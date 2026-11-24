@@ -694,6 +694,242 @@
     }).catch(function () {});
   }
 
+  // 🎲 300가지 이상(9,500+ 조합) 초고정밀 무중복 랜덤 샘플 생성기
+  // - 현재 CRM에 등록된 고객사 이름과 절대 중복되지 않도록 엄격 필터링 (완전일치 + 부분포함 차단)
+  var sampleUsedNames = {};
+  var SAMPLE_REGIONS = [
+    '강남', '서초', '청담', '압구정', '판교', '분당', '성수', '잠실', '여의도', '마포',
+    '홍대', '용산', '한남', '송도', '해운대', '센텀', '둔산', '수성', '광교', '동탄',
+    '위례', '목동', '일산', '평촌', '수원', '천안', '창원', '광주'
+  ];
+  var SAMPLE_SURNAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '홍', '전', '고', '문', '양'];
+  var SAMPLE_GIVEN = [
+    '도현', '서연', '민수', '정훈', '지우', '현우', '유진', '성민', '수빈', '태윤',
+    '하은', '재원', '지훈', '은서', '준호', '소연', '동혁', '예진', '승현', '다혜',
+    '영호', '미라', '건우', '세진', '원준', '보람', '상우', '나연', '진우', '채원',
+    '경수', '혜진', '민재', '아름', '시우', '윤서', '태현', '지민', '호진', '서현',
+    '우진', '은지', '준영', '소미', '기훈'
+  ];
+  var SAMPLE_POOLS = {
+    '병원': {
+      cores: ['연세', '서울', '바른', '더맑은', '프리미어', '루미에', '하늘빛', '다온', '온유', '센트럴', '아름다운', '청담라인', '엘리트', '에이스', '리더스', '블룸', '웰니스', '스마일', '에이펙스', '더나은'],
+      suffixes: ['내과', '치과', '피부과', '한의원', '정형외과', '안과', '성형외과', '건강검진센터', '통증의학과', '재활의학과'],
+      titleSuffix: '원장',
+      slugBase: 'clinic',
+      keywords: ['건강검진, 내시경 잘하는 곳, 만성피로 수액', '임플란트 가격, 치아교정 후기, 야간진료', '기미 레이저, 리프팅 시술, 피부 탄력 관리', '도수치료, 허리디스크 비수술, 체형 교정', '다이어트 한약, 교통사고 후유증, 추나요법'],
+      memos: [
+        '개원 초기 지역 인지도 확보 및 신환 상담 DB 자동화 시급. 원장님 1분 팩트체크 릴스 촬영 적극 협조 가능.',
+        '블로그 검색 유입은 있으나 예약 전환율 저조. 의료법 심의 준수 원고 + 카톡 상담 퍼널 결합 희망.',
+        '경쟁 병원 증가로 신규 유입 정체. 시술·검진 비하인드 숏폼과 네이버 예약 전환 동선 개편 필요.',
+        '야간/주말 진료 강점 홍보 및 고단가 시술 문의 집중 확보 목표. 월 30건 이상 신환 DB 기대.',
+      ],
+      feeRange: [2200000, 4800000],
+      dealRange: [800000, 2200000],
+      items: [
+        { name: '네이버 브랜드 블로그 대행 (월 12편)', qty: 1, price: 1200000, note: '의료법 심의 기준 준수' },
+        { name: '원장님 팩트체크 릴스 대행 (월 8편)', qty: 1, price: 1300000, note: '3초 후킹·촬영가이드·자막' },
+        { name: '신환 상담 DB 퍼널·카톡 전환 세팅', qty: 1, price: 700000, note: '무료 자가진단 체크리스트 CTA' },
+      ],
+    },
+    '보험설계사': {
+      cores: ['리치파트너스', '프라임가드', '스마트보장', '트러스트', '밸류업', '위드라이프', '세이프플랜', '코어에셋', '올바른보장', '퍼스트케어', '하모니에셋', '넥스트웰스', '블루칩', '골든키', '에이원', '마스터플랜'],
+      suffixes: ['보험설계팀', '보장분석센터', 'GA 본부', '재무설계 지점', '컨설팅 그룹', '금융파트너스'],
+      titleSuffix: '본부장',
+      slugBase: 'ins',
+      keywords: ['40대 암보험 비교, 실손보험 리모델링, 가족 보장분석', '어린이보험 가입요령, 태아보험 추천, 보험료 절약', '운전자보험 필수특약, 뇌혈관 진단비, 보험금 청구', '법인 CEO 절세보험, 퇴직연금 설계, 종신보험 비교'],
+      memos: [
+        '유료 DB 구매 단가 부담이 커 자체 릴스·블로그 기반 무료 보장분석 DB 퍼널 구축 희망.',
+        '댓글 키워드 자동 DM(매니챗) + 3문항 보장점검 폼으로 월 40건 이상 고관여 상담 DB 목표.',
+        '금소법 심의 안전 가이드 준수하면서 실손·암보험 청구 실수 30초 릴스 집중 발행 요청.',
+        '지점 소속 설계사 5명 공동 브랜딩 및 퍼스널 프로필 리뉴얼 + 스레드 데일리 소통 확장 추진.',
+      ],
+      feeRange: [1800000, 3800000],
+      dealRange: [1000000, 2400000],
+      items: [
+        { name: '보장분석 DB 수집 퍼널 + 댓글 DM 자동화', qty: 1, price: 1100000, note: '월 목표 DB 40건 설계' },
+        { name: '인스타 릴스 3초 후킹 대행 (월 10편)', qty: 1, price: 1300000, note: '금소법 심의 통과 기준' },
+        { name: '네이버 보장분석 칼럼 블로그 (월 12편)', qty: 1, price: 1000000, note: '청구 사례·비교 키워드' },
+      ],
+    },
+    '정책자금': {
+      cores: ['한빛', '비즈브릿지', '성장파트너', '코어비즈', '넥스트펀드', '성공경영', '기업지원', '밸류인사이트', '드림캐피탈', '선도경영', '위너스비즈', '브라이트', '케이비즈', '올인원', '프로경영', '솔루션'],
+      suffixes: ['정책자금연구소', '경영컨설팅', '기업자문센터', '경영지원단', '자금전략파트너스', 'B2B 컨설팅'],
+      titleSuffix: '대표',
+      slugBase: 'fund',
+      keywords: ['소상공인 정책자금 조건, 운전자금 신청, 부결 사유', '중소기업 기술보증기금, 신보 한도 조회, 법인 자금', '창업자금 저금리 대출, 정부지원사업 서류 준비', '매출 10억 법인 운전자금, 시설자금 승인 사례'],
+      memos: [
+        '업력·매출·신용점수 4문항 사전 필터링 폼으로 허수 문의를 걸러내고 법인 대표자 DB만 수집 희망.',
+        '자금 공고 마감 시즌에 맞춘 속보형 릴스와 네이버 정보성 상위노출 블로그 동시 가동 목표.',
+        '승인 사례 스토리텔링 강화로 상담 미팅 성사율을 현재 18%에서 35% 이상으로 끌어올리는 것이 과제.',
+        '전국 중소기업·소상공인 대표 타깃 B2B 퍼널 구축 및 월 30건 이상 유효 상담 확보 추진.',
+      ],
+      feeRange: [2400000, 4500000],
+      dealRange: [2000000, 5000000],
+      items: [
+        { name: '정책자금 핵심 키워드 블로그 SEO (월 12편)', qty: 1, price: 1200000, note: '자격·승인사례 중심' },
+        { name: '1분 무료 한도진단 B2B DB 퍼널 구축', qty: 1, price: 1100000, note: '매출·업력 필터링 4문항' },
+        { name: '정책자금 속보·탈락방지 릴스 (월 8편)', qty: 1, price: 1100000, note: '대표자 타깃 3초 후킹' },
+      ],
+    },
+    '자영업/소상공인': {
+      cores: ['브루잉', '아뜰리에', '소담', '더테이블', '모던', '오브제', '그린우드', '라온', '미소', '달빛', '호호', '온기', '바다뷰', '포레스트', '선데이', '마레'],
+      suffixes: ['카페', '다이닝', '베이커리', '피트니스', '필라테스', '헤어살롱', '인테리어', '스튜디오', '브런치하우스', '로스터리'],
+      titleSuffix: '대표',
+      slugBase: 'shop',
+      keywords: ['데이트 맛집, 주차 편한 카페, 주말 웨이팅', '일대일 피티 후기, 체형교정 필라테스, 체험권', '복구펌 잘하는 곳, 퍼스널컬러 염색, 예약 할인', '소형 아파트 리모델링, 매장 인테리어 견적'],
+      memos: [
+        '주말 손님은 많으나 평일 낮 시간대 공석 해결 필요. 지역 릴스 + 네이버 알림받기 쿠폰 퍼널 도입 희망.',
+        '신규 오픈 3개월 차. 지역 상권 네이버 플레이스 상위노출과 방문 리뷰 선순환 구조 세팅 요청.',
+        '가격 경쟁 대신 시그니처 메뉴·공간 스토리 브랜딩으로 객단가 25% 상승 목표.',
+        '단골 재방문 알림톡 채널 확보 및 매장 비하인드 3초 후킹 릴스 월 8편 제작 희망.',
+      ],
+      feeRange: [1200000, 2600000],
+      dealRange: [150000, 650000],
+      items: [
+        { name: '지역 상권 폭발형 릴스 숏폼 (월 8편)', qty: 1, price: 900000, note: '위치태그·지역 알고리즘 공략' },
+        { name: '네이버 브랜드 블로그 · 플레이스 연동 (월 10편)', qty: 1, price: 800000, note: '지역명+핵심키워드 장악' },
+        { name: '알림받기 쿠폰 · 단골 재방문 퍼널 세팅', qty: 1, price: 500000, note: '방문 리뷰 선순환 구조' },
+      ],
+    },
+    '브랜드/기타': {
+      cores: ['노바', '루멘', '아르떼', '벨라', '오리진', '스파크', '넥서스', '에테르', '코지', '솔라', '모멘텀', '크래프트', '베르데', '클라우드', '아우라', '리브'],
+      suffixes: ['F&B', '코스메틱', '리빙', '랩', '커머스', '스튜디오', '라이프', '프랜차이즈', '웰니스', '테크'],
+      titleSuffix: '대표',
+      slugBase: 'brand',
+      keywords: ['프리미엄 브랜드 스토리, 고객 후기, 첫구매 혜택', '프랜차이즈 창업 비용, 소자본 가맹 상담, 수익 구조', '신제품 런칭 프로모션, 와디즈 펀딩 후기, 자사몰', 'B2B 납품 문의, OEM 제작 단가, 파트너 제휴'],
+      memos: [
+        '신규 브랜드 런칭 앞두고 인지도 확보 및 자사몰/가맹 상담 DB 동시 확장 목표.',
+        '블로그·릴스·스레드 3채널 원소스 멀티유즈로 월 30편 콘텐츠 공장 가동 및 전환율 개선 희망.',
+        '경쟁사 대비 차별화된 브랜드 포지셔닝 확립과 고전환 리드 마그넷(무료 샘플/가이드) 퍼널 세팅 필요.',
+        '전국 대리점·가맹점주 모집 DB 확보를 위한 고단가 B2B 제안 퍼널 구축 추진 중.',
+      ],
+      feeRange: [2800000, 7500000],
+      dealRange: [1500000, 6000000],
+      items: [
+        { name: '브랜드 통합 포지셔닝 · 콘텐츠 기획', qty: 1, price: 1400000, note: '멀티채널 톤앤매너 정립' },
+        { name: '인스타 릴스 · 스레드 팬덤 대행 (월 10편+)', qty: 1, price: 1500000, note: '바이럴 후킹·데일리 소통' },
+        { name: '고전환 상담/가맹 DB 수집 퍼널 구축', qty: 1, price: 1100000, note: '실시간 리드 자동 알림 연동' },
+      ],
+    },
+  };
+
+  function normBizName(s) {
+    return String(s || '').toLowerCase().replace(/[\s\-_()\[\]·.,/]/g, '');
+  }
+
+  function isNameTakenByExisting(candidateName) {
+    var candNorm = normBizName(candidateName);
+    if (!candNorm) return true;
+    var existing = store.clients || [];
+    for (var i = 0; i < existing.length; i++) {
+      var exNorm = normBizName(existing[i] && existing[i].name);
+      if (!exNorm) continue;
+      // 완전 일치 또는 기존 등록 고객사 이름을 포함하거나 포함되는 경우 모두 중복 차단!
+      if (candNorm === exNorm || candNorm.indexOf(exNorm) !== -1 || exNorm.indexOf(candNorm) !== -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function pickRand(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  function pad4(n) {
+    return String(n).padStart(4, '0');
+  }
+
+  function generateUniqueSample(opts) {
+    opts = opts || {};
+    var indList = INDUSTRIES.map(function (x) { return x.id; });
+    var ind = (opts.industry && SAMPLE_POOLS[opts.industry]) ? opts.industry : pickRand(indList);
+    var pool = SAMPLE_POOLS[ind] || SAMPLE_POOLS['브랜드/기타'];
+
+    // 기존 등록 고객사 이름 + 최근 샘플 이력과 100% 겹치지 않는 업체명 추첨 (300회 시도)
+    var bizName = '';
+    var region = '';
+    var core = '';
+    var suffix = '';
+    for (var attempt = 0; attempt < 300; attempt++) {
+      region = pickRand(SAMPLE_REGIONS);
+      core = pickRand(pool.cores);
+      suffix = pickRand(pool.suffixes);
+      var style = attempt % 3;
+      var candidate = style === 0
+        ? (region + ' ' + core + ' ' + suffix)
+        : (style === 1 ? (core + ' ' + suffix + ' ' + region + '점') : (region + core + suffix));
+      candidate = candidate.replace(/\s+/g, ' ').trim();
+      var key = normBizName(candidate);
+      if (!isNameTakenByExisting(candidate) && !sampleUsedNames[key]) {
+        bizName = candidate;
+        sampleUsedNames[key] = true;
+        break;
+      }
+    }
+    if (!bizName) {
+      // 모든 풀 소진 시 고유 번호 부여하여 절대 중복 방지
+      sampleUsedNames = {};
+      bizName = pickRand(SAMPLE_REGIONS) + ' ' + pickRand(pool.cores) + ' ' + pickRand(pool.suffixes) + ' ' + randInt(101, 999) + '호점';
+    }
+
+    var contactPure = pickRand(SAMPLE_SURNAMES) + pickRand(SAMPLE_GIVEN);
+    var contactWithTitle = contactPure + ' ' + pool.titleSuffix;
+    var phone = '010-' + pad4(randInt(2000, 9899)) + '-' + pad4(randInt(1000, 9999));
+    var bizNo = String(randInt(101, 899)) + '-' + String(randInt(10, 89)) + '-' + String(randInt(10000, 99999));
+    var handleNum = randInt(10, 999);
+    var slug = pool.slugBase + '_' + handleNum;
+    var feeStep = Math.round(randInt(pool.feeRange[0], pool.feeRange[1]) / 100000) * 100000;
+    var dbGoal = randInt(20, 80);
+    var dbCount = randInt(Math.max(5, Math.round(dbGoal * 0.4)), Math.round(dbGoal * 1.25));
+    var stage = pickRand(FUNNEL_STAGES);
+    var svcCount = randInt(2, 4);
+    var shuffledSvcs = SERVICES.slice().sort(function () { return Math.random() - 0.5; });
+    var svcs = shuffledSvcs.slice(0, svcCount);
+    var roadNames = ['테헤란로', '강남대로', '판교역로', '여의대로', '성수로', '송파대로', '마포대로', '센텀중앙로', '둔산로', '광교중앙로'];
+    var address = region + ' ' + pickRand(roadNames) + ' ' + randInt(12, 480) + ' ' + randInt(2, 14) + '층';
+    var email = slug + '@' + pickRand(['naver.com', 'gmail.com', 'daum.net', 'company.kr']);
+    var avgDeal = Math.round(randInt(pool.dealRange[0], pool.dealRange[1]) / 50000) * 50000;
+    var closeCnt = randInt(3, 18);
+
+    return {
+      name: bizName,
+      industry: ind,
+      contact: contactWithTitle,
+      contactPure: contactPure,
+      phone: phone,
+      bizNo: bizNo,
+      email: email,
+      address: address,
+      stage: stage,
+      fee: feeStep,
+      db: dbCount,
+      goal: dbGoal,
+      blog: 'https://blog.naver.com/' + slug,
+      insta: '@' + slug,
+      svcs: svcs,
+      memo: pickRand(pool.memos),
+      keywords: region + ' ' + pickRand(pool.keywords),
+      blogNeighbors: randInt(800, 9500),
+      blogDailyVisits: randInt(350, 4200),
+      blogMonthlyPosts: randInt(6, 20),
+      instaFollowers: randInt(1200, 24000),
+      reelsAvgViews: randInt(2500, 42000),
+      reelsSaveRate: (randInt(18, 72) / 10).toFixed(1) + '%',
+      funnelVisits: randInt(280, 1600),
+      funnelDb: dbCount,
+      marketingBudget: feeStep,
+      closeCount: closeCnt,
+      avgDealValue: avgDeal,
+      discountRate: pickRand([0, 5, 10]),
+      proposalTitle: bizName + ' ' + pickRand(['신규 문의 2배 SNS·DB 퍼널 마케팅 제안서', '고전환 브랜딩·릴스 통합 마케팅 제안서', '매출 직결 검색·숏폼·퍼널 실행 제안서']),
+      contractTitle: bizName + ' ' + ind + ' SNS 브랜딩·DB 퍼널 마케팅 대행 계약서',
+      items: pool.items.map(function (it) { return Object.assign({}, it); }),
+    };
+  }
+
   function init(bridge) {
     store.bridge = bridge;
     Array.prototype.forEach.call(document.querySelectorAll('.cat-tab'), function (btn) {
@@ -738,5 +974,6 @@
     transferToProposal: transferToProposal,
     transferToContract: transferToContract,
     transferToVideo: transferToVideo,
+    generateUniqueSample: generateUniqueSample,
   };
 })();

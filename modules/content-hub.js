@@ -785,16 +785,31 @@
 
     var sampleAddBtn = q('#calSampleAddBtn');
     if (sampleAddBtn) sampleAddBtn.addEventListener('click', function () {
-      var list = [
-        { ch: '네이버 블로그', title: '12월 무료 사전 진단 체크리스트 5가지 총정리', body: '🎯 [도입]\n처음 문의하시는 대표님/고객님들이 가장 자주 묻는 핵심 질문 5가지를 정리했습니다.\n\n📝 [핵심 구성]\n1) 사전 준비물 체크\n2) 자주 발생하는 실수 TOP3\n3) 1분 무료 상담 신청 안내\n\n🏷️ #브랜드블로그 #무료진단 #고객상담' },
-        { ch: '인스타 릴스', title: '3초 후킹 릴스 — 똑같은 비용 쓰고 실패하는 사람들의 공통점', body: '[0~3초 후킹] "아직도 가격표만 보고 고르세요? 이 1가지 꼭 확인하세요!"\n[4~20초 본론] 실제 사례로 보는 핵심 비교 포인트 3가지\n[21~30초 CTA] "프로필 링크에서 무료 비교 체크리스트 받아가세요!"' },
+      var channels = ['네이버 블로그', '인스타 릴스', '유튜브', '스레드', '컨설팅', '기타'];
+      var angles = [
+        '초보가 가장 많이 하는 치명적 실수 TOP3',
+        '비용 절반으로 줄이고 전환율 2배 올리는 체크리스트',
+        '실제 고객 상담 Q&A 베스트 5 총정리',
+        '이번 달 놓치면 손해 보는 핵심 혜택·일정 안내',
+        '전문가가 직접 공개하는 현장 비하인드 스토리',
+        '비교표 한 장으로 끝내는 실패 없는 선택 기준',
+        '문의 전 반드시 확인해야 할 필수 준비물 4가지',
+        '성과가 3배 차이 나는 상위 1%의 디테일 공개',
       ];
-      var s = list[Math.floor(Math.random() * list.length)];
-      st.newChannel = s.ch;
-      st.newTitle = s.title;
-      st.newBody = s.body;
+      var topics = ['무료 사전 진단', '신규 고객 프로모션', '브랜드 신뢰 구축', '보장·조건 리모델링', '예약·상담 퍼널', '지역 상권 공략', '고객 후기 사례', '시즌 트렌드 분석'];
+      var ctas = ['프로필 링크에서 1분 무료 체크리스트 받아가세요!', '댓글에 "가이드" 남기시면 바로 DM 보내드립니다!', '하단 카카오 채널로 편하게 1:1 무료 상담 신청하세요!', '지금 저장해 두시고 상담 전에 꼭 다시 확인하세요!'];
+      var ch = channels[Math.floor(Math.random() * channels.length)];
+      var ang = angles[Math.floor(Math.random() * angles.length)];
+      var top = topics[Math.floor(Math.random() * topics.length)];
+      var cta = ctas[Math.floor(Math.random() * ctas.length)];
+      var tag = (ch === '인스타 릴스' || ch === '유튜브') ? '3초 후킹 ' : '[' + top + '] ';
+      st.newChannel = ch;
+      st.newTitle = tag + ang;
+      st.newBody = (ch === '인스타 릴스' || ch === '유튜브')
+        ? ('[0~3초 후킹] "잠깐! ' + top + ' 준비 중이시라면 이거 먼저 확인하세요!"\n[4~20초 본론] ' + ang + ' 핵심 포인트 3가지 정리\n[21~30초 CTA] "' + cta + '"')
+        : ('🎯 [도입]\n' + top + ' 관련해서 가장 많이 물어보시는 "' + ang + '" 내용을 알기 쉽게 정리했습니다.\n\n📝 [핵심 구성]\n1) 핵심 기준 3가지 비교\n2) 실제 사례로 보는 주의사항\n3) ' + cta + '\n\n🏷️ #' + top.replace(/\s+/g, '') + ' #브랜드마케팅 #무료상담');
       render();
-      A.toast('🎲 샘플 일정이 채워졌습니다! [달력 · VIP 포털에 일정 등록]을 눌러보세요.');
+      A.toast('🎲 랜덤 샘플 일정(' + ch + ' · ' + top + ')이 채워졌습니다!');
     });
 
     var submitNew = q('#calSubmitNewBtn');

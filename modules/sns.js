@@ -274,16 +274,28 @@
     var q = function (s) { return root.querySelector(s); };
     var sampleSnsBtn = q('#snsSampleBtn');
     if (sampleSnsBtn) sampleSnsBtn.addEventListener('click', function () {
-      var list = [
-        { client_name: '연세미담내과', industry: '병원', blogUrl: 'https://blog.naver.com/midamclinic', blogNeighbors: 3400, blogDailyVisits: 1850, blogMonthlyPosts: 12, blogKeywords: '강남 건강검진, 내시경 잘하는 곳, 만성피로 수액', instaHandle: '@midam_clinic', instaFollowers: 6200, reelsAvgViews: 8400, reelsSaveRate: '4.6%', funnelVisits: 620, funnelDb: 34, marketingBudget: 2500000, closeCount: 11, avgDealValue: 1200000 },
-        { client_name: '골드만리치 보험설계팀', industry: '보험설계사', blogUrl: 'https://blog.naver.com/goldman_ins', blogNeighbors: 2100, blogDailyVisits: 920, blogMonthlyPosts: 14, blogKeywords: '40대 암보험 비교, 실손보험 리모델링, 가족 보장분석', instaHandle: '@goldman_rich_ins', instaFollowers: 9500, reelsAvgViews: 14200, reelsSaveRate: '5.3%', funnelVisits: 840, funnelDb: 52, marketingBudget: 2200000, closeCount: 9, avgDealValue: 1600000 },
-        { client_name: '쉐어링F&B 브랜드', industry: '브랜드/기타', blogUrl: 'https://blog.naver.com/sharing_fnb', blogNeighbors: 4800, blogDailyVisits: 2600, blogMonthlyPosts: 10, blogKeywords: '프랜차이즈 창업 비용, 소자본 카페 브랜드, 가맹 상담', instaHandle: '@sharing_fnb_official', instaFollowers: 12400, reelsAvgViews: 18500, reelsSaveRate: '4.1%', funnelVisits: 910, funnelDb: 41, marketingBudget: 3500000, closeCount: 4, avgDealValue: 4500000 },
-      ];
-      var s = list[Math.floor(Math.random() * list.length)];
-      form = Object.assign(blankForm(), s);
+      var s = A.generateUniqueSample();
+      form = Object.assign(blankForm(), {
+        client_name: s.name,
+        industry: s.industry,
+        blogUrl: s.blog,
+        blogNeighbors: s.blogNeighbors,
+        blogDailyVisits: s.blogDailyVisits,
+        blogMonthlyPosts: s.blogMonthlyPosts,
+        blogKeywords: s.keywords,
+        instaHandle: s.insta,
+        instaFollowers: s.instaFollowers,
+        reelsAvgViews: s.reelsAvgViews,
+        reelsSaveRate: s.reelsSaveRate,
+        funnelVisits: s.funnelVisits,
+        funnelDb: s.funnelDb,
+        marketingBudget: s.marketingBudget,
+        closeCount: s.closeCount,
+        avgDealValue: s.avgDealValue,
+      });
       computeAutoScores();
       render();
-      A.toast('🎲 랜덤 SNS 분석 예시(' + s.client_name + ')가 자동 입력되었습니다!');
+      A.toast('🎲 중복 없는 랜덤 SNS 분석 예시(' + s.name + ' · ' + s.industry + ')가 자동 입력되었습니다!');
     });
 
     var autoChk = q('#snsAutoScoreChk');

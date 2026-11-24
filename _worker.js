@@ -971,6 +971,210 @@ function formatDocRow(r) {
       }
       return json({ ok: true, mode, restored_rooms: restoredRooms, restored_messages: restoredMsgs });
     }
+
+    // 📧 브레인 이메일 자동 발송 설정 조회/저장 (/api/brain/email-config)
+    if (parts[2] === 'email-config') {
+      const KEY = 'brain_email_cfg';
+      const row = await env.DB.prepare('select v from kv_store where k = ?').bind(KEY).first();
+      const prev = row ? safeParseJson(row.v, {}) : {};
+      if (method === 'GET') {
+        const keyStr = String(env.RESEND_API_KEY || prev.resend_api_key || '').trim();
+        return json({
+          ok: true,
+          config: {
+            to_email: String(prev.to_email || ''),
+            from_email: String(prev.from_email || 'onboarding@resend.dev'),
+            auto_daily: !!prev.auto_daily,
+            last_sent_at: prev.last_sent_at || null,
+            has_resend_key: !!keyStr,
+            resend_key_hint: keyStr ? ('••••' + keyStr.slice(-4)) : '',
+          },
+        });
+      }
+      if (method === 'POST' || method === 'PUT') {
+        let p = {};
+        try { p = await request.json(); } catch (e) { p = {}; }
+        const merged = {
+          to_email: String(p.to_email !== undefined ? p.to_email : (prev.to_email || '')).trim(),
+          from_email: String(p.from_email !== undefined ? p.from_email : (prev.from_email || 'onboarding@resend.dev')).trim() || 'onboarding@resend.dev',
+          auto_daily: p.auto_daily !== undefined ? !!p.auto_daily : !!prev.auto_daily,
+          resend_api_key: p.clear_key ? '' : (String(p.resend_api_key || '').trim() || String(prev.resend_api_key || '').trim()),
+          last_sent_at: prev.last_sent_at || null,
+        };
+        await env.DB.prepare(
+          `insert into kv_store (k, v, updated_at) values (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+           on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+        ).bind(KEY, JSON.stringify(merged)).run();
+        const keyStr = String(env.RESEND_API_KEY || merged.resend_api_key || '').trim();
+        return json({
+          ok: true,
+          config: {
+            to_email: merged.to_email,
+            from_email: merged.from_email,
+            auto_daily: merged.auto_daily,
+            last_sent_at: merged.last_sent_at,
+            has_resend_key: !!keyStr,
+            resend_key_hint: keyStr ? ('••••' + keyStr.slice(-4)) : '',
+          },
+        });
+      }
+    }
+
+    // 📨 최신 브레인 패키지(.json) + 전체 회의록·프롬프트 문서(.md) 이메일 자동 발송 (/api/brain/send-email)
+    if (parts[2] === 'send-email' && method === 'POST') {
+      let p = {};
+      try { p = await request.json(); } catch (e) { p = {}; }
+      const KEY = 'brain_email_cfg';
+      const cfgRow = await env.DB.prepare('select v from kv_store where k = ?').bind(KEY).first();
+      const savedCfg = cfgRow ? safeParseJson(cfgRow.v, {}) : {};
+      const toEmail = String(p.to_email || savedCfg.to_email || '').trim();
+      if (!toEmail || toEmail.indexOf('@') === -1) {
+        return json({ ok: false, error: 'invalid_email', message: '유효한 받는 이메일 주소를 입력해 주세요.' }, 400);
+      }
+      // 입력한 이메일 주소와 키(있다면) 자동 기억 저장
+      const nextCfg = Object.assign({}, savedCfg, {
+        to_email: toEmail,
+        from_email: String(p.from_email || savedCfg.from_email || 'onboarding@resend.dev').trim() || 'onboarding@resend.dev',
+        auto_daily: p.auto_daily !== undefined ? !!p.auto_daily : !!savedCfg.auto_daily,
+        resend_api_key: String(p.resend_api_key || '').trim() || String(savedCfg.resend_api_key || '').trim(),
+      });
+      await env.DB.prepare(
+        `insert into kv_store (k, v, updated_at) values (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+      ).bind(KEY, JSON.stringify(nextCfg)).run();
+
+      // 최신 브레인 JSON + 전체 회의록·프롬프트 MD 생성
+      const rooms = await roomList(env);
+      const msgsRes = await env.DB.prepare(
+        `select id, room_slug, sender, content, reply_to_id, created_at from messages order by id asc`
+      ).all();
+      const kvRes = await env.DB.prepare(
+        `select k, v from kv_store where k in ('prompts', 'integrations', 'agency_profile', 'agent_souls')`
+      ).all();
+      const clientsRes = await env.DB.prepare('select * from clients order by id asc').all();
+      const snsRes = await env.DB.prepare('select * from sns_reports order by id asc').all();
+      const propRes = await env.DB.prepare('select * from proposals order by id asc').all();
+      const contRes = await env.DB.prepare('select * from contracts order by id asc').all();
+      const portRes = await env.DB.prepare('select * from portfolios order by id asc').all();
+      const kv = {};
+      for (const r of kvRes.results || []) {
+        try { kv[r.k] = JSON.parse(r.v); } catch (e) { kv[r.k] = null; }
+      }
+      const safeProfile = kv.agency_profile ? Object.assign({}, kv.agency_profile) : null;
+      if (safeProfile && safeProfile.docusealApiKey) delete safeProfile.docusealApiKey;
+      const nowIso = new Date().toISOString();
+      const kstDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      const kstStamp = kstDate.replace(/-/g, '');
+      const brainObj = {
+        version: '2.1',
+        service: '껌씹는 AI 일진방',
+        exported_at: nowIso,
+        rooms: rooms.map((r) => ({ slug: r.slug, name: r.name, description: r.description, position: r.position })),
+        messages: msgsRes.results || [],
+        prompts: kv.prompts || null,
+        integrations: kv.integrations || null,
+        agency_profile: safeProfile,
+        agent_souls: kv.agent_souls || null,
+        clients: (clientsRes.results || []).map((r) => formatClientRow(r, env)),
+        sns_reports: (snsRes.results || []).map(formatDocRow),
+        proposals: (propRes.results || []).map(formatDocRow),
+        contracts: (contRes.results || []).map(formatDocRow),
+        portfolios: (portRes.results || []).map(formatDocRow),
+      };
+      const jsonText = JSON.stringify(brainObj, null, 2);
+      const mdLines = [`# 🧠 껌씹는 AI 일진방 브레인 통합 문서 (${kstDate})`, ''];
+      if (brainObj.prompts) {
+        mdLines.push('## 👑 대장 최우선 명령 프롬프트');
+        if (brainObj.prompts.global) mdLines.push(`### 공통 지침\n${brainObj.prompts.global}\n`);
+        const ag = brainObj.prompts.agents || {};
+        for (const k of Object.keys(ag)) mdLines.push(`### ${k}\n${ag[k]}\n`);
+      }
+      mdLines.push('## 💬 방별 전체 대화 기록');
+      for (const r of brainObj.rooms) {
+        const rMsgs = brainObj.messages.filter((m) => m.room_slug === r.slug);
+        mdLines.push(`\n### #${r.name} (${r.slug}) — ${rMsgs.length}건`);
+        for (const m of rMsgs) {
+          mdLines.push(`- **#${m.id} ${m.sender}** (${String(m.created_at || '').slice(0, 16)}): ${String(m.content || '').replace(/\n/g, ' ')}`);
+        }
+      }
+      const mdText = mdLines.join('\n');
+      const jsonName = `buja-ai-brain-${kstStamp}.json`;
+      const mdName = `buja-ai-brain-doc-${kstStamp}.md`;
+
+      const resendKey = String(env.RESEND_API_KEY || nextCfg.resend_api_key || '').trim();
+      if (!resendKey) {
+        return json({
+          ok: true,
+          mode: 'fallback_client',
+          to_email: toEmail,
+          json_name: jsonName,
+          md_name: mdName,
+          message: '이메일 주소가 저장되었습니다! 무료 Resend API 키가 아직 없어 파일 2종을 자동 내려받고 Gmail 작성창을 열어드립니다.',
+        });
+      }
+
+      // UTF-8 문자열을 안전하게 Base64로 인코딩 (첨부파일용)
+      const toB64 = (str) => {
+        const bytes = new TextEncoder().encode(str);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        }
+        return btoa(bin);
+      };
+
+      const emailPayload = {
+        from: nextCfg.from_email || 'onboarding@resend.dev',
+        to: [toEmail],
+        subject: `[껌씹는 AI 일진방] 최신 브레인 백업 패키지 + 전체 회의록 문서 (${kstDate})`,
+        html: `<div style="font-family:sans-serif;line-height:1.7;color:#0f172a">
+          <h2 style="color:#0284c7">🧠 껌씹는 AI 일진방 — 최신 브레인 자동 백업</h2>
+          <p>요청하신 최신 브레인 백업 파일 2종을 첨부해 드립니다.</p>
+          <ul>
+            <li><b>📦 ${jsonName}</b> — 전체 대화(${brainObj.messages.length}건) · 고객사(${brainObj.clients.length}곳) · 제안서/계약서 · 프롬프트 · AI 영혼·기억 통합 복원 패키지</li>
+            <li><b>📝 ${mdName}</b> — 전체 회의록 및 대장 프롬프트 문서 (.md)</li>
+          </ul>
+          <p style="font-size:12px;color:#475569">노트북이나 다른 PC에서 <a href="${url.origin}">${url.origin}</a> 접속 후 상단 [🧠 브레인] 창에 JSON 파일을 끌어다 놓으면 즉시 복원됩니다.</p>
+        </div>`,
+        attachments: [
+          { filename: jsonName, content: toB64(jsonText) },
+          { filename: mdName, content: toB64(mdText) },
+        ],
+      };
+
+      const rRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailPayload),
+      });
+      const rData = await rRes.json().catch(() => ({}));
+      if (!rRes.ok) {
+        return json({
+          ok: false,
+          error: 'resend_error',
+          message: '이메일 발송 오류: ' + String(rData.message || rData.name || ('HTTP ' + rRes.status)),
+        }, 502);
+      }
+
+      nextCfg.last_sent_at = nowIso;
+      await env.DB.prepare(
+        `insert into kv_store (k, v, updated_at) values (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+      ).bind(KEY, JSON.stringify(nextCfg)).run();
+
+      return json({
+        ok: true,
+        mode: 'sent',
+        id: rData.id || '',
+        to_email: toEmail,
+        json_name: jsonName,
+        md_name: mdName,
+        message: `✅ ${toEmail} 주소로 최신 브레인 패키지(.json)와 전체 회의록·프롬프트(.md) 2개 파일을 자동 발송했습니다!`,
+      });
+    }
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
 

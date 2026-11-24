@@ -308,22 +308,15 @@
 
     var samplePropBtn = q('#propSampleBtn');
     if (samplePropBtn) samplePropBtn.addEventListener('click', function () {
-      var list = [
-        { ind: '병원', name: '연세프라임내과', ceo: '김도현 원장님', title: '연세프라임내과 신환 상담 2배 SNS·DB 퍼널 마케팅 제안서', disc: 5 },
-        { ind: '보험설계사', name: '골드만리치 보험설계팀', ceo: '박진만 본부장님', title: '골드만리치 고전환 보장분석 DB 수집 퍼널 제안서', disc: 10 },
-        { ind: '정책자금', name: '한빛정책자금경영연구소', ceo: '이정훈 대표님', title: '한빛정책자금 대표자 B2B 한도진단 퍼널 마케팅 제안서', disc: 5 },
-        { ind: '자영업/소상공인', name: '성수 브루잉 하우스', ceo: '박서연 대표님', title: '성수 브루잉 하우스 상권 장악 릴스·플레이스 바이럴 제안서', disc: 0 },
-        { ind: '브랜드/기타', name: '쉐어링F&B', ceo: '장남길 대표님', title: '쉐어링F&B 전국 가맹 상담 폭주 브랜딩·DB 퍼널 제안서', disc: 10 },
-      ];
-      var s = list[Math.floor(Math.random() * list.length)];
-      form = Object.assign(blankForm(s.ind), {
+      var s = A.generateUniqueSample();
+      form = Object.assign(blankForm(s.industry), {
         client_name: s.name,
-        contact_name: s.ceo,
-        title: s.title,
-        discountRate: s.disc,
+        contact_name: s.contact + '님',
+        title: s.proposalTitle,
+        discountRate: s.discountRate,
       });
       render();
-      A.toast('🎲 랜덤 예시 제안서(' + s.name + ' · ' + s.ind + ')가 자동 기입되었습니다!');
+      A.toast('🎲 중복 없는 랜덤 제안서(' + s.name + ' · ' + s.industry + ')가 자동 기입되었습니다!');
     });
 
     var newBtn = q('#propNewBtn');

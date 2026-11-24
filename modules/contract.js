@@ -405,19 +405,23 @@
 
     var sampleContBtn = q('#contSampleBtn');
     if (sampleContBtn) sampleContBtn.addEventListener('click', function () {
-      var samples = [
-        { name: '연세프라임내과', ceo: '김도현', biz: '214-88-49102', phone: '010-4821-3390', email: 'director@yonseiprime.kr', addr: '서울 강남구 테헤란로 218 4층', title: '병원 SNS 브랜딩·신환 DB 퍼널 마케팅 계약서', items: [{ name: '네이버 브랜드 블로그 대행 (월 12편)', qty: 1, price: 1200000, note: '의료법 심의 기준 준수' }, { name: '원장님 팩트체크 릴스 대행 (월 8편)', qty: 1, price: 1300000, note: '기획·촬영가이드·자막편집' }, { name: '신환 상담 DB 퍼널 세팅', qty: 1, price: 700000, note: '카톡/랜딩 자동 수집' }], extra: EXTRA_TERM_PRESETS[0].text + '\n\n' + EXTRA_TERM_PRESETS[1].text },
-        { name: '프라임에셋 강민수 지점', ceo: '강민수', biz: '109-42-77821', phone: '010-7712-9045', email: 'ms.kang@primeasset.co.kr', addr: '서울 영등포구 여의대로 66 9층', title: '보험 보장분석 DB 수집 퍼널 마케팅 계약서', items: [{ name: '보장분석 DB 수집 퍼널 + 댓글 DM 자동화', qty: 1, price: 1100000, note: '월 목표 DB 40건' }, { name: '인스타 릴스 3초 후킹 대행 (월 10편)', qty: 1, price: 1300000, note: '금소법 심의 통과 기준' }], extra: EXTRA_TERM_PRESETS[0].text + '\n\n' + EXTRA_TERM_PRESETS[3].text },
-        { name: '한빛정책자금경영연구소', ceo: '이정훈', biz: '311-86-55209', phone: '010-5590-1823', email: 'ceo@hanbitfund.kr', addr: '경기 성남시 분당구 판교역로 146', title: '정책자금 B2B 대표자 DB 퍼널 대행 계약서', items: [{ name: '정책자금 핵심 키워드 블로그 SEO (월 12편)', qty: 1, price: 1200000, note: '자격·승인사례 중심' }, { name: '1분 무료 한도진단 DB 퍼널 구축', qty: 1, price: 1100000, note: '사전 필터링 질문 4문항' }], extra: EXTRA_TERM_PRESETS[2].text + '\n\n' + EXTRA_TERM_PRESETS[3].text },
-      ];
-      var s = samples[Math.floor(Math.random() * samples.length)];
+      var s = A.generateUniqueSample();
+      var p1 = EXTRA_TERM_PRESETS[Math.floor(Math.random() * EXTRA_TERM_PRESETS.length)];
+      var p2 = EXTRA_TERM_PRESETS[(EXTRA_TERM_PRESETS.indexOf(p1) + 1) % EXTRA_TERM_PRESETS.length];
       form = Object.assign(blankForm(), {
-        client_name: s.name, clientCeo: s.ceo, clientBizNo: s.biz, clientPhone: s.phone,
-        clientEmail: s.email, clientAddress: s.addr, title: s.title, items: s.items,
-        usePage2: true, extraSpecialTerms: s.extra,
+        client_name: s.name,
+        clientCeo: s.contactPure,
+        clientBizNo: s.bizNo,
+        clientPhone: s.phone,
+        clientEmail: s.email,
+        clientAddress: s.address,
+        title: s.contractTitle,
+        items: s.items,
+        usePage2: true,
+        extraSpecialTerms: p1.text + '\n\n' + p2.text,
       });
       render();
-      A.toast('🎲 랜덤 예시 계약서(' + s.name + ' · A4 2장)가 자동 입력되었습니다!');
+      A.toast('🎲 중복 없는 랜덤 계약서(' + s.name + ' · A4 2장)가 자동 입력되었습니다!');
     });
 
     var p2Chk = q('#contPage2Chk');
