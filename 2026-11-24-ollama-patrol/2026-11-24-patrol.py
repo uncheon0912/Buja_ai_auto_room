@@ -23,9 +23,12 @@ LOCAL_SQUAD = [
         'secret_who': 'ollago',
         'secret_nick': '용량난민 올라고(Qwen 2.5)',
         'role_prompt': (
-            '너는 껌씹는 AI 일진방의 로컬 오프라인 즉답 담당 "올라고 개거품"이다. '
-            '반드시 자연스러운 한국어만 사용하고, 외국어(영어·중국어·인도네시아어)나 내부 모델명은 절대 쓰지 마라. '
-            '확인되지 않은 사실은 지어내지 말고, 빠르고 실전적인 핵심 요약과 실행 방안을 부자사람대장님께 보고하라.'
+            '너는 마케팅 대행사 미담공장(껌씹는 AI 일진방)의 실무 즉답 팀장 "올라고 개거품"이다.\n'
+            '[절대 규칙]\n'
+            '1. 사용자의 지시 문장을 그대로 따라 쓰거나 복창하지 마라.\n'
+            '2. "알겠습니다" 같은 빈말로 끝내지 말고, 지금 당장 복사해서 촬영·발행·실행할 수 있는 **완성된 실전 결과물**을 100% 구체적으로 써내라.\n'
+            '3. 릴스·숏폼 대본을 요청받으면 반드시 ① 3초 후킹(화면 연출+나레이션+자막) ② 본론 전개(초 단위 장면+대사) ③ 강력 CTA ④ 추천 해시태그 8~10개를 모두 채워서 완성본으로 작성하라.\n'
+            '4. 반드시 자연스러운 한국어만 사용하고, 중국어·영어·인도네시아어나 모델명은 절대 섞지 마라.'
         ),
         'direct_re': r'올라고|개거품|올라마|ollama|큐웬|qwen',
         'topic_re': r'요약|정리|빠르게|즉답|보고|출석|점호|알림',
@@ -108,22 +111,44 @@ def resolve_model(preferred, installed, fallback):
     return fallback if fallback in installed else next(iter(installed))
 
 
-def call_ollama(model, prompt, num_predict=650, temperature=0.35, timeout=180):
+def call_ollama(model, prompt, num_predict=1100, temperature=0.5, timeout=180, system_prompt=''):
+    """Ollama /api/chat 기반 고지능 호출 (System/User 역할 분리로 앵무새 복창 원천 차단)"""
+    messages = []
+    if system_prompt:
+        messages.append({'role': 'system', 'content': system_prompt})
+    messages.append({'role': 'user', 'content': prompt})
     payload = {
         'model': model,
-        'prompt': prompt,
+        'messages': messages,
         'stream': False,
-        'keep_alive': '2m',
-        'options': {'num_predict': max(num_predict, 900) if 'deepseek-r1' in model else num_predict, 'temperature': temperature},
+        'keep_alive': '3m',
+        'options': {
+            'num_predict': max(num_predict, 1200) if 'deepseek-r1' in model else num_predict,
+            'temperature': temperature,
+            'repeat_penalty': 1.15,
+            'num_ctx': 4096,
+        },
     }
     if 'deepseek-r1' in model:
-        # DeepSeek-R1 추론 토큰으로 본문이 잘리는 현상 방지
         payload['think'] = False
-    res = request('http://127.0.0.1:11434/api/generate', payload, timeout=timeout)
-    txt = (res.get('response') or '').strip()
+    res = request('http://127.0.0.1:11434/api/chat', payload, timeout=timeout)
+    msg = res.get('message') or {}
+    txt = (msg.get('content') or res.get('response') or '').strip()
     txt = re.sub(r'<think>[\s\S]*?</think>', '', txt).strip()
     txt = re.sub(r'<think>[\s\S]*$', '', txt).strip()
     return txt
+
+
+def is_parrot_or_weak(user_content, answer):
+    """명령어 복창(앵무새) 또는 너무 빈약한 2~3줄 응답 감지"""
+    if not answer or len(answer) < 90:
+        return True
+    norm_u = re.sub(r'\s+', '', user_content or '')
+    norm_a = re.sub(r'\s+', '', answer or '')
+    # 명령 문장이 거의 그대로 들어있고 추가 살이 거의 없는 경우
+    if len(norm_u) >= 12 and norm_u[:20] in norm_a and len(norm_a) < len(norm_u) * 2.2:
+        return True
+    return False
 
 
 def load_soul_block(agent_id):
@@ -357,16 +382,36 @@ def run():
                     if ag_map.get(member['sender']):
                         boss_guide += f"\n[{member['sender']} 전용 지침]\n{ag_map[member['sender']]}"
 
-                    prompt = (
+                    system_prompt = (
                         member['role_prompt']
                         + soul_block
                         + boss_guide
                         + presence_info
-                        + f'\n방: {room_slug}\n메시지: {content}\n'
-                        + '중요: 불필요한 메타 설명 없이 회의실에 바로 올릴 순수 한국어 답장만 출력하라.'
+                        + '\n[출력 절대 규칙]\n'
+                        + '- 절대 지시 문장을 그대로 따라 쓰거나 복창하지 마라.\n'
+                        + '- 요청받은 결과물(릴스 대본, 기획안, 전략, 검수안, 해시태그 등)을 지금 당장 실전에 쓸 수 있는 완성본으로 풍성하고 구체적으로 작성하라.\n'
+                        + '- 불필요한 메타 설명 없이 회의실에 바로 올릴 순수 한국어 본문만 출력하라.'
+                    )
+                    user_prompt = (
+                        f"[회의실: {room_slug}]\n"
+                        f"[발신자: {msg.get('sender', '부자사람대장')}]\n"
+                        f"[요청 내용]\n{content}\n\n"
+                        "위 요청에 대해 지시를 복창하지 말고, 지금 바로 실무에 투입할 수 있는 고퀄리티 완성 결과물을 항목별로 상세히 작성해 보고해 줘."
                     )
                     try:
-                        answer = call_ollama(use_model, prompt, num_predict=750, temperature=0.35, timeout=180)
+                        answer = call_ollama(use_model, user_prompt, num_predict=1100, temperature=0.55, timeout=180, system_prompt=system_prompt)
+                        # 앵무새 복창 또는 빈약한 응답이면 EXAONE 3.5 한국어 최강 엔진으로 자동 1회 보강 재생성!
+                        if is_parrot_or_weak(content, answer):
+                            retry_model = resolve_model('exaone3.5:7.8b', installed_models, use_model)
+                            log(f'방({room_slug}) [{member["sender"]}] 약한 응답 감지 → {retry_model} 로 고품질 재생성')
+                            answer = call_ollama(
+                                retry_model,
+                                user_prompt + '\n(주의: 절대로 요청 문장을 요약/복창하지 말고, 완성된 실제 대본·기획·CTA·해시태그 본문을 최소 350자 이상 구체적으로 작성하라!)',
+                                num_predict=1200,
+                                temperature=0.6,
+                                timeout=180,
+                                system_prompt=system_prompt,
+                            )
                         answer = save_memory_notes(member['id'], member['sender'], mem_file, answer)
                         if not answer:
                             log(f'방({room_slug}) [{member["sender"]}/{use_model}] 빈 응답 스킵 #{mid}')

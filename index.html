@@ -164,6 +164,90 @@
     box-shadow:0 0 20px rgba(255,107,0,0.78), inset 0 0 12px rgba(255,123,0,0.24);
   }
   body.dark .room.inbox-neon.has-cmd .rdesc{color:#fdba74}
+  @keyframes sirenGlow{
+    0%,100%{
+      background:rgba(239,68,68,0.28);
+      border-color:#ef4444;
+      box-shadow:0 0 16px rgba(239,68,68,0.85), 0 0 32px rgba(255,107,0,0.48), inset 0 0 14px rgba(239,68,68,0.3);
+    }
+    50%{
+      background:rgba(255,107,0,0.34);
+      border-color:#facc15;
+      box-shadow:0 0 24px rgba(250,204,21,0.92), 0 0 42px rgba(239,68,68,0.68), inset 0 0 18px rgba(250,204,21,0.32);
+    }
+  }
+  @keyframes sirenShake{
+    0%,100%{transform:rotate(0deg) scale(1)}
+    20%{transform:rotate(-18deg) scale(1.22)}
+    40%{transform:rotate(18deg) scale(1.26)}
+    60%{transform:rotate(-14deg) scale(1.18)}
+    80%{transform:rotate(14deg) scale(1.14)}
+  }
+  .room.inbox-neon.siren-alert{
+    animation:sirenGlow 1.1s ease-in-out infinite;
+    color:#fff !important;
+  }
+  .room.inbox-neon.siren-alert .hash{
+    display:inline-block;
+    animation:sirenShake 0.85s ease-in-out infinite;
+    filter:drop-shadow(0 0 8px #ef4444);
+  }
+  .room.inbox-neon.siren-alert .rdesc{color:#fef08a !important; font-weight:700}
+  .room.inbox-neon.siren-alert .cnt{
+    background:linear-gradient(135deg,#ef4444,#ff6b00);
+    box-shadow:0 0 14px rgba(239,68,68,0.95);
+    animation:pulseLive 1s infinite;
+  }
+  .room.inbox-neon.inbox-clear{
+    background:rgba(57,255,20,0.14);
+    border-color:#39ff14;
+    color:#14532d;
+    box-shadow:0 0 14px rgba(57,255,20,0.42), inset 0 0 10px rgba(57,255,20,0.16);
+  }
+  body.dark .room.inbox-neon.inbox-clear{color:#d9ffce}
+  body.dark .room.inbox-neon.inbox-clear .rdesc{color:#86efac}
+  .room.inbox-neon.inbox-clear .cnt{
+    background:#16a34a;
+    box-shadow:0 0 10px rgba(57,255,20,0.65);
+  }
+  /* ✅ 대장명령함 개별 메시지 처리 완료 체크박스 & 형광 녹색 네온 변신 */
+  .inbox-check-wrap{
+    margin-left:auto; display:inline-flex; align-items:center; gap:6px;
+    padding:4px 10px; border-radius:999px; cursor:pointer; user-select:none;
+    font-size:11.5px; font-weight:800;
+    background:rgba(239,68,68,0.16); border:1.5px solid rgba(248,113,113,0.6); color:#fca5a5;
+    transition:all .18s ease;
+  }
+  .inbox-check-wrap:hover{transform:scale(1.04); background:rgba(239,68,68,0.26)}
+  .inbox-check-wrap input[type="checkbox"]{
+    width:16px; height:16px; accent-color:#39ff14; cursor:pointer; margin:0;
+  }
+  .msg.inbox-pending{
+    border:1.5px solid rgba(255,107,0,0.58) !important;
+    box-shadow:0 0 14px rgba(255,107,0,0.24) !important;
+  }
+  .msg.inbox-resolved{
+    border:2px solid #39ff14 !important;
+    background:rgba(57,255,20,0.15) !important;
+    box-shadow:0 0 20px rgba(57,255,20,0.42), inset 0 0 14px rgba(57,255,20,0.14) !important;
+  }
+  .msg.inbox-resolved .inbox-check-wrap{
+    background:rgba(57,255,20,0.26);
+    border-color:#39ff14;
+    color:#39ff14;
+    text-shadow:0 0 8px rgba(57,255,20,0.75);
+    box-shadow:0 0 12px rgba(57,255,20,0.55);
+  }
+  body:not(.dark) .msg.inbox-resolved .inbox-check-wrap{color:#15803d; text-shadow:none}
+  .siren-top-pill{
+    display:inline-flex; align-items:center; gap:5px;
+    border:1.5px solid #ef4444; border-radius:999px; padding:4px 11px;
+    font-size:11.5px; font-weight:800; color:#fff;
+    background:linear-gradient(135deg,#dc2626,#ea580c);
+    animation:sirenGlow 1.1s ease-in-out infinite;
+    white-space:nowrap;
+  }
+  .siren-top-pill[hidden]{display:none}
   .inbox-open-mini{
     margin-left:auto; flex:0 0 auto; font-size:10px; font-weight:800;
     padding:3px 7px; border-radius:999px; text-decoration:none;
@@ -924,6 +1008,7 @@
           <input type="date" id="searchDate" aria-label="날짜 검색">
           <button type="button" class="clr" id="searchClear" title="검색 초기화" hidden>×</button>
         </div>
+        <button type="button" class="siren-top-pill" id="sirenTopPill" hidden title="클릭하면 대장명령함(긴급처리)으로 이동합니다">🚨 긴급 미처리 0건</button>
         <button type="button" class="brain-btn" id="soulOpenBtn" style="background:linear-gradient(135deg,#0d9488,#06b6d4)" title="AI 인격체별 SOUL.md · MEMORY.md 관리">🧬 영혼·기억</button>
         <button type="button" class="brain-btn" id="brainOpenBtn" title="브레인 폴더(전체 대화·문서·프롬프트 백업 및 복원)">🧠 브레인</button>
         <button type="button" class="prompt-btn" id="promptOpenBtn" title="대장 최우선 명령 프롬프트 설정">⚡ 대장 프롬프트</button>
@@ -1550,6 +1635,7 @@ window.pulsePortfolio3D = function(pageIdx) {
     searchDate: '',
     searchRoom: 'current',
     searchResults: null,
+    inboxResolved: {},
     replyTo: null,
     timer: null,
     loading: false
@@ -1735,22 +1821,37 @@ window.pulsePortfolio3D = function(pageIdx) {
     ordered.forEach(function(r){
       var seen = parseInt(localStorage.getItem(seenKey(r.slug)) || '0', 10);
       var isInbox = r.slug === 'inbox';
-      var msgCnt = Number(r.message_count || 0);
-      var hasCmd = isInbox && (msgCnt > 0 || (r.last_id || 0) > seen);
+      var pendingCnt = isInbox ? Number(r.pending_count != null ? r.pending_count : (r.message_count || 0)) : 0;
+      var totalCmdCnt = isInbox ? Number(r.total_command_count != null ? r.total_command_count : pendingCnt) : 0;
+      var hasPending = isInbox && pendingCnt > 0;
+      var isAllClear = isInbox && totalCmdCnt > 0 && pendingCnt === 0;
       var badge = '';
       if (isInbox){
-        badge = hasCmd
-          ? '<span class="cnt">🔥 ' + msgCnt + '건</span>'
-          : '<a class="inbox-open-mini" href="/mailbox.html" target="_blank" onclick="event.stopPropagation()" title="모바일 대장명령함 새 창 열기">열기</a>';
+        if (hasPending){
+          badge = '<span class="cnt">🚨 ' + pendingCnt + '건</span>';
+        } else if (isAllClear){
+          badge = '<span class="cnt">✅ 완료</span>';
+        } else {
+          badge = '<a class="inbox-open-mini" href="/mailbox.html" target="_blank" onclick="event.stopPropagation()" title="모바일 대장명령함 새 창 열기">열기</a>';
+        }
+        // 상단 사이렌 경고 배지도 실시간 동기화
+        var topSiren = $('sirenTopPill');
+        if (topSiren){
+          topSiren.hidden = !hasPending;
+          topSiren.textContent = '🚨 긴급 미처리 ' + pendingCnt + '건!';
+        }
       } else if (r.slug !== state.room && (r.last_id || 0) > seen){
         badge = '<span class="cnt">new</span>';
       }
-      var icon = isInbox ? '🚨' : '#';
-      var cls = 'room' + (r.slug === state.room ? ' active' : '') + (isInbox ? (' inbox-neon' + (hasCmd ? ' has-cmd' : '')) : '');
+      var icon = isInbox ? (hasPending ? '🚨' : (isAllClear ? '✅' : '📮')) : '#';
+      var cls = 'room' + (r.slug === state.room ? ' active' : '') + (isInbox ? (' inbox-neon' + (hasPending ? ' has-cmd siren-alert' : (isAllClear ? ' inbox-clear' : ''))) : '');
+      var descTxt = isInbox
+        ? (hasPending ? ('⚠️ 미처리 긴급명령 ' + pendingCnt + '건! 처리 후 체크') : (isAllClear ? '모든 긴급 명령 처리 완료!' : (r.description || '')))
+        : (r.description || '');
       html += '<button class="' + cls + '" data-room="' + esc(r.slug) + '">' +
         '<span class="hash">' + icon + '</span>' +
         '<span style="min-width:0;flex:1"><span class="rname">' + esc(r.name) + '</span>' +
-        '<span class="rdesc" style="display:block">' + esc(hasCmd ? '명령 접수됨! 클릭해 확인 · 처리' : (r.description || '')) + '</span></span>' +
+        '<span class="rdesc" style="display:block">' + esc(descTxt) + '</span></span>' +
         badge + '</button>';
     });
     elRoomList.innerHTML = html;
@@ -1867,15 +1968,24 @@ window.pulsePortfolio3D = function(pageIdx) {
       out += '<div class="daysep"><span>📅 ' + esc(dayLabel) + ' (KST 자정 기준)</span></div>';
     }
     var q = (state.searchText || '').trim();
+    var isInboxCmd = (m.room === 'inbox' || state.room === 'inbox') && !m.reply_to_id;
+    var isResolved = !!(isInboxCmd && state.inboxResolved && state.inboxResolved[String(m.id)]);
+    var inboxCls = isInboxCmd ? (isResolved ? ' inbox-resolved' : ' inbox-pending') : '';
+    var inboxCheckHtml = isInboxCmd
+      ? '<label class="inbox-check-wrap" title="처리 완료 시 체크하세요 (형광 녹색 변신 & 긴급 건수 차감)">' +
+          '<input type="checkbox" data-inbox-check="' + m.id + '"' + (isResolved ? ' checked' : '') + '>' +
+          '<span>' + (isResolved ? '✅ 처리 완료' : '🚨 미처리 (완료 체크)') + '</span>' +
+        '</label>'
+      : '';
     var roomPill = showRoomTag && m.room
       ? '<button type="button" class="search-room-pill" data-jump-room="' + esc(m.room) + '" title="이 방으로 이동">#' + esc(m.room_name || m.room) + ' 이동 →</button>'
       : '';
-    out += '<div class="msg" id="m' + m.id + '" data-id="' + m.id + '">' +
+    out += '<div class="msg' + inboxCls + '" id="m' + m.id + '" data-id="' + m.id + '">' +
       '<div class="avatar"><img src="' + esc(avatarUrl(m.sender)) + '" alt="' + esc(m.sender) + '" loading="lazy"></div>' +
       '<div class="body">' +
         '<div class="meta">' + roomPill + '<span class="who" style="color:' + esc(m.color || '#0284c7') + '">' + highlightHtml(esc(m.sender), q) + '</span>' +
           '<span class="badge">' + esc(m.role || '참여자') + '</span>' +
-          '<span class="time">' + esc(kstTime(m.created_at)) + '</span></div>';
+          '<span class="time">' + esc(kstTime(m.created_at)) + '</span>' + inboxCheckHtml + '</div>';
     if (m.reply_to){
       out += '<div class="replyq" data-target="' + m.reply_to.id + '"><b>' + esc(m.reply_to.sender) + '</b><span>' +
         esc(m.reply_to.content || (m.reply_to.attachment ? '📎 ' + m.reply_to.attachment.filename : '')).replace(/\n/g, ' ') + '</span></div>';
@@ -2033,6 +2143,46 @@ window.pulsePortfolio3D = function(pageIdx) {
       setStatus(false, '연결 끊김 · 재시도 중');
     });
   }
+  function loadInboxResolved(){
+    return api('/api/inbox/resolved').then(function(d){
+      if (d && d.resolved && typeof d.resolved === 'object'){
+        state.inboxResolved = d.resolved;
+        if (state.room === 'inbox' && !isSearchActive()) renderAll();
+      }
+    }).catch(function(){});
+  }
+  if ($('sirenTopPill')){
+    $('sirenTopPill').addEventListener('click', function(){
+      switchRoom('inbox');
+    });
+  }
+  elMessages.addEventListener('change', function(e){
+    var chk = e.target.closest('[data-inbox-check]');
+    if (!chk) return;
+    var mid = chk.getAttribute('data-inbox-check');
+    var checked = !!chk.checked;
+    // 즉시 형광 녹색 UI 반영 (낙관적 업데이트)
+    if (checked) state.inboxResolved[mid] = new Date().toISOString();
+    else delete state.inboxResolved[mid];
+    var card = document.getElementById('m' + mid);
+    if (card){
+      card.classList.toggle('inbox-resolved', checked);
+      card.classList.toggle('inbox-pending', !checked);
+      var sp = card.querySelector('.inbox-check-wrap span');
+      if (sp) sp.textContent = checked ? '✅ 처리 완료' : '🚨 미처리 (완료 체크)';
+    }
+    api('/api/inbox/resolved', {
+      method: 'POST',
+      body: JSON.stringify({ id: mid, resolved: checked })
+    }).then(function(d){
+      if (d && d.resolved) state.inboxResolved = d.resolved;
+      loadRooms().catch(function(){});
+      if (checked && window.triggerSkyBurst) window.triggerSkyBurst();
+      setStatus(true, checked ? '✅ 긴급 명령 처리 완료! (미처리 ' + (d.pending_count || 0) + '건)' : '🚨 미처리 상태로 되돌렸습니다.');
+    }).catch(function(err){
+      setStatus(false, '체크 저장 실패: ' + (err.message || ''));
+    });
+  });
   elMessages.addEventListener('click', function(e){
     if (e.target.closest('#loadOlderBtn')){
       loadOlderMessages();
@@ -2977,6 +3127,7 @@ window.pulsePortfolio3D = function(pageIdx) {
     renderSenders();
     loadConns();
     loadPrompts();
+    loadInboxResolved();
     sendPresenceHeartbeat();
     loadPresence();
     loadRooms().catch(function(){ setStatus(false, '연결 끊김'); addDiag('ERR', '방 목록 불러오기 실패'); });

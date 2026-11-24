@@ -153,6 +153,16 @@ async function attachReplies(env, messages, slug) {
   return messages;
 }
 
+async function getInboxResolvedMap(env) {
+  try {
+    const row = await env.DB.prepare('select v from kv_store where k = ?').bind('inbox_resolved').first();
+    const parsed = row ? JSON.parse(row.v || '{}') : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (e) {
+    return {};
+  }
+}
+
 async function roomList(env) {
   const res = await env.DB.prepare(
     `select r.slug, r.name, r.description, r.position,
@@ -162,7 +172,22 @@ async function roomList(env) {
        from rooms r
       order by r.position, r.slug`
   ).all();
-  return res.results || [];
+  const list = res.results || [];
+  // 🚨 대장명령함(inbox) 미처리 긴급 명령 건수 계산 (완료 체크된 건은 실시간 차감!)
+  const inboxRoom = list.find((r) => r.slug === 'inbox');
+  if (inboxRoom) {
+    const resolvedMap = await getInboxResolvedMap(env);
+    const cmdRows = await env.DB.prepare(
+      `select id from messages where room_slug = 'inbox' and reply_to_id is null`
+    ).all();
+    const cmdIds = (cmdRows.results || []).map((x) => String(x.id));
+    const pendingCount = cmdIds.filter((id) => !resolvedMap[id]).length;
+    const resolvedCount = cmdIds.length - pendingCount;
+    inboxRoom.total_command_count = cmdIds.length;
+    inboxRoom.pending_count = pendingCount;
+    inboxRoom.resolved_count = resolvedCount;
+  }
+  return list;
 }
 
 async function getRoom(env, slug) {
@@ -2152,6 +2177,36 @@ function formatDocRow(r) {
         .bind(storeKey, serialized)
         .run();
       return json({ ok: true, data: payload });
+    }
+    return json({ ok: false, error: 'method_not_allowed' }, 405);
+  }
+
+  // 🚨 대장명령함(inbox) 긴급 명령 처리 완료 체크박스 조회/토글 (/api/inbox/resolved)
+  if (parts[1] === 'inbox' && parts[2] === 'resolved' && parts.length === 3) {
+    await ensureAgencyTables(env);
+    const map = await getInboxResolvedMap(env);
+    if (method === 'GET') {
+      return json({ ok: true, resolved: map });
+    }
+    if (method === 'POST' || method === 'PUT') {
+      let p = {};
+      try { p = await request.json(); } catch (e) { p = {}; }
+      const id = String(p.id || '').trim();
+      if (!id) return json({ ok: false, error: 'invalid_id', message: '메시지 ID가 필요합니다.' }, 400);
+      if (p.resolved) {
+        map[id] = new Date().toISOString();
+      } else {
+        delete map[id];
+      }
+      await env.DB.prepare(
+        `insert into kv_store (k, v, updated_at) values ('inbox_resolved', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+      ).bind(JSON.stringify(map)).run();
+      const cmdRows = await env.DB.prepare(
+        `select id from messages where room_slug = 'inbox' and reply_to_id is null`
+      ).all();
+      const pendingCount = (cmdRows.results || []).filter((x) => !map[String(x.id)]).length;
+      return json({ ok: true, resolved: map, pending_count: pendingCount });
     }
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
