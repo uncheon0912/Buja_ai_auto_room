@@ -236,7 +236,7 @@
       // 왼쪽: 계약서 입력 및 텍스트 편집
       '<div class="split-editor">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
-      '<h3 style="margin:0;font-size:15px;color:#0c4a6e">📄 계약서 작성 · 텍스트 편집</h3>' +
+      '<h3 class="neon-yellow-title" style="margin:0;font-size:15.5px">📄 계약서 작성 · 텍스트 편집</h3>' +
       '<div class="ws-actions">' +
       '<button type="button" class="ws-btn sm accent" id="contSampleBtn">🎲 Sample</button>' +
       '<button type="button" class="ws-btn sm" id="contNewBtn">➕ 새 계약서</button>' +
@@ -374,7 +374,7 @@
       // 오른쪽: 실시간 A4 계약서 미리보기
       '<div class="split-preview">' +
       '<div class="preview-toolbar">' +
-      '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 계약서 미리보기 (' + (form.usePage2 ? '2장' : '1장') + ')</span>' +
+      '<span class="neon-yellow-title" style="font-size:12.8px">👁️ 실시간 A4 계약서 미리보기 (' + (form.usePage2 ? '2장' : '1장') + ')</span>' +
       '<div class="ws-actions">' +
       '<button type="button" class="ws-btn sm primary" id="contSaveBtn">💾 계약서 저장</button>' +
       '<button type="button" class="ws-btn sm ai" id="contSendSignBtn">📧 이메일 · 전자서명 발송</button>' +

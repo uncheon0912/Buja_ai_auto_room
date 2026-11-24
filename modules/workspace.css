@@ -136,13 +136,93 @@ body.ws-mode .sidebar{width:236px; flex:0 0 236px}
 .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
 @media (max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 .kpi-card{
-  background:rgba(255,255,255,0.86); backdrop-filter:blur(10px);
+  position:relative; overflow:hidden;
+  background:rgba(255,255,255,0.88); backdrop-filter:blur(12px);
   border:1.5px solid rgba(255,255,255,0.92); border-radius:16px;
-  padding:14px 16px; box-shadow:0 6px 18px rgba(2,132,199,0.08);
+  padding:15px 17px; box-shadow:0 6px 18px rgba(2,132,199,0.08);
+  cursor:default;
+  transition:transform .24s cubic-bezier(.34,1.56,.64,1), box-shadow .24s ease, border-color .24s ease, background .24s ease;
 }
-.kpi-card .k-lbl{font-size:11.8px; font-weight:700; color:var(--muted)}
-.kpi-card .k-val{font-size:22px; font-weight:900; color:#0284c7; margin:4px 0 2px; letter-spacing:-.4px}
-.kpi-card .k-sub{font-size:11.2px; color:#0369a1; font-weight:600}
+.kpi-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:3px;
+  opacity:.78; transition:opacity .24s ease, height .24s ease;
+}
+.kpi-card:hover{
+  transform:translateY(-5px) scale(1.018);
+}
+.kpi-card:hover::before{opacity:1; height:4px}
+.kpi-card .k-lbl{font-size:11.8px; font-weight:700; color:var(--muted); letter-spacing:-.1px}
+.kpi-card .k-val{
+  font-size:24px; font-weight:900; margin:5px 0 3px; letter-spacing:-.5px;
+  display:inline-block;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1), filter .22s ease;
+}
+.kpi-card:hover .k-val{transform:translateX(3px) scale(1.04)}
+.kpi-card .k-sub{font-size:11.2px; font-weight:700; opacity:.9}
+
+/* 1번 카드: 전체 관리 업체 — 일렉트릭 스카이 시안 */
+.kpi-card:nth-child(1)::before{background:linear-gradient(90deg,#0ea5e9,#22d3ee)}
+.kpi-card:nth-child(1) .k-val{color:#0284c7}
+.kpi-card:nth-child(1) .k-sub{color:#0369a1}
+.kpi-card:nth-child(1):hover{border-color:rgba(56,189,248,0.75); box-shadow:0 14px 30px rgba(14,165,233,0.28)}
+body.dark .kpi-card:nth-child(1) .k-val{color:#38bdf8; text-shadow:0 0 16px rgba(56,189,248,0.45)}
+body.dark .kpi-card:nth-child(1) .k-sub{color:#7dd3fc}
+
+/* 2번 카드: 월 누적 대행 매출(MRR) — 샴페인 골드·앰버 */
+.kpi-card:nth-child(2)::before{background:linear-gradient(90deg,#f59e0b,#fde047)}
+.kpi-card:nth-child(2) .k-val{color:#d97706}
+.kpi-card:nth-child(2) .k-sub{color:#b45309}
+.kpi-card:nth-child(2):hover{border-color:rgba(250,204,21,0.8); box-shadow:0 14px 30px rgba(245,158,11,0.32)}
+body.dark .kpi-card:nth-child(2) .k-val{color:#fde047; text-shadow:0 0 18px rgba(250,204,21,0.52)}
+body.dark .kpi-card:nth-child(2) .k-sub{color:#fcd34d}
+
+/* 3번 카드: 누적 DB 수집 실적 — 네온 에메랄드 민트 */
+.kpi-card:nth-child(3)::before{background:linear-gradient(90deg,#10b981,#4ade80)}
+.kpi-card:nth-child(3) .k-val{color:#059669}
+.kpi-card:nth-child(3) .k-sub{color:#047857}
+.kpi-card:nth-child(3):hover{border-color:rgba(74,222,128,0.8); box-shadow:0 14px 30px rgba(16,185,129,0.3)}
+body.dark .kpi-card:nth-child(3) .k-val{color:#4ade80; text-shadow:0 0 18px rgba(74,222,128,0.5)}
+body.dark .kpi-card:nth-child(3) .k-sub{color:#86efac}
+
+/* 4번 카드: AI 업셀링 제안 가능 — 비비드 바이올렛·마젠타 */
+.kpi-card:nth-child(4)::before{background:linear-gradient(90deg,#a855f7,#ec4899)}
+.kpi-card:nth-child(4) .k-val{color:#9333ea}
+.kpi-card:nth-child(4) .k-sub{color:#7e22ce}
+.kpi-card:nth-child(4):hover{border-color:rgba(232,121,249,0.8); box-shadow:0 14px 30px rgba(168,85,247,0.34)}
+body.dark .kpi-card:nth-child(4) .k-val{color:#e879f9; text-shadow:0 0 18px rgba(232,121,249,0.55)}
+body.dark .kpi-card:nth-child(4) .k-sub{color:#f0abfc}
+
+body.dark .kpi-card{
+  background:rgba(15,23,42,0.82);
+  border-color:rgba(148,163,184,0.22);
+}
+body.dark .kpi-card:hover{
+  background:rgba(22,33,58,0.96);
+}
+
+/* ✨ 4개 카테고리(SNS 분석 · 제안서 · 계약서 · 포트폴리오) 노랑 형광 편집 제목 */
+.neon-yellow-title{
+  color:#b45309 !important;
+  font-weight:900 !important;
+  letter-spacing:-.2px;
+}
+body.dark .neon-yellow-title{
+  color:#fef08a !important;
+  text-shadow:0 0 10px rgba(250,204,21,0.72), 0 0 22px rgba(250,204,21,0.32);
+}
+#pane-sns .form-card h3,
+#pane-proposal .form-card h3,
+#pane-contract .form-card h3,
+#pane-portfolio .form-card h3{
+  color:#b45309;
+}
+body.dark #pane-sns .form-card h3,
+body.dark #pane-proposal .form-card h3,
+body.dark #pane-contract .form-card h3,
+body.dark #pane-portfolio .form-card h3{
+  color:#fde047 !important;
+  text-shadow:0 0 9px rgba(250,204,21,0.55);
+}
 
 /* 폼 요소 */
 .ws-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}

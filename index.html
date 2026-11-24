@@ -944,7 +944,7 @@
     .pill.school{display:none}
   }
 </style>
-<link rel="stylesheet" href="/modules/workspace.css?v=8">
+<link rel="stylesheet" href="/modules/workspace.css?v=21">
 </head>
 <body>
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
@@ -1565,10 +1565,10 @@ window.pulsePortfolio3D = function(pageIdx) {
 
 <script src="/modules/agency-store.js?v=19"></script>
 <script src="/modules/crm.js?v=19"></script>
-<script src="/modules/sns.js?v=19"></script>
-<script src="/modules/proposal.js?v=19"></script>
-<script src="/modules/contract.js?v=19"></script>
-<script src="/modules/portfolio.js?v=10"></script>
+<script src="/modules/sns.js?v=21"></script>
+<script src="/modules/proposal.js?v=21"></script>
+<script src="/modules/contract.js?v=21"></script>
+<script src="/modules/portfolio.js?v=21"></script>
 <script src="/modules/video-editor.js?v=11"></script>
 <script src="/modules/content-hub.js?v=19"></script>
 <script src="/modules/secret-room.js?v=20"></script>
@@ -2490,11 +2490,11 @@ window.pulsePortfolio3D = function(pageIdx) {
     elSearchClear.addEventListener('click', function(){ resetSearch(false); });
   }
 
-  /* ---------- 외부 서비스 연결 탭 (형광 LED 6개 슬롯) ---------- */
+  /* ---------- 외부 서비스 연결 탭 (형광 LED 6개 슬롯 · pbat01@gmail.com 공유 기본 활성화) ---------- */
   var DEFAULT_CONNS = [
-    { id: 'notion', name: '노션', icon: '📓', connected: false, url: '', empty: false },
-    { id: 'gmail',  name: '지메일', icon: '📧', connected: false, url: '', empty: false },
-    { id: 'gdrive', name: '구글드라이브', icon: '📁', connected: false, url: '', empty: false },
+    { id: 'notion', name: '노션', icon: '📓', connected: true, url: 'https://www.notion.so/', empty: false },
+    { id: 'gmail',  name: '지메일', icon: '📧', connected: true, url: 'https://mail.google.com/mail/u/?authuser=pbat01@gmail.com', empty: false },
+    { id: 'gdrive', name: '구글드라이브', icon: '📁', connected: true, url: 'https://drive.google.com/drive/u/?authuser=pbat01@gmail.com', empty: false },
     { id: 'slot4',  name: '+ 슬롯 4', icon: '➕', connected: false, url: '', empty: true },
     { id: 'slot5',  name: '+ 슬롯 5', icon: '➕', connected: false, url: '', empty: true },
     { id: 'slot6',  name: '+ 슬롯 6', icon: '➕', connected: false, url: '', empty: true }
@@ -2508,11 +2508,14 @@ window.pulsePortfolio3D = function(pageIdx) {
     elConnGrid.innerHTML = integrations.map(function(c, idx){
       var isOn = !!(c.connected || (c.url && c.url.trim() && c.connected !== false));
       var cls = 'conn-btn' + (isOn ? ' on' : '') + (c.empty && !isOn ? ' empty' : '');
+      var openMini = (isOn && c.url && /^https?:\/\//i.test(c.url))
+        ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="새 창으로 바로 열기" style="margin-left:auto;font-size:11px;font-weight:900;color:inherit;text-decoration:none;padding:0 3px">↗</a>'
+        : '';
       var statBadge = isOn
         ? '<span class="conn-stat">● 연결됨</span>'
         : (!c.empty ? '<span class="conn-stat">미연결</span>' : '');
-      return '<button type="button" class="' + cls + '" data-cidx="' + idx + '" title="' + esc(c.name + (isOn ? ' (연결됨)' : ' (클릭해서 연결)')) + '">' +
-        '<span class="conn-top"><span class="led"></span><span class="cname">' + esc((c.icon || '🔗') + ' ' + c.name) + '</span></span>' +
+      return '<button type="button" class="' + cls + '" data-cidx="' + idx + '" title="' + esc(c.name + (isOn ? ' (연결됨 · 클릭해 설정, ↗ 바로열기)' : ' (클릭해서 연결)')) + '">' +
+        '<span class="conn-top"><span class="led"></span><span class="cname">' + esc((c.icon || '🔗') + ' ' + c.name) + '</span>' + openMini + '</span>' +
         statBadge + '</button>';
     }).join('');
     Array.prototype.forEach.call(elConnGrid.querySelectorAll('.conn-btn'), function(b){

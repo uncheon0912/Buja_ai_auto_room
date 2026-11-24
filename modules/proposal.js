@@ -138,7 +138,7 @@
     root.innerHTML = '<div class="ws-split">' +
       '<div class="split-editor">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
-          '<h3 style="margin:0;font-size:15px;color:#0c4a6e">📑 마케팅 제안서 · 견적서 편집</h3>' +
+          '<h3 class="neon-yellow-title" style="margin:0;font-size:15.5px">📑 마케팅 제안서 · 견적서 편집</h3>' +
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn sm accent" id="propSampleBtn" title="랜덤 예시 제안서 자동 채우기">🎲 Sample</button>' +
             '<button type="button" class="ws-btn sm" id="propNewBtn">➕ 새 제안서</button>' +
@@ -200,14 +200,14 @@
 
         '<div class="ws-field"><label>5. 단계별 진행 로드맵 (예: "1개월 차: ...", "1~2개월 차: ..." → 오른쪽 가로 타임스케줄 그래프 자동 생성)</label><textarea data-pf="roadmap" style="min-height:92px">' + A.esc(form.roadmap) + '</textarea></div>' +
         '<div style="margin-top:10px;padding:12px;border-radius:12px;background:rgba(2,132,199,0.09);border:1.5px solid rgba(56,189,248,0.35);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
-          '<span style="font-size:12px;font-weight:700;color:#0c4a6e">🔗 이 제안서의 업체·견적·할인·로드맵을 <b>통일된 계약서 폼</b>으로 한 번에 넘기세요!</span>' +
+          '<span class="neon-yellow-title" style="font-size:12.2px">🔗 이 제안서의 업체·견적·할인·로드맵을 <b>통일된 계약서 폼</b>으로 한 번에 넘기세요!</span>' +
           '<button type="button" class="ws-btn primary" id="propToContBtnLeft">📄 제안서 그대로 계약서 자동 작성 →</button>' +
         '</div>' +
       '</div>' +
 
       '<div class="split-preview">' +
         '<div class="preview-toolbar">' +
-          '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 제안서 미리보기</span>' +
+          '<span class="neon-yellow-title" style="font-size:12.8px">👁️ 실시간 A4 제안서 미리보기</span>' +
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn sm ai" id="propAskAiBtn">🤖 AI 초안 요청</button>' +
             '<button type="button" class="ws-btn sm primary" id="propSaveBtn">💾 제안서 저장</button>' +

@@ -474,7 +474,7 @@
     root.innerHTML = '<div class="ws-split port-split">' +
       '<div class="split-editor">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
-          '<h3 style="margin:0;font-size:15px;color:#0c4a6e">🎨 3D 인터랙티브 회사 포트폴리오 편집</h3>' +
+          '<h3 class="neon-yellow-title" style="margin:0;font-size:15.5px">🎨 3D 인터랙티브 회사 포트폴리오 편집</h3>' +
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn sm" id="portResetBtn">🔄 기본 10장</button>' +
             (deck.id ? '<button type="button" class="ws-btn sm danger" id="portDelDeckBtn">삭제</button>' : '') +
@@ -548,7 +548,7 @@
         '<div class="preview-toolbar" style="max-width:940px">' +
           '<div style="display:flex;align-items:center;gap:6px">' +
             '<button type="button" class="ws-btn sm" id="portPrevBtn">◀ 이전 장</button>' +
-            '<span id="portPagerLabel" style="font-size:12.5px;font-weight:900;color:#0c4a6e;min-width:90px;text-align:center">' + (ui.pageIdx + 1) + ' / ' + deck.slides.length + ' 페이지</span>' +
+            '<span id="portPagerLabel" class="neon-yellow-title" style="font-size:12.8px;min-width:90px;text-align:center">' + (ui.pageIdx + 1) + ' / ' + deck.slides.length + ' 페이지</span>' +
             '<button type="button" class="ws-btn sm" id="portNextBtn">다음 장 ▶</button>' +
           '</div>' +
           '<div class="ws-actions">' +

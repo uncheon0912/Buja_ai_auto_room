@@ -184,7 +184,7 @@
     root.innerHTML = '<div class="ws-split">' +
       '<div class="split-editor">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
-          '<h3 style="margin:0;font-size:15px;color:#0c4a6e">🔍 SNS 분석 보고서 입력</h3>' +
+          '<h3 class="neon-yellow-title" style="margin:0;font-size:15.5px">🔍 SNS 분석 보고서 입력</h3>' +
           '<div class="ws-actions">' +
             '<label class="chip-check" style="margin:0;padding:4px 9px;font-size:11.5px"><input type="checkbox" id="snsAutoScoreChk"' + (autoScore ? ' checked' : '') + '> 🧮 수치 기반 점수 자동계산</label>' +
             '<button type="button" class="ws-btn sm accent" id="snsSampleBtn">🎲 Sample</button>' +
@@ -255,7 +255,7 @@
 
       '<div class="split-preview">' +
         '<div class="preview-toolbar">' +
-          '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 보고서 미리보기</span>' +
+          '<span class="neon-yellow-title" style="font-size:12.8px">👁️ 실시간 A4 보고서 미리보기</span>' +
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn sm ai" id="snsAskAiBtn">🤖 AI 진단 총평 요청</button>' +
             '<button type="button" class="ws-btn sm primary" id="snsSaveBtn">💾 보고서 저장</button>' +
