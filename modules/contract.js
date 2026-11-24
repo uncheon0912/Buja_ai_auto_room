@@ -84,8 +84,32 @@
         { name: '인스타그램 릴스 대행 (월 8편)', qty: 1, price: 1200000, note: '대본·편집·업로드' },
       ],
       clauses: DEFAULT_CLAUSES,
+      usePage2: false,
+      extraSpecialTerms: '',
     };
   }
+
+  function formatPhoneAuto(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.indexOf('02') === 0) {
+      if (d.length <= 2) return d;
+      if (d.length <= 5) return d.slice(0, 2) + '-' + d.slice(2);
+      if (d.length <= 9) return d.slice(0, 2) + '-' + d.slice(2, d.length - 4) + '-' + d.slice(-4);
+      return d.slice(0, 2) + '-' + d.slice(2, 6) + '-' + d.slice(6, 10);
+    }
+    if (d.length <= 3) return d;
+    if (d.length <= 7) return d.slice(0, 3) + '-' + d.slice(3);
+    if (d.length <= 10) return d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+    return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7, 11);
+  }
+
+  var EXTRA_TERM_PRESETS = [
+    { label: '📊 월간 성과 리포트 특약', text: '1. 을은 매월 말일 기준 네이버 블로그·인스타 릴스·DB 유입 성과 보고서 및 VIP 포털 실시간 리포트를 갑에게 제공한다.' },
+    { label: '🎥 촬영·원본·저작권 특약', text: '2. 출장 촬영 또는 원장님/대표님 인터뷰 촬영 원본 파일은 요청 시 갑에게 제공하며, 제3자 무단 배포를 금지한다.' },
+    { label: '💳 매체 광고비 실비 정산', text: '3. 네이버 파워링크·메타(인스타) 유료 광고 집행 실비는 본 대행료와 별도로 갑의 법인/개인 카드로 직접 결제한다.' },
+    { label: '🔒 동종 업종 비밀유지 강화', text: '4. 을은 계약 기간 및 종료 후 1년간 갑의 내부 영업 전략·단가·수집된 가망고객 DB를 타사 마케팅에 일체 활용하지 않는다.' },
+  ];
 
   var form = blankForm();
 
@@ -159,7 +183,41 @@
           (form.stampDataUrl ? '<img class="stamp-img" src="' + A.esc(form.stampDataUrl) + '" alt="직인">' : '') +
         '</div>' +
       '</div>' +
-    '</div>';
+    '</div>' +
+    // 📜 A4 2페이지: 추가 특약사항 합의서 (별지)
+    ((form.usePage2 || (form.extraSpecialTerms && form.extraSpecialTerms.trim())) ? (
+      '<div class="a4-sheet a4-page2" style="margin-top:22px;page-break-before:always;break-before:page">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#64748b;margin-bottom:8px">' +
+          '<span>계약번호: <b>' + A.esc(form.contract_no) + '</b> (별지 2 / 2페이지)</span>' +
+          '<span>상호: <b>' + A.esc(form.client_name || '(고객사명)') + '</b></span>' +
+        '</div>' +
+        '<h1>[별지] 추가 특약사항 합의서</h1>' +
+        '<div class="doc-sub">본 별지는 원 계약서(' + A.esc(form.contract_no) + ', 체결일 ' + A.esc(form.contractDate) + ')의 일부로서 원 계약서와 동일한 법적 효력을 가진다.</div>' +
+        '<div class="sec-title">추가 특약 및 세부 합의 조항</div>' +
+        '<div class="clause-body" style="min-height:420px;padding:14px 16px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc">' +
+          A.esc((form.extraSpecialTerms || '').trim() || '여기에 클라이언트 요청 추가 특약사항을 입력하면 A4 2페이지에 자동 기재됩니다.') +
+        '</div>' +
+        '<p style="text-align:center;font-weight:700;font-size:12.4px;margin:24px 0 6px">' +
+          '갑과 을은 위 추가 특약사항의 내용을 충분히 확인하고 합의하였음을 증명하기 위하여 아래와 같이 서명·날인한다.' +
+        '</p>' +
+        '<div style="text-align:center;font-size:13px;font-weight:800;color:#0c4a6e;margin-bottom:14px">' + A.esc(form.contractDate) + '</div>' +
+        '<div class="sign-grid">' +
+          '<div class="sign-box">' +
+            '<h4>갑 (위탁자 · 고객사 확인)</h4>' +
+            '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.client_name || '-') + '</b></div>' +
+            '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.clientCeo || '-') + ' (인)</b></div>' +
+            '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.clientPhone || '-') + '</span></div>' +
+          '</div>' +
+          '<div class="sign-box">' +
+            '<h4>을 (수탁자 · 대행사 확인)</h4>' +
+            '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.agencyCompany || '미담공장') + '</b></div>' +
+            '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.agencyCeo || '-') + ' (인)</b></div>' +
+            '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.agencyPhone || '-') + '</span></div>' +
+            (form.stampDataUrl ? '<img class="stamp-img" src="' + A.esc(form.stampDataUrl) + '" alt="직인">' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    ) : '');
   }
 
   function updatePreviewOnly() {
@@ -290,17 +348,30 @@
 
         '<div class="ws-field">' +
           '<div style="display:flex;justify-content:space-between;align-items:center">' +
-            '<label>📝 계약서 조항 텍스트 편집 (입력 즉시 오른쪽 미리보기 반영)</label>' +
+            '<label>📝 계약서 조항 텍스트 편집 (1페이지 본문)</label>' +
             '<button type="button" class="ws-btn sm" id="contResetClauses">🔄 표준 조항 복원</button>' +
           '</div>' +
-          '<textarea data-cf="clauses" style="min-height:240px;font-size:12.6px">' + A.esc(form.clauses) + '</textarea>' +
+          '<textarea data-cf="clauses" style="min-height:220px;font-size:12.6px">' + A.esc(form.clauses) + '</textarea>' +
+        '</div>' +
+
+        '<div class="ws-card" style="padding:12px;border-color:rgba(56,189,248,0.45)">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">' +
+            '<h3 style="margin:0;font-size:13.2px">📜 별지 A4 2페이지 — 추가 특약사항 (선택)</h3>' +
+            '<label class="chip-check" style="margin:0;padding:4px 9px;font-size:11.5px"><input type="checkbox" id="contPage2Chk"' + ((form.usePage2 || (form.extraSpecialTerms && form.extraSpecialTerms.trim())) ? ' checked' : '') + '> A4 2장으로 출력/발송</label>' +
+          '</div>' +
+          '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">' +
+            EXTRA_TERM_PRESETS.map(function (p, i) {
+              return '<button type="button" class="ws-btn sm" data-etp="' + i + '">+ ' + p.label + '</button>';
+            }).join('') +
+          '</div>' +
+          '<textarea data-cf="extraSpecialTerms" style="min-height:110px;font-size:12.4px" placeholder="클라이언트가 추가 특약사항을 요청할 경우 여기에 입력하세요. 내용이 들어가면 오른쪽 A4 미리보기·PDF·전자서명에 자동으로 2페이지(별지 합의서 + 서명란)가 붙습니다.">' + A.esc(form.extraSpecialTerms || '') + '</textarea>' +
         '</div>' +
       '</div>' +
 
       // 오른쪽: 실시간 A4 계약서 미리보기
       '<div class="split-preview">' +
         '<div class="preview-toolbar">' +
-          '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 계약서 미리보기</span>' +
+          '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 계약서 미리보기 (' + ((form.usePage2 || (form.extraSpecialTerms && form.extraSpecialTerms.trim())) ? '2장' : '1장') + ')</span>' +
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn sm primary" id="contSaveBtn">💾 계약서 저장</button>' +
             '<button type="button" class="ws-btn sm ai" id="contSendSignBtn">📧 이메일 · 전자서명 발송</button>' +
@@ -308,7 +379,7 @@
           '</div>' +
         '</div>' +
         '<div id="contSignNotice" style="width:100%;max-width:794px" hidden></div>' +
-        '<div id="contPreviewBox" style="width:100%;display:flex;justify-content:center">' + previewHtml() + '</div>' +
+        '<div id="contPreviewBox" style="width:100%;display:flex;flex-direction:column;align-items:center">' + previewHtml() + '</div>' +
       '</div>' +
     '</div>';
 
@@ -320,8 +391,29 @@
     Array.prototype.forEach.call(root.querySelectorAll('[data-cf]'), function (el) {
       var ev = el.tagName === 'SELECT' ? 'change' : 'input';
       el.addEventListener(ev, function () {
-        form[el.getAttribute('data-cf')] = el.value;
+        var k = el.getAttribute('data-cf');
+        if (k === 'clientPhone' || k === 'agencyPhone') {
+          el.value = formatPhoneAuto(el.value);
+        }
+        form[k] = el.value;
+        if (k === 'extraSpecialTerms' && el.value.trim()) form.usePage2 = true;
         updatePreviewOnly();
+      });
+    });
+
+    var p2Chk = q('#contPage2Chk');
+    if (p2Chk) p2Chk.addEventListener('change', function () {
+      form.usePage2 = p2Chk.checked;
+      render();
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-etp]'), function (b) {
+      b.addEventListener('click', function () {
+        var p = EXTRA_TERM_PRESETS[parseInt(b.getAttribute('data-etp'), 10)];
+        if (!p) return;
+        form.usePage2 = true;
+        form.extraSpecialTerms = (form.extraSpecialTerms ? (form.extraSpecialTerms.trim() + '\n\n') : '') + p.text;
+        render();
+        A.toast('📜 A4 2페이지 별지 특약에 항목을 추가했습니다!');
       });
     });
 
@@ -626,12 +718,29 @@
     if (p.client_id) form.client_id = p.client_id;
     if (p.client_name) form.client_name = p.client_name;
     if (p.contact_name) form.clientCeo = p.contact_name;
+    if (p.title) form.title = p.title.replace(/제안서/g, '대행 용역 계약서');
     if (Array.isArray(p.items) && p.items.length) {
       form.items = p.items.map(function (it) {
         return { name: it.name, qty: Number(it.qty || 1), price: Number(it.price || 0), note: it.note || '' };
       });
+      var discRate = Number(p.discountRate || 0);
+      if (discRate > 0) {
+        var sub = form.items.reduce(function (a, b) { return a + (b.qty * b.price); }, 0);
+        var discAmt = Math.round(sub * (discRate / 100));
+        if (discAmt > 0) {
+          form.items.push({ name: '패키지 특별 할인 (' + discRate + '%)', qty: 1, price: -discAmt, note: '제안서 할인 적용' });
+        }
+      }
     }
     if (p.includeVat !== undefined) form.includeVat = !!p.includeVat;
+    // 제안서 핵심 전략 & 단계별 로드맵을 별지 참고 특약으로 통일 이관
+    var summaryLines = [];
+    if (p.concept) summaryLines.push('• 핵심 브랜딩 방향: ' + p.concept);
+    if (p.roadmap) summaryLines.push('• 합의된 단계별 진행 로드맵:\n' + p.roadmap);
+    if (summaryLines.length) {
+      form.usePage2 = true;
+      form.extraSpecialTerms = '[제안서 기반 합의 과업 범위]\n' + summaryLines.join('\n\n');
+    }
   }
 
   A.on('transfer-contract', function (payload) {

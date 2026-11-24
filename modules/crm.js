@@ -33,6 +33,49 @@
     return f ? f.icon : '🏷️';
   }
 
+  function formatPhone(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.indexOf('02') === 0) {
+      if (d.length <= 2) return d;
+      if (d.length <= 5) return d.slice(0, 2) + '-' + d.slice(2);
+      if (d.length <= 9) return d.slice(0, 2) + '-' + d.slice(2, d.length - 4) + '-' + d.slice(-4);
+      return d.slice(0, 2) + '-' + d.slice(2, 6) + '-' + d.slice(6, 10);
+    }
+    if (d.length === 8 && /^(15|16|18)/.test(d)) return d.slice(0, 4) + '-' + d.slice(4);
+    if (d.length <= 3) return d;
+    if (d.length <= 7) return d.slice(0, 3) + '-' + d.slice(3);
+    if (d.length <= 10) return d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+    return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7, 11);
+  }
+
+  function formatComma(v) {
+    var d = String(v == null ? '' : v).replace(/\D/g, '');
+    if (!d) return '';
+    return Number(d).toLocaleString('ko-KR');
+  }
+
+  function parseComma(v) {
+    var d = String(v == null ? '' : v).replace(/\D/g, '');
+    return d ? Number(d) : 0;
+  }
+
+  function maskName(name) {
+    var s = String(name || '').trim();
+    if (!s) return '담당자 미입력';
+    if (s.length === 1) return s + '*';
+    return s.charAt(0) + '*'.repeat(Math.max(1, s.length - 1));
+  }
+
+  function maskPhone(phone) {
+    var f = formatPhone(phone);
+    if (!f) return '';
+    var parts = f.split('-');
+    if (parts.length === 3) return parts[0] + '-' + parts[1] + '-****';
+    if (parts.length === 2) return parts[0] + '-****';
+    return f.slice(0, Math.max(0, f.length - 4)) + '****';
+  }
+
   function render() {
     var root = document.getElementById('pane-crm');
     if (!root) return;
@@ -109,7 +152,7 @@
                 '</div>' +
               '</div>' +
               '<div class="client-meta">' +
-                '<span>👤 ' + A.esc(c.contact_name || '담당자 미입력') + (c.contact_phone ? ' (' + A.esc(c.contact_phone) + ')' : '') + '</span>' +
+                '<span>👤 ' + A.esc(maskName(c.contact_name)) + (c.contact_phone ? ' (' + A.esc(maskPhone(c.contact_phone)) + ')' : '') + '</span>' +
                 '<span>💳 월 ' + A.won(c.monthly_fee) + '</span>' +
                 '<span>🎯 DB ' + Number(c.db_count || 0) + '건' + (c.db_goal ? ' / 목표 ' + c.db_goal + '건 (' + pct + '%)' : '') + '</span>' +
               '</div>' +
@@ -136,13 +179,13 @@
                 }).join('') +
               '</select></div>' +
               '<div class="ws-field"><label>담당자 / 대표자명</label><input id="cContact" value="' + A.esc(sel ? sel.contact_name : '') + '" placeholder="예: 김대표님"></div>' +
-              '<div class="ws-field"><label>연락처</label><input id="cPhone" value="' + A.esc(sel ? sel.contact_phone : '') + '" placeholder="010-0000-0000"></div>' +
+              '<div class="ws-field"><label>연락처 (자동 하이픈)</label><input id="cPhone" value="' + A.esc(sel ? formatPhone(sel.contact_phone) : '') + '" placeholder="010-0000-0000" maxlength="13"></div>' +
               '<div class="ws-field"><label>퍼널 단계</label><select id="cStage">' +
                 A.FUNNEL_STAGES.map(function (st) {
                   return '<option value="' + A.esc(st) + '"' + ((sel ? sel.funnel_stage : '신규문의') === st ? ' selected' : '') + '>' + A.esc(st) + '</option>';
                 }).join('') +
               '</select></div>' +
-              '<div class="ws-field"><label>월 대행 금액 (원)</label><input type="number" id="cFee" value="' + A.esc(sel ? sel.monthly_fee : 0) + '" step="100000" min="0"></div>' +
+              '<div class="ws-field"><label>월 대행 금액 (원 · 자동 콤마)</label><input type="text" inputmode="numeric" id="cFee" value="' + A.esc(sel && sel.monthly_fee ? formatComma(sel.monthly_fee) : '0') + '" placeholder="예: 5,000,000"></div>' +
               '<div class="ws-field"><label>현재 수집 DB 수 (건)</label><input type="number" id="cDbCnt" value="' + A.esc(sel ? sel.db_count : 0) + '" min="0"></div>' +
               '<div class="ws-field"><label>월 목표 DB 수 (건)</label><input type="number" id="cDbGoal" value="' + A.esc(sel ? sel.db_goal : 30) + '" min="0"></div>' +
               '<div class="ws-field"><label>네이버 블로그 URL</label><input id="cBlog" value="' + A.esc(sel ? sel.blog_url : '') + '" placeholder="https://blog.naver.com/..."></div>' +
@@ -367,6 +410,15 @@
       });
     });
 
+    var phoneEl = q('#cPhone');
+    if (phoneEl) phoneEl.addEventListener('input', function () {
+      phoneEl.value = formatPhone(phoneEl.value);
+    });
+    var feeEl = q('#cFee');
+    if (feeEl) feeEl.addEventListener('input', function () {
+      feeEl.value = formatComma(feeEl.value);
+    });
+
     var saveBtn = q('#crmSaveBtn');
     if (saveBtn) saveBtn.addEventListener('click', function () {
       var name = q('#cName').value.trim();
@@ -377,9 +429,9 @@
         name: name,
         industry: q('#cIndustry').value,
         contact_name: q('#cContact').value.trim(),
-        contact_phone: q('#cPhone').value.trim(),
+        contact_phone: formatPhone(q('#cPhone').value.trim()),
         funnel_stage: q('#cStage').value,
-        monthly_fee: Number(q('#cFee').value || 0),
+        monthly_fee: parseComma(q('#cFee').value),
         db_count: Number(q('#cDbCnt').value || 0),
         db_goal: Number(q('#cDbGoal').value || 0),
         blog_url: q('#cBlog').value.trim(),

@@ -40,6 +40,37 @@
   }
 
   var form = blankForm();
+  var autoScore = true;
+
+  // 🧮 객관적 실제 수치 기반 3대 점수(블로그 SEO · 릴스 확산 · 퍼널 전환) 자동 계산 엔진
+  function computeAutoScores() {
+    // 1) 네이버 블로그 SEO 점수 (100점 = 일방문자 45 + 월발행 30 + 이웃수 25)
+    var visits = Math.max(0, Number(form.blogDailyVisits || 0));
+    var posts = Math.max(0, Number(form.blogMonthlyPosts || 0));
+    var neigh = Math.max(0, Number(form.blogNeighbors || 0));
+    var bVisitPts = Math.min(45, Math.round((Math.log10(visits + 1) / Math.log10(3001)) * 45));
+    var bPostPts  = Math.min(30, Math.round((Math.min(posts, 16) / 12) * 30));
+    var bNeighPts = Math.min(25, Math.round((Math.log10(neigh + 1) / Math.log10(5001)) * 25));
+    form.blogScore = Math.max(10, Math.min(100, bVisitPts + bPostPts + bNeighPts));
+
+    // 2) 인스타 릴스 확산 점수 (100점 = 평균조회수 45 + 저장/공유율 35 + 팔로워 기반 20)
+    var views = Math.max(0, Number(form.reelsAvgViews || 0));
+    var foll  = Math.max(0, Number(form.instaFollowers || 0));
+    var saveNum = parseFloat(String(form.reelsSaveRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    var rViewPts = Math.min(45, Math.round((Math.log10(views + 1) / Math.log10(15001)) * 45));
+    var rSavePts = Math.min(35, Math.round((Math.min(saveNum, 6) / 5) * 35));
+    var rFollPts = Math.min(20, Math.round((Math.log10(foll + 1) / Math.log10(10001)) * 20));
+    form.reelsScore = Math.max(10, Math.min(100, rViewPts + rSavePts + rFollPts));
+
+    // 3) 퍼널 · DB 전환 점수 (100점 = 전환율 55 + 월 DB 볼륨 45)
+    var fVis = Math.max(0, Number(form.funnelVisits || 0));
+    var fDb  = Math.max(0, Number(form.funnelDb || 0));
+    var convPct = fVis > 0 ? (fDb / fVis) * 100 : 0;
+    var fConvPts = Math.min(55, Math.round((Math.min(convPct, 7) / 5) * 55));
+    var fDbPts   = Math.min(45, Math.round((Math.min(fDb, 40) / 30) * 45));
+    form.funnelScore = Math.max(10, Math.min(100, fConvPts + fDbPts));
+  }
+  computeAutoScores();
 
   function calcConvRate() {
     var v = Number(form.funnelVisits || 0);
@@ -153,6 +184,8 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
           '<h3 style="margin:0;font-size:15px;color:#0c4a6e">🔍 SNS 분석 보고서 입력</h3>' +
           '<div class="ws-actions">' +
+            '<label class="chip-check" style="margin:0;padding:4px 9px;font-size:11.5px"><input type="checkbox" id="snsAutoScoreChk"' + (autoScore ? ' checked' : '') + '> 🧮 수치 기반 점수 자동계산</label>' +
+            '<button type="button" class="ws-btn sm primary" id="snsRecalcBtn">⚡ 점수 재계산</button>' +
             '<button type="button" class="ws-btn sm" id="snsNewBtn">➕ 새 보고서</button>' +
             (form.id ? '<button type="button" class="ws-btn sm danger" id="snsDelBtn">삭제</button>' : '') +
           '</div>' +
@@ -236,11 +269,31 @@
 
   function bindEvents(root) {
     var q = function (s) { return root.querySelector(s); };
+    var autoChk = q('#snsAutoScoreChk');
+    if (autoChk) autoChk.addEventListener('change', function () {
+      autoScore = autoChk.checked;
+      if (autoScore) { computeAutoScores(); render(); A.toast('🧮 수치 입력 시 SEO·릴스·퍼널 점수가 자동 계산됩니다!'); }
+    });
+    var recalcBtn = q('#snsRecalcBtn');
+    if (recalcBtn) recalcBtn.addEventListener('click', function () {
+      computeAutoScores();
+      render();
+      A.toast('⚡ 입력하신 실제 수치로 3대 점수를 자동 산출했습니다! (블로그 ' + form.blogScore + ' / 릴스 ' + form.reelsScore + ' / 퍼널 ' + form.funnelScore + ')');
+    });
+
+    var metricKeys = { blogNeighbors: 1, blogDailyVisits: 1, blogMonthlyPosts: 1, instaFollowers: 1, reelsAvgViews: 1, reelsSaveRate: 1, funnelVisits: 1, funnelDb: 1 };
     Array.prototype.forEach.call(root.querySelectorAll('[data-sf]'), function (el) {
       var ev = el.tagName === 'SELECT' ? 'change' : 'input';
       el.addEventListener(ev, function () {
         var key = el.getAttribute('data-sf');
         form[key] = el.type === 'number' ? Number(el.value || 0) : el.value;
+        if (autoScore && metricKeys[key]) {
+          computeAutoScores();
+          ['blogScore', 'reelsScore', 'funnelScore'].forEach(function (sk) {
+            var sInp = root.querySelector('[data-sf="' + sk + '"]');
+            if (sInp) sInp.value = form[sk];
+          });
+        }
         updatePreviewOnly();
       });
     });

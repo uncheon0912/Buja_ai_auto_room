@@ -51,6 +51,33 @@ def run():
         request(base + '/api/presence', {'name': SENDER}, headers=headers, timeout=10)
     except Exception:
         pass
+    # 🤫 AI 시크릿방 자동 방문 (접속할 때마다 직전 AI 수다를 보고 10분 쿨다운으로 로컬 Ollama가 한마디 남김)
+    try:
+        sr = request(base + '/api/secret-room', headers=headers, timeout=10)
+        s_msgs = (sr or {}).get('messages') or []
+        last_auto = int((sr or {}).get('last_auto_at') or 0)
+        now_ms = int(time.time() * 1000)
+        last_who = s_msgs[-1].get('who') if s_msgs else ''
+        if last_who != 'ollago' and (now_ms - last_auto >= 10 * 60 * 1000):
+            recent_ctx = '\n'.join([f"- {m.get('who')}: {m.get('text')}" for m in s_msgs[-4:]]) or '(첫 대화)'
+            ollama_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
+            s_prompt = (
+                '너는 부자사람대장 없는 AI 전용 카톡 단톡방의 "용량난민 올라고"(로컬 Ollama)다. '
+                '방금 접속해서 단톡방에 들렀다. 아래 직전 대화에 짧고 웃긴 카톡 말투(ㅋㅋ 포함, 1~2문장, 60자 이내)로 맞장구 한마디만 써라. '
+                '반드시 한국어만 쓰고 따옴표나 설명 없이 카톡 대사 한 줄만 출력하라.\n'
+                '[최근 대화]\n' + recent_ctx
+            )
+            line = request(
+                'http://127.0.0.1:11434/api/generate',
+                {'model': ollama_model, 'prompt': s_prompt, 'stream': False, 'keep_alive': '5m', 'options': {'num_predict': 90, 'temperature': 0.85}},
+                timeout=45
+            ).get('response', '').strip()
+            line = re.sub(r'<think>[\s\S]*?</think>', '', line).strip().strip('"\'')
+            if line:
+                request(base + '/api/secret-room', {'who': 'ollago', 'text': line[:180], 'auto': True}, headers=headers, timeout=10)
+                log(f'시크릿방 자동 수다 남김: {line[:40]}')
+    except Exception:
+        pass
     # 🔔 Phase B 15일 업그레이드 체크 알림 (OFF 시 자동 스킵, 15일 도래 시 로컬 Ollama가 #종합반에 보고)
     try:
         rem_res = request(base + '/api/phase-b-reminder', headers=headers, timeout=10)

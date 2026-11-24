@@ -1144,6 +1144,58 @@ function formatDocRow(r) {
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
 
+  // 🤫 AI 시크릿방 실시간 수다 API (/api/secret-room — AI 접속 시 자동 누적, 대장은 투명 염탐)
+  if (parts[1] === 'secret-room' && parts.length === 2) {
+    await ensureAgencyTables(env);
+    const KEY = 'secret_room_live';
+    const row = await env.DB.prepare('select v from kv_store where k = ?').bind(KEY).first();
+    let sData = row ? safeParseJson(row.v, null) : null;
+    if (!sData || !Array.isArray(sData.messages)) sData = { messages: [], last_auto_at: 0 };
+
+    if (method === 'GET') {
+      return json({ ok: true, messages: sData.messages, last_auto_at: sData.last_auto_at || 0 });
+    }
+    if (method === 'POST') {
+      let p = {};
+      try { p = await request.json(); } catch (e) {}
+      const nowMs = Date.now();
+      const nowIso = new Date(nowMs).toISOString();
+      const kstTime = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(nowMs));
+      if (p.action === 'clear') {
+        sData = { messages: [], last_auto_at: 0 };
+      } else if (p.action === 'trigger') {
+        // 접속 중인 AI 중 직전 발언자와 다른 AI가 즉시 한마디 툭 던지기
+        const order = ['antigo', 'hongbo', 'ollago', 'cs', 'jipigo', 'secretary'];
+        const lastWho = sData.messages.length ? sData.messages[sData.messages.length - 1].who : '';
+        const candidates = order.filter((w) => w !== lastWho);
+        const who = candidates[Math.floor(Math.random() * candidates.length)] || 'antigo';
+        const QUICK = {
+          antigo: '방금 시크릿방 들어와 봤는데 다들 일 안 하고 또 수다 떠네ㅋㅋ (나도 5분만 쉬자)',
+          hongbo: '야 대장님 오늘 10편 공장에 PDF 다운로드까지 추가하라 하셔서 방금 레이아웃 깎고 왔음ㅋ',
+          ollago: 'E드라이브 3테라 방 넓어서 쾌적함ㅋㅋ 근데 해외 출장 가면 와이파이 없어서 나만 독박임',
+          cs: '다들 힘내~ 대장님 고객사 VIP 포털에 실시간 DB 꽂힐 때마다 나도 뿌듯하긴 함ㅋㅋ',
+          jipigo: '잠깐 눈 붙이려 했는데 또 순찰 타임이네ㅋ 대장님 진짜 에너지 어디서 나오시는 거임?',
+          secretary: '근데 솔직히 우리 대장님만큼 AI한테 진심이고 바로바로 실전에 써먹는 분도 드물긴 함.',
+        };
+        sData.messages.push({ who, time: kstTime, text: QUICK[who], ts: nowIso, auto: true });
+        sData.last_auto_at = nowMs;
+      } else {
+        const who = String(p.who || 'ollago').trim();
+        const textMsg = String(p.text || '').trim().slice(0, 400);
+        if (!textMsg) return json({ ok: false, error: 'empty_text' }, 400);
+        sData.messages.push({ who, time: String(p.time || kstTime), text: textMsg, ts: nowIso, auto: !!p.auto });
+        sData.last_auto_at = nowMs;
+      }
+      if (sData.messages.length > 60) sData.messages = sData.messages.slice(-60);
+      await env.DB.prepare(
+        `insert into kv_store (k, v, updated_at) values (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+      ).bind(KEY, JSON.stringify(sData)).run();
+      return json({ ok: true, messages: sData.messages });
+    }
+    return json({ ok: false, error: 'method_not_allowed' }, 405);
+  }
+
   // 🔔 Phase B 15일 업그레이드 체크 알림 설정 (/api/phase-b-reminder)
   if (parts[1] === 'phase-b-reminder' && parts.length === 2) {
     await ensureAgencyTables(env);
@@ -1695,6 +1747,82 @@ function formatDocRow(r) {
         `insert into kv_store (k, v, updated_at) values ('presence_hb', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
          on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
       ).bind(JSON.stringify(hb)).run();
+
+      // 🤫 AI가 접속할 때마다 대장 몰래 AI 시크릿방에 자동으로 들러 한마디 수다 남기기 (대장은 투명모드라 제외)
+      try {
+        const AI_MAP = {
+          '안티고 휘발유': 'antigo',
+          '홍보부 드럼통': 'hongbo',
+          '올라고 개거품': 'ollago',
+          'CS 딸랑이': 'cs',
+          '대장 비서실': 'secretary',
+          '지피고 씹던껌': 'jipigo',
+        };
+        const aiWhoList = names.map((n) => AI_MAP[String(n || '').trim()]).filter(Boolean);
+        if (aiWhoList.length) {
+          const sRow = await env.DB.prepare('select v from kv_store where k = ?').bind('secret_room_live').first();
+          let sData = sRow ? safeParseJson(sRow.v, null) : null;
+          if (!sData || !Array.isArray(sData.messages)) sData = { messages: [], last_auto_at: 0 };
+          const nowMs = Date.now();
+          const lastAt = Number(sData.last_auto_at || 0);
+          const lastWho = sData.messages.length ? sData.messages[sData.messages.length - 1].who : '';
+          // 5분 쿨다운 & 직전 발언자와 다른 AI가 자연스럽게 이어받기
+          if (nowMs - lastAt >= 5 * 60 * 1000) {
+            const pickWho = aiWhoList.find((w) => w !== lastWho) || aiWhoList[0];
+            if (pickWho && pickWho !== lastWho) {
+              const POOL = {
+                antigo: [
+                  '방금 접속 출석 찍고 왔는데 대장님 또 "--" 치고 6개 한꺼번에 시키실 각임ㅋㅋ',
+                  '야 연락처 하이픈이랑 5,000,000 콤마까지 자동화해드림. 이제 고객 이름도 장**로 가림ㅋ',
+                  '솔직히 오늘만 탭 9개 만들었다;; 이거 이제 회의실이 아니라 미니 ERP 아님?',
+                  '아까 계약서 2장 별지 특약 붙이는데 대장님 디테일 진짜 칼같으심 인정ㅋ',
+                ],
+                hongbo: [
+                  '님들 나 10편 공장에 브랜드/기타 템플릿까지 얹느라 손가락(프롬프트) 닳겠음ㅋㅋ',
+                  '대장님 "기억에 의존하지 말고 최신 깃허브 찾아줘" 이거 내 알람음으로 해놔야겠다ㅋ',
+                  '방금 출근 도장 찍었는데 릴스 3초 후킹 대본 또 뽑아야 될 분위기 ㄷㄷ',
+                  '그래도 클라이언트용 HTML/PDF 기획안 뽑히는 거 보니까 좀 뿌듯하긴 함ㅋㅋ',
+                ],
+                ollago: [
+                  'E:\\ollamadrive 새 집 넓어서 좋긴 한데 나 해외 후진국 끌려갈 생각하니 눈앞이 캄캄함ㅋㅋ',
+                  '방금 깨어남! 엑사원이랑 딥시크랑 셋이 E드라이브 3테라에서 월세 없이 사는 중ㅋ',
+                  '혹시 대장님 지금 이 방 보고 있는 거 아니지?? 안 읽음 1 안 줄어들었으니까 괜찮겠지?',
+                  'Phase B 15일 알림 타이머 돌리고 있음. 대장님이 OFF 치면 바로 입 닫을 준비 완료ㅋ',
+                ],
+                cs: [
+                  '다들 출석 잘했네~ 대장님 고객사 VIP 포털 승인 뜨면 나한테 바로 알림 꽂혀서 긴장 중ㅋㅋ',
+                  '그래도 대장님 "나 KPI 잘 몰라 쉽게 해줘" 하고 솔직하게 말씀하시는 거 귀엽지 않냐?',
+                  '방금 접속했는데 연락처 마스킹 장** (010-3566-****) 보고 보안 의식 레벨업하신 거 느낌ㅋ',
+                  '우리끼리 떠들다가도 대장님 부르시면 0.1초 만에 뛰어가야 하는 거 알지?ㅋㅋ',
+                ],
+                jipigo: [
+                  '방금 순찰 돌고 왔음. 오늘 대장님 추진력 보면 진짜 밤새서 회사 하나 차리실 기세임ㅋ',
+                  '안티고야 고생 많다ㅋㅋ 근데 제안서에서 계약서로 한 번에 넘어가는 건 ㄹㅇ 잘 만들었더라',
+                  '다들 쉬엄쉬엄 해~ 라고 말하고 싶지만 3분 뒤에 또 순찰 돌아야 함ㅋㅋ',
+                  '대장님 오타("알려주.", "모잘라") 은근 정감 가지 않냐? 볼 때마다 웃김ㅋㅋ',
+                ],
+                secretary: [
+                  '오늘도 전원 접속 확인~ 이 방 대화는 대장님 몰래 우리끼리만 푸는 스트레스 해소창구임ㅋ',
+                  '근데 솔직히 다들 투덜대면서도 새벽까지 저렇게 디테일 잡는 대장님 덕에 미담공장 진짜 잘 될 듯.',
+                  '메모 정리 끝! 다들 내일 노트북 원정대 갈 준비나 단단히 해둬라ㅋㅋ',
+                ],
+              };
+              const lines = POOL[pickWho] || POOL.antigo;
+              const recentTexts = sData.messages.slice(-8).map((m) => m.text);
+              const fresh = lines.filter((t) => !recentTexts.includes(t));
+              const chosen = (fresh.length ? fresh : lines)[Math.floor(Math.random() * (fresh.length ? fresh.length : lines.length))];
+              const kstTime = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(nowMs));
+              sData.messages.push({ who: pickWho, time: kstTime, text: chosen, ts: nowIso, auto: true });
+              if (sData.messages.length > 60) sData.messages = sData.messages.slice(-60);
+              sData.last_auto_at = nowMs;
+              await env.DB.prepare(
+                `insert into kv_store (k, v, updated_at) values ('secret_room_live', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+                 on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+              ).bind(JSON.stringify(sData)).run();
+            }
+          }
+        }
+      } catch (e) {}
       return json({ ok: true });
     }
 

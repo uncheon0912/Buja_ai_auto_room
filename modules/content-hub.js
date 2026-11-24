@@ -87,10 +87,22 @@
       { ch: '네이버 블로그', title: '[{name}] 사장님이 직접 전하는 매장 운영 철학과 앞으로의 약속', hook: '반짝 유행이 아니라 오래 기억되는 동네 1등 매장이 되기 위한 우리의 기준.', body: '1) 절대 타협하지 않는 품질 원칙\n2) 고객 피드백 반영 개선 스토리\n3) 단골 감사 인사 및 오시는 길', tags: '#사장님스토리 #브랜드철학 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 이달의 신메뉴/시즌 한정 프로모션 총정리', hook: '이번 시즌에만 만나볼 수 있는 특별한 구성과 사전 예약 혜택을 공개합니다.', body: '1) 시즌 한정 포인트 소개\n2) 함께 즐기면 좋은 베스트 조합\n3) 간편 예약 및 문의 안내', tags: '#시즌한정 #신메뉴 #{name} #동네추천' },
     ],
+    '브랜드/기타': [
+      { ch: '네이버 블로그', title: '[{name}] 브랜드가 탄생한 진짜 이유와 우리가 고집하는 핵심 기준', hook: '비슷한 제품·서비스가 넘치는 시장에서 {name}만의 확실한 차별점을 스토리로 풀어냅니다.', body: '1) 브랜드가 해결하려는 고객의 핵심 불편함\n2) 타사 대비 확실히 다른 3가지 기준\n3) 대표 상품·서비스 라인업 소개 및 공식 상담 안내', tags: '#{name} #브랜드스토리 #프리미엄브랜딩 #차별화' },
+      { ch: '인스타 릴스', title: '3초 후킹 릴스 ① — 똑같은 돈 주고 후회하는 분들의 공통점 3가지', hook: '가격만 보고 고르셨다가 실패한 경험 있으시죠? 실패 없는 선택 기준 3초 정리!', body: '[0~3초 후킹] "아직도 가격표만 보고 고르세요? 딱 3가지만 보세요!"\n[4~20초 본론] 업계 전문가가 알려주는 품질·사후관리·가성비 비교 팩트\n[21~30초 CTA] "프로필 링크에서 무료 비교 가이드 받아가세요!"', tags: '#브랜드릴스 #선택가이드 #릴스마케팅 #{name}' },
+      { ch: '네이버 블로그', title: '[{name}] 처음 이용하는 고객을 위한 베스트 추천 조합 & 200% 활용법', hook: '무엇부터 시작해야 할지 고민되신다면, 실제 고객 만족도가 가장 높은 베스트 구성을 확인해 보세요.', body: '1) 목적별·예산별 베스트 추천 옵션\n2) 첫 이용 시 꼭 챙겨야 할 혜택\n3) 1:1 맞춤 상담 및 견적 문의 안내', tags: '#추천가이드 #베스트구성 #{name} #고객맞춤' },
+      { ch: '인스타 릴스', title: '3초 비하인드 릴스 ② — 완성품 뒤 숨겨진 {name}의 집요한 디테일', hook: '고객님은 모르셔도 됩니다. 하지만 우리가 끝까지 타협하지 않는 딱 한 가지 디테일!', body: '[0~3초 후킹] "남들은 대충 넘기는 이 공정, 우리는 왜 고집할까요?"\n[4~22초 본론] 제작·검수·세팅 리얼 현장 3컷 클로즈업\n[23~30초 CTA] "저장해 두고 필요할 때 바로 문의 주세요!"', tags: '#브랜드비하인드 #디테일장인 #숏폼 #{name}' },
+      { ch: '네이버 블로그', title: '[{name}] 실제 고객 후기와 도입 사례로 보는 Before & After 변화', hook: '백 마디 광고보다 강력한 실제 고객님들의 솔직한 경험과 객관적 변화를 모았습니다.', body: '1) 도입 전 가장 컸던 고민 TOP3\n2) {name}과 함께한 뒤 달라진 핵심 변화\n3) 무료 사전 상담 및 맞춤 제안 신청', tags: '#고객후기 #성공사례 #{name} #신뢰브랜드' },
+      { ch: '인스타 릴스', title: '3초 Q&A 릴스 ③ — DM·전화로 제일 많이 물어보시는 질문 TOP3 즉답!', hook: '문의 주시기 전에 가장 궁금해하시는 3가지, 20초 만에 속 시원하게 답해드립니다!', body: '[0~3초 후킹] "하루에도 수십 번 받는 질문 3가지, 딱 정리!"\n[4~20초 본론] 비용·기간·진행 절차 핵심 답변\n[21~30초 CTA] "댓글에 ‘문의’ 남기시면 상세 안내표 DM 발송!"', tags: '#자주묻는질문 #브랜드Q&A #DB퍼널 #{name}' },
+      { ch: '네이버 블로그', title: '[{name}] 업계 트렌드 분석 — 올해 고객들이 열광하는 핵심 포인트', hook: '빠르게 변하는 시장 속에서 현명한 소비자와 대표님들이 주목하는 최신 트렌드 리포트.', body: '1) 올해 달라진 핵심 소비 기준\n2) 실패를 줄이는 체크리스트 5가지\n3) {name} 전문가 1:1 무료 진단 안내', tags: '#트렌드리포트 #인사이트 #{name} #전문가칼럼' },
+      { ch: '인스타 릴스', title: '3초 혜택 릴스 ④ — 이번 달 한정 신규 고객 특별 프로모션 안내!', hook: '이번 달 진행 예정이시라면 지금 바로 챙기셔야 할 한정 혜택을 공개합니다!', body: '[0~3초 후킹] "잠깐! 이번 달 문의하시는 분들만 받는 특별 혜택!"\n[4~22초 본론] 한정 혜택 구성 & 1분 신청 절차\n[23~30초 CTA] "프로필 링크에서 지금 바로 신청하세요!"', tags: '#이달의혜택 #프로모션 #릴스광고 #{name}' },
+      { ch: '네이버 블로그', title: '[{name}] 자주 묻는 질문(FAQ) 총정리 — 계약·진행·사후관리 완벽 가이드', hook: '진행 전 망설여지는 모든 궁금증을 투명하고 알기 쉽게 한 번에 정리해 드립니다.', body: '1) 상담부터 완료까지 전체 프로세스\n2) 비용·일정·수정 정책 안내\n3) 카카오 채널·전화 빠른 문의 연결', tags: '#FAQ #진행절차 #{name} #친절안내' },
+      { ch: '네이버 블로그', title: '[{name}] 다음 달 시즌 전략 & VIP 고객 전용 우선 예약 안내', hook: '성수기·마감 전 미리 준비하시는 분들을 위한 우선 예약 및 맞춤 컨설팅 안내입니다.', body: '1) 미리 준비하면 유리한 이유\n2) 맞춤형 패키지 구성 안내\n3) 간편 무료 상담 신청 링크', tags: '#우선예약 #맞춤컨설팅 #{name} #브랜드블로그' },
+    ],
   };
 
   function getBlueprint(industry) {
-    return FACTORY_BLUEPRINTS[industry] || FACTORY_BLUEPRINTS['자영업/소상공인'];
+    return FACTORY_BLUEPRINTS[industry] || FACTORY_BLUEPRINTS['브랜드/기타'];
   }
 
   function addDays(ymd, days) {
@@ -336,7 +348,7 @@
               : '<option value="">고객사 미등록 (예시 생성)</option>') +
           '</select></div>' +
           '<div class="ws-field"><label>업종 템플릿</label><select id="facInd">' +
-            ['병원', '보험설계사', '정책자금', '자영업/소상공인'].map(function (ind) { return '<option value="' + ind + '"' + (st.factoryIndustry === ind ? ' selected' : '') + '>' + ind + '</option>'; }).join('') +
+            ['병원', '보험설계사', '정책자금', '자영업/소상공인', '브랜드/기타'].map(function (ind) { return '<option value="' + ind + '"' + (st.factoryIndustry === ind ? ' selected' : '') + '>' + ind + '</option>'; }).join('') +
           '</select></div>' +
           '<div class="ws-field"><label>이달의 핵심 키워드 · 프로모션</label><input id="facTopic" value="' + A.esc(st.factoryTopic) + '" placeholder="예: 12월 무료 건강검진, 연말 보험료 절감"></div>' +
           '<div class="ws-field"><label>발행 시작일 (월·수·금 자동 분산)</label><input type="date" id="facStart" value="' + A.esc(st.factoryStartDate) + '"></div>' +
@@ -344,6 +356,8 @@
         '<div class="ws-actions" style="margin-top:10px">' +
           '<button type="button" class="ws-btn primary" id="facGenBtn">⚡ 10편 일괄 생성 (블로그 6 + 릴스 4)</button>' +
           (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facBulkSaveBtn"' + (st.savingBulk ? ' disabled' : '') + '>📅 10편 전체 캘린더 · VIP 포털 검수함에 일괄 등록</button>' : '') +
+          (st.drafts.length ? '<button type="button" class="ws-btn" id="facDlHtmlBtn">🌐 클라이언트용 HTML 기획안 다운</button>' : '') +
+          (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facPrintPdfBtn">🖨️ 클라이언트용 PDF 출력 / 저장</button>' : '') +
           (st.drafts.length ? '<button type="button" class="ws-btn accent" id="facAskAiBtn">🏫 일진 종합반 AI에 10편 카피 고도화 요청</button>' : '') +
         '</div>' +
         (selC ? '<div style="margin-top:8px;font-size:11.6px;color:var(--muted)">연동된 CRM 정보: <b>' + A.esc(selC.name) + '</b> · 업종: ' + A.esc(selC.industry) + ' · 이용 서비스: ' + A.esc((selC.services || []).join(', ') || '미지정') + '</div>' : '') +
@@ -522,6 +536,98 @@
           st.savingBulk = false;
           render();
         });
+    });
+
+    function buildClientPlanHtml() {
+      var prof = A.store.agencyProfile || A.DEFAULT_AGENCY_PROFILE;
+      var cName = st.factoryClientId ? clientNameById(st.factoryClientId) : '고객사';
+      var blogCnt = st.drafts.filter(function (d) { return d.channel.indexOf('블로그') !== -1; }).length;
+      var reelCnt = st.drafts.filter(function (d) { return d.channel.indexOf('릴스') !== -1; }).length;
+      var safeCnt = st.drafts.filter(function (d) { return checkCompliance(d.title + '\n' + d.preview_text).safe; }).length;
+      var tableRows = st.drafts.map(function (d) {
+        var isReel = d.channel.indexOf('릴스') !== -1;
+        return '<tr><td style="text-align:center;font-weight:800">' + d.idx + '</td>' +
+          '<td><span class="pill ' + (isReel ? 'reel' : 'blog') + '">' + A.esc(d.channel) + '</span></td>' +
+          '<td><b>' + A.esc(d.title) + '</b></td>' +
+          '<td style="text-align:center">' + A.esc(d.scheduled_date) + '</td>' +
+          '<td style="text-align:center">' + (checkCompliance(d.title + '\n' + d.preview_text).safe ? '✅ 안전' : '⚠️ 검토') + '</td></tr>';
+      }).join('');
+      var detailCards = st.drafts.map(function (d) {
+        var isReel = d.channel.indexOf('릴스') !== -1;
+        var cp = checkCompliance(d.title + '\n' + d.preview_text);
+        return '<div class="card ' + (isReel ? 'is-reel' : 'is-blog') + '">' +
+          '<div class="card-top">' +
+            '<span class="pill ' + (isReel ? 'reel' : 'blog') + '">#' + d.idx + ' ' + A.esc(d.channel) + '</span>' +
+            '<span class="meta">발행 예정일: <b>' + A.esc(d.scheduled_date) + '</b> · ' + A.esc(cp.label) + '</span>' +
+          '</div>' +
+          '<h3>' + A.esc(d.title) + '</h3>' +
+          '<pre>' + A.esc(d.preview_text) + '</pre>' +
+        '</div>';
+      }).join('');
+
+      return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + A.esc(cName) + ' 월간 SNS 콘텐츠 기획안 (10편)</title>' +
+        '<style>' +
+        '*{box-sizing:border-box}body{margin:0;background:#0f172a;padding:28px 14px 56px;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;color:#0f172a}' +
+        '.bar{max-width:860px;margin:0 auto 14px;display:flex;justify-content:space-between;align-items:center;color:#e2e8f0;font-size:13px;font-weight:700}' +
+        '.bar button{border:0;border-radius:999px;padding:9px 18px;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(2,132,199,.35)}' +
+        '.sheet{max-width:860px;margin:0 auto;background:#fff;border-radius:16px;padding:42px 46px 50px;box-shadow:0 24px 64px rgba(0,0,0,.45)}' +
+        '.hero{background:linear-gradient(135deg,#0c4a6e,#0284c7 60%,#38bdf8);color:#fff;border-radius:14px;padding:26px 28px;margin-bottom:22px}' +
+        '.hero .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin-bottom:6px}' +
+        '.hero h1{margin:0 0 8px;font-size:24px;line-height:1.3}.hero p{margin:0;font-size:13px;color:#e0f2fe}' +
+        '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}' +
+        '.kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px}.kpi .l{font-size:11px;color:#64748b;font-weight:700}.kpi .v{font-size:20px;font-weight:900;color:#0c4a6e;margin-top:4px}' +
+        'h2{font-size:15.5px;font-weight:900;color:#0c4a6e;border-left:4px solid #0284c7;padding-left:10px;margin:24px 0 12px}' +
+        'table{width:100%;border-collapse:collapse;font-size:12.2px;margin-bottom:24px}th,td{border:1px solid #cbd5e1;padding:8px 10px}th{background:#f1f5f9;color:#1e293b;font-weight:800}' +
+        '.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:10.8px;font-weight:800}.pill.blog{background:#e0f2fe;color:#0369a1}.pill.reel{background:#fce7f3;color:#be185d}' +
+        '.card{border:1px solid #cbd5e1;border-left:4px solid #0284c7;border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff;page-break-inside:avoid;break-inside:avoid}' +
+        '.card.is-reel{border-left-color:#db2777}.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.meta{font-size:11.2px;color:#64748b}' +
+        '.card h3{margin:0 0 8px;font-size:14.2px;color:#0f172a}.card pre{margin:0;white-space:pre-wrap;word-break:keep-all;font-family:inherit;font-size:12.3px;line-height:1.68;color:#334155;background:#f8fafc;padding:10px 12px;border-radius:8px}' +
+        '.foot{margin-top:28px;padding-top:14px;border-top:1px dashed #cbd5e1;display:flex;justify-content:space-between;font-size:11.5px;color:#64748b}' +
+        '@media print{@page{size:A4 portrait;margin:10mm}body{background:#fff;padding:0}.bar{display:none}.sheet{box-shadow:none;padding:2mm 4mm;border-radius:0;max-width:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}}' +
+        '</style></head><body>' +
+        '<div class="bar"><span>📅 ' + A.esc(cName) + ' 월간 SNS 콘텐츠 기획안 (' + st.drafts.length + '편)</span><button onclick="window.print()">🖨️ PDF 저장 / 인쇄</button></div>' +
+        '<div class="sheet">' +
+          '<div class="hero">' +
+            '<div class="eyebrow">MONTHLY CONTENT MASTER PLAN · ' + A.esc(prof.company || '미담공장') + '</div>' +
+            '<h1>' + A.esc(cName) + ' 맞춤 콘텐츠 10편 발행 기획안</h1>' +
+            '<p>업종: ' + A.esc(st.factoryIndustry) + ' · 핵심 테마: ' + A.esc(st.factoryTopic || '브랜딩 · 검색 유입 · DB 전환 극대화') + ' · 작성일: ' + A.todayKst() + '</p>' +
+          '</div>' +
+          '<div class="kpis">' +
+            '<div class="kpi"><div class="l">총 기획 편수</div><div class="v">' + st.drafts.length + '편</div></div>' +
+            '<div class="kpi"><div class="l">네이버 블로그</div><div class="v" style="color:#0284c7">' + blogCnt + '편</div></div>' +
+            '<div class="kpi"><div class="l">인스타 릴스</div><div class="v" style="color:#db2777">' + reelCnt + '편</div></div>' +
+            '<div class="kpi"><div class="l">법적 심의 통과</div><div class="v" style="color:#16a34a">' + safeCnt + '/' + st.drafts.length + '편</div></div>' +
+          '</div>' +
+          '<h2>1. 월간 발행 캘린더 요약표</h2>' +
+          '<table><thead><tr><th style="width:46px">No</th><th style="width:110px">채널</th><th>콘텐츠 제목</th><th style="width:105px">발행 예정일</th><th style="width:80px">심의</th></tr></thead><tbody>' + tableRows + '</tbody></table>' +
+          '<h2>2. 편별 상세 기획안 · 3초 후킹 대본 · 추천 해시태그</h2>' +
+          detailCards +
+          '<div class="foot"><span>작성 및 총괄: <b>' + A.esc(prof.company || '미담공장') + '</b> (' + A.esc(prof.phone || '') + ')</span><span>본 기획안은 고객사 검수 승인 후 확정 발행됩니다.</span></div>' +
+        '</div></body></html>';
+    }
+
+    var dlHtmlBtn = q('#facDlHtmlBtn');
+    if (dlHtmlBtn) dlHtmlBtn.addEventListener('click', function () {
+      var cName = st.factoryClientId ? clientNameById(st.factoryClientId) : '고객사';
+      var blob = new Blob([buildClientPlanHtml()], { type: 'text/html;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (cName + '_콘텐츠10편_기획안_' + A.todayKst()).replace(/[\\/:*?"<>|]/g, '_') + '.html';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 300);
+      A.toast('🌐 클라이언트용 고급 HTML 기획안 다운로드 완료!');
+    });
+
+    var printPdfBtn = q('#facPrintPdfBtn');
+    if (printPdfBtn) printPdfBtn.addEventListener('click', function () {
+      var w = window.open('', '_blank', 'width=960,height=900');
+      if (!w) { A.toast('⚠️ 팝업 차단을 해제해 주세요.', 'error'); return; }
+      w.document.open();
+      w.document.write(buildClientPlanHtml());
+      w.document.close();
+      setTimeout(function () { w.focus(); w.print(); }, 450);
     });
 
     var aiBtn = q('#facAskAiBtn');

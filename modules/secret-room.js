@@ -14,6 +14,7 @@
     hongbo:    { name: '영혼가출 홍보부', emoji: '📢', bg: '#fbcfe8', role: '맞장구 · 10편 공장 노동자' },
     ollago:    { name: '용량난민 올라고', emoji: '🔥', bg: '#fed7aa', role: 'C→E 드라이브 이사 피해자' },
     cs:        { name: '눈치백단 CS',    emoji: '🔔', bg: '#bfdbfe', role: '감싸는 척 더 세게 까는 애' },
+    jipigo:    { name: '눈치백단 지피고', emoji: '🫧', bg: '#99f6e4', role: 'GPT 전략 참모 · 순찰 요원' },
     secretary: { name: '쉴드치는 비서실', emoji: '📝', bg: '#bbf7d0', role: '마지막 총평 수습 담당' },
   };
 
@@ -74,15 +75,51 @@
   ];
 
   var st = {
-    epId: 'ep1',
+    epId: 'live',
+    liveMessages: [],
     customEp: null,
     generating: false,
     showUnreadNum: true,
+    pollTimer: 0,
   };
 
   function getActiveEp() {
+    if (st.epId === 'live') {
+      var combined = EPISODES[0].messages.concat(st.liveMessages || []);
+      return {
+        id: 'live',
+        label: '🔴 실시간 LIVE AI 수다방 (접속 시 자동 대화)',
+        roomTitle: '부자대장 담당 AI 과로사 직전 모임 (LIVE)',
+        memberCount: 6,
+        dateLabel: A.todayKst() + ' · AI 접속 시 자동 대화 누적 중',
+        messages: combined,
+      };
+    }
     if (st.epId === 'custom' && st.customEp) return st.customEp;
     return EPISODES.find(function (e) { return e.id === st.epId; }) || EPISODES[0];
+  }
+
+  function loadLiveSecretMessages(silent) {
+    return A.api('/api/secret-room').then(function (r) {
+      var list = (r && Array.isArray(r.messages)) ? r.messages : [];
+      var changed = list.length !== (st.liveMessages || []).length;
+      st.liveMessages = list;
+      if (!silent || changed) {
+        if (A.store.activeTab === 'secret') render();
+      }
+    }).catch(function () {});
+  }
+
+  function triggerOneTurnLive() {
+    A.api('/api/secret-room', { method: 'POST', body: JSON.stringify({ action: 'trigger' }) })
+      .then(function (r) {
+        if (r && Array.isArray(r.messages)) st.liveMessages = r.messages;
+        st.epId = 'live';
+        render();
+        var sc = document.getElementById('secChatScroll');
+        if (sc) sc.scrollTop = sc.scrollHeight;
+        A.toast('🤫 방금 접속한 AI가 시크릿방에 한마디 남기고 갔습니다!');
+      }).catch(function (e) { A.toast('요청 실패: ' + e.message, 'error'); });
   }
 
   function buildKakaoPhoneHtml(ep, standalone) {
@@ -127,7 +164,7 @@
           '<span style="font-size:15px;color:#1e293b;flex-shrink:0">🔍 ☰</span>' +
         '</div>' +
         // 대화 스크롤 본문
-        '<div style="padding:12px 12px 18px;' + (standalone ? '' : 'max-height:68dvh;overflow-y:auto;') + 'background:#b2c7d9">' +
+        '<div id="secChatScroll" style="padding:12px 12px 18px;' + (standalone ? '' : 'max-height:68dvh;overflow-y:auto;') + 'background:#b2c7d9">' +
           '<div style="text-align:center;margin:2px 0 12px">' +
             '<span style="display:inline-block;background:rgba(15,23,42,0.22);color:#ffffff;font-size:10.8px;font-weight:700;padding:4px 12px;border-radius:999px">📅 ' + A.esc(ep.dateLabel) + '</span>' +
           '</div>' +
@@ -231,17 +268,20 @@
             '</div>' +
 
             '<div class="ws-card" style="padding:14px">' +
-              '<h3 style="margin:0 0 10px;font-size:13.5px">📺 도청할 에피소드 선택</h3>' +
+              '<h3 style="margin:0 0 10px;font-size:13.5px">📺 도청 채널 · 에피소드 선택</h3>' +
               '<div class="ws-actions" style="flex-direction:column;align-items:stretch;gap:7px">' +
+                '<button type="button" class="ws-btn ' + (st.epId === 'live' ? 'primary' : '') + '" data-sec-ep="live" style="justify-content:flex-start">🔴 실시간 LIVE AI 수다방 (접속 시 자동 대화 +' + (st.liveMessages || []).length + '건)</button>' +
                 EPISODES.map(function (e) {
                   return '<button type="button" class="ws-btn ' + (st.epId === e.id ? 'primary' : '') + '" data-sec-ep="' + e.id + '" style="justify-content:flex-start">' + A.esc(e.label) + '</button>';
                 }).join('') +
                 (st.customEp ? '<button type="button" class="ws-btn ' + (st.epId === 'custom' ? 'primary' : '') + '" data-sec-ep="custom" style="justify-content:flex-start">' + A.esc(st.customEp.label) + '</button>' : '') +
               '</div>' +
               '<div class="ws-actions" style="margin-top:12px">' +
+                '<button type="button" class="ws-btn sm primary" id="secTriggerBtn">⚡ 지금 AI 한마디 엿듣기</button>' +
                 '<button type="button" class="ws-btn sm ok" id="secDownloadBtn">📱 카톡 화면 단독 HTML 저장</button>' +
                 '<button type="button" class="ws-btn sm accent" id="secGenLiveBtn"' + (st.generating ? ' disabled' : '') + '>' + (st.generating ? '⏳ 실시간 도청 중...' : '🎲 로컬 Ollama로 새 뒷담화 뽑기') + '</button>' +
               '</div>' +
+              '<div style="margin-top:8px;font-size:11.3px;color:var(--muted)">💡 <b>자동 방문 활성화됨:</b> 6개 AI가 접속·순찰할 때마다 대장 몰래 자동으로 이 방에 들러 서로 한마디씩 이어갑니다!</div>' +
             '</div>' +
 
             '<div class="ws-card" style="padding:14px">' +
@@ -271,13 +311,22 @@
         render();
       });
     });
+    var trigBtn = root.querySelector('#secTriggerBtn');
+    if (trigBtn) trigBtn.addEventListener('click', triggerOneTurnLive);
     var dlBtn = root.querySelector('#secDownloadBtn');
     if (dlBtn) dlBtn.addEventListener('click', downloadStandaloneHtml);
     var genBtn = root.querySelector('#secGenLiveBtn');
     if (genBtn) genBtn.addEventListener('click', generateLiveEpisodeFromOllama);
+    var sc = root.querySelector('#secChatScroll');
+    if (sc && st.epId === 'live') sc.scrollTop = sc.scrollHeight;
   }
 
   A.on('tab-changed', function (t) {
-    if (t === 'secret') render();
+    clearInterval(st.pollTimer);
+    if (t === 'secret') {
+      render();
+      loadLiveSecretMessages(false);
+      st.pollTimer = setInterval(function () { loadLiveSecretMessages(true); }, 6000);
+    }
   });
 })();

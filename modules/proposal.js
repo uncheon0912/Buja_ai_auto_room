@@ -198,6 +198,10 @@
         '</div>' +
 
         '<div class="ws-field"><label>5. 단계별 진행 로드맵 (예: "1개월 차: ...", "1~2개월 차: ..." → 오른쪽 가로 타임스케줄 그래프 자동 생성)</label><textarea data-pf="roadmap" style="min-height:92px">' + A.esc(form.roadmap) + '</textarea></div>' +
+        '<div style="margin-top:10px;padding:12px;border-radius:12px;background:rgba(2,132,199,0.09);border:1.5px solid rgba(56,189,248,0.35);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
+          '<span style="font-size:12px;font-weight:700;color:#0c4a6e">🔗 이 제안서의 업체·견적·할인·로드맵을 <b>통일된 계약서 폼</b>으로 한 번에 넘기세요!</span>' +
+          '<button type="button" class="ws-btn primary" id="propToContBtnLeft">📄 제안서 그대로 계약서 자동 작성 →</button>' +
+        '</div>' +
       '</div>' +
 
       '<div class="split-preview">' +
@@ -206,7 +210,7 @@
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn sm ai" id="propAskAiBtn">🤖 AI 초안 요청</button>' +
             '<button type="button" class="ws-btn sm primary" id="propSaveBtn">💾 제안서 저장</button>' +
-            '<button type="button" class="ws-btn sm warn" id="propToContBtn">📄 계약서로 바로 전환</button>' +
+            '<button type="button" class="ws-btn sm warn" id="propToContBtn">📄 제안서 그대로 계약서 전환</button>' +
             '<button type="button" class="ws-btn sm" id="propDownloadHtmlBtn">🌐 HTML 다운</button>' +
             '<button type="button" class="ws-btn sm ok" id="propPrintBtn">🖨️ PDF / 인쇄</button>' +
           '</div>' +
@@ -358,11 +362,17 @@
       });
     });
 
-    var toCont = q('#propToContBtn');
-    if (toCont) toCont.addEventListener('click', function () {
-      var c = A.store.clients.filter(function (x) { return String(x.id) === String(form.client_id); })[0] || null;
+    function sendProposalToContract() {
+      var c = A.store.clients.filter(function (x) {
+        return (form.client_id && String(x.id) === String(form.client_id)) ||
+          (form.client_name && x.name === form.client_name.trim());
+      })[0] || null;
       A.transferToContract({ client: c, proposal: Object.assign({}, form, { totals: calcTotals() }) });
-    });
+    }
+    var toCont = q('#propToContBtn');
+    if (toCont) toCont.addEventListener('click', sendProposalToContract);
+    var toContLeft = q('#propToContBtnLeft');
+    if (toContLeft) toContLeft.addEventListener('click', sendProposalToContract);
 
     var printBtn = q('#propPrintBtn');
     if (printBtn) printBtn.addEventListener('click', function () {
