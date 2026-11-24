@@ -522,16 +522,17 @@ async function handleApi(request, env, url) {
       try { p = await request.json(); } catch (e) { return json({ ok: false, error: 'invalid_json' }, 400); }
       const item = await env.DB.prepare('select * from deliverables where id = ? and client_id = ?').bind(did, clientId).first();
       if (!item) return json({ ok: false, error: 'not_found' }, 404);
-      const nextStatus = p.status === '수정요청' ? '수정요청' : '승인완료';
+      const nextStatus = p.status === '수정요청' ? '수정요청' : '예약확정';
       const fb = String(p.feedback || '').trim();
       const now = new Date().toISOString();
       await env.DB.prepare('update deliverables set status = ?, client_feedback = ?, updated_at = ? where id = ?')
         .bind(nextStatus, fb, now, did).run();
       const client = await env.DB.prepare('select name from clients where id = ?').bind(clientId).first();
+      const statusDesc = nextStatus === '예약확정' ? '승인 완료 → 캘린더 자동 예약 확정 📅' : '수정 요청 ✏️';
       try {
         await postMessage(env, 'ops', {
           sender: 'CS 딸랑이',
-          content: `🌟 **[VIP 포털 고객 컨펌]** **${client ? client.name : ''}**\n- 콘텐츠: [${item.channel}] ${item.title}\n- 결과: **${nextStatus}**${fb ? '\n- 고객 피드백: ' + fb : ''}`,
+          content: `🌟 **[VIP 포털 고객 컨펌]** **${client ? client.name : ''}**\n- 콘텐츠: [${item.channel}] ${item.title}\n- 예정일: ${item.scheduled_date || '미정'}\n- 자동 반영: **${statusDesc}**${fb ? '\n- 고객 피드백: ' + fb : ''}`,
         });
       } catch (e) {}
       return json({ ok: true, status: nextStatus, feedback: fb });
@@ -1077,20 +1078,145 @@ function formatDocRow(r) {
       const title = String((p && p.title) || '').trim();
       if (!cid || !title) return json({ ok: false, error: 'invalid_request', message: '고객사와 콘텐츠 제목이 필요합니다.' }, 400);
       const now = new Date().toISOString();
+      const initStatus = String((p && p.status) || '검수대기').trim() || '검수대기';
       const res = await env.DB.prepare(
         `insert into deliverables (client_id, channel, title, preview_text, scheduled_date, status, client_feedback, created_at, updated_at)
-         values (?, ?, ?, ?, ?, '검수대기', '', ?, ?)`
+         values (?, ?, ?, ?, ?, ?, '', ?, ?)`
       ).bind(
         cid, String(p.channel || '네이버 블로그').trim(), title,
-        String(p.preview_text || '').trim(), String(p.scheduled_date || '').trim(), now, now
+        String(p.preview_text || '').trim(), String(p.scheduled_date || '').trim(), initStatus, now, now
       ).run();
       const row = await env.DB.prepare('select * from deliverables where id = ?').bind(res.meta.last_row_id).first();
       return json({ ok: true, deliverable: row }, 201);
+    }
+    if (parts.length === 3 && parts[2] === 'bulk' && method === 'POST') {
+      let p;
+      try { p = await request.json(); } catch (e) { return json({ ok: false, error: 'invalid_json' }, 400); }
+      const items = Array.isArray(p && p.items) ? p.items.slice(0, 30) : [];
+      if (!items.length) return json({ ok: false, error: 'invalid_request', message: '등록할 콘텐츠 항목이 없습니다.' }, 400);
+      const now = new Date().toISOString();
+      const created = [];
+      for (const it of items) {
+        const cid = parseInt(it && it.client_id, 10);
+        const title = String((it && it.title) || '').trim();
+        if (!cid || !title) continue;
+        const st = String((it && it.status) || '검수대기').trim() || '검수대기';
+        const res = await env.DB.prepare(
+          `insert into deliverables (client_id, channel, title, preview_text, scheduled_date, status, client_feedback, created_at, updated_at)
+           values (?, ?, ?, ?, ?, ?, '', ?, ?)`
+        ).bind(
+          cid, String(it.channel || '네이버 블로그').trim(), title,
+          String(it.preview_text || '').trim(), String(it.scheduled_date || '').trim(), st, now, now
+        ).run();
+        const row = await env.DB.prepare('select * from deliverables where id = ?').bind(res.meta.last_row_id).first();
+        if (row) created.push(row);
+      }
+      return json({ ok: true, count: created.length, deliverables: created }, 201);
+    }
+    if (parts.length === 3 && (method === 'PATCH' || method === 'PUT')) {
+      const id = parseInt(parts[2], 10);
+      if (!Number.isFinite(id) || id <= 0) return json({ ok: false, error: 'invalid_id' }, 400);
+      let p;
+      try { p = await request.json(); } catch (e) { return json({ ok: false, error: 'invalid_json' }, 400); }
+      const cur = await env.DB.prepare('select * from deliverables where id = ?').bind(id).first();
+      if (!cur) return json({ ok: false, error: 'not_found' }, 404);
+      const now = new Date().toISOString();
+      await env.DB.prepare(
+        `update deliverables set channel=?, title=?, preview_text=?, scheduled_date=?, status=?, client_feedback=?, updated_at=? where id=?`
+      ).bind(
+        String(p.channel !== undefined ? p.channel : cur.channel).trim(),
+        String(p.title !== undefined ? p.title : cur.title).trim(),
+        String(p.preview_text !== undefined ? p.preview_text : cur.preview_text).trim(),
+        String(p.scheduled_date !== undefined ? p.scheduled_date : cur.scheduled_date).trim(),
+        String(p.status !== undefined ? p.status : cur.status).trim(),
+        String(p.client_feedback !== undefined ? p.client_feedback : cur.client_feedback).trim(),
+        now,
+        id
+      ).run();
+      const updated = await env.DB.prepare('select * from deliverables where id = ?').bind(id).first();
+      return json({ ok: true, deliverable: updated });
     }
     if (parts.length === 3 && method === 'DELETE') {
       const id = parseInt(parts[2], 10);
       await env.DB.prepare('delete from deliverables where id = ?').bind(id).run();
       return json({ ok: true, deleted_id: id });
+    }
+    return json({ ok: false, error: 'method_not_allowed' }, 405);
+  }
+
+  // 🔔 Phase B 15일 업그레이드 체크 알림 설정 (/api/phase-b-reminder)
+  if (parts[1] === 'phase-b-reminder' && parts.length === 2) {
+    await ensureAgencyTables(env);
+    const KEY = 'phase_b_reminder';
+    const nowMs = Date.now();
+    const row = await env.DB.prepare('select v from kv_store where k = ?').bind(KEY).first();
+    let cfg = row ? safeParseJson(row.v, null) : null;
+    if (!cfg || typeof cfg !== 'object') {
+      const nextIso = new Date(nowMs + 15 * 86400000).toISOString();
+      cfg = {
+        enabled: true,
+        interval_days: 15,
+        last_notified_at: new Date(nowMs).toISOString(),
+        next_due_at: nextIso,
+        client_threshold: 15,
+      };
+      await env.DB.prepare(
+        `insert into kv_store (k, v, updated_at) values (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+      ).bind(KEY, JSON.stringify(cfg)).run();
+    }
+    const cCntRow = await env.DB.prepare('select count(*) as cnt from clients').first();
+    const clientCount = Number((cCntRow && cCntRow.cnt) || 0);
+
+    if (method === 'GET') {
+      const dueMs = Date.parse(cfg.next_due_at || '') || (nowMs + 15 * 86400000);
+      const diffMs = dueMs - nowMs;
+      const daysLeft = Math.max(0, Math.ceil(diffMs / 86400000));
+      const dueNow = !!cfg.enabled && diffMs <= 0;
+      return json({
+        ok: true,
+        reminder: Object.assign({}, cfg, {
+          days_left: daysLeft,
+          due_now: dueNow,
+          client_count: clientCount,
+        }),
+      });
+    }
+    if (method === 'POST' || method === 'PUT') {
+      let p;
+      try { p = await request.json(); } catch (e) { p = {}; }
+      const act = String((p && p.action) || '').trim().toLowerCase();
+      if (act === 'off' || p.enabled === false) {
+        cfg.enabled = false;
+      } else if (act === 'on' || p.enabled === true) {
+        cfg.enabled = true;
+        if (!cfg.next_due_at || Date.parse(cfg.next_due_at) <= nowMs) {
+          cfg.next_due_at = new Date(nowMs + (Number(cfg.interval_days) || 15) * 86400000).toISOString();
+        }
+      }
+      if (act === 'snooze_15d' || act === 'snooze') {
+        const d = Number(p.interval_days || cfg.interval_days || 15);
+        cfg.interval_days = d;
+        cfg.last_notified_at = new Date(nowMs).toISOString();
+        cfg.next_due_at = new Date(nowMs + d * 86400000).toISOString();
+      }
+      if (p && p.interval_days !== undefined && Number(p.interval_days) >= 1) {
+        cfg.interval_days = Math.min(90, Math.max(1, Number(p.interval_days)));
+      }
+      await env.DB.prepare(
+        `insert into kv_store (k, v, updated_at) values (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+      ).bind(KEY, JSON.stringify(cfg)).run();
+      const dueMs = Date.parse(cfg.next_due_at || '') || (nowMs + 15 * 86400000);
+      const diffMs = dueMs - nowMs;
+      return json({
+        ok: true,
+        reminder: Object.assign({}, cfg, {
+          days_left: Math.max(0, Math.ceil(diffMs / 86400000)),
+          due_now: !!cfg.enabled && diffMs <= 0,
+          client_count: clientCount,
+        }),
+      });
     }
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
@@ -1716,6 +1842,35 @@ function formatDocRow(r) {
       }
       const out = await postMessage(env, slug, payload || {});
       if (out.error) return json({ ok: false, error: 'invalid_request', message: out.error }, out.status || 400);
+      // 대장님 채팅 명령으로 Phase B 15일 알림 즉시 OFF / ON 제어
+      try {
+        const sender = String((payload && payload.sender) || '').trim();
+        const txt = String((payload && payload.content) || '');
+        const isBoss = ['부자사람대장', '일진대장', 'CEO', '피클 부대장'].includes(sender);
+        const mentionsPhaseB = /(phase\s*b|페이즈\s*b|15일|업그레이드\s*알림|업그레이드\s*체크)/i.test(txt);
+        if (isBoss && mentionsPhaseB) {
+          const wantOff = /(off|꺼|끄|중지|그만|멈춰|취소|해제|안\s*받)/i.test(txt);
+          const wantOn = !wantOff && /(on|켜|재개|다시\s*알림|활성)/i.test(txt);
+          if (wantOff || wantOn) {
+            const row = await env.DB.prepare('select v from kv_store where k = ?').bind('phase_b_reminder').first();
+            const nowMs = Date.now();
+            const cfg = (row && safeParseJson(row.v, null)) || {
+              enabled: true, interval_days: 15, last_notified_at: new Date(nowMs).toISOString(),
+              next_due_at: new Date(nowMs + 15 * 86400000).toISOString(), client_threshold: 15,
+            };
+            cfg.enabled = wantOn;
+            if (wantOn) cfg.next_due_at = new Date(nowMs + (Number(cfg.interval_days) || 15) * 86400000).toISOString();
+            await env.DB.prepare(
+              `insert into kv_store (k, v, updated_at) values ('phase_b_reminder', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+               on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at`
+            ).bind(JSON.stringify(cfg)).run();
+            const replyText = wantOff
+              ? '🔕 대장님 명령 접수 완료! **Phase B 15일 업그레이드 체크 알림(팝업 + 올라고 자동 점검)을 완전히 OFF(중지)**했습니다.\n나중에 다시 켜고 싶으시면 채팅에 `Phase B 알림 켜` 또는 화면 하단 알림 버튼을 눌러주세요!'
+              : '🔔 대장님 명령 접수 완료! **Phase B 15일 업그레이드 체크 알림을 다시 ON(활성화)**했습니다. (다음 점검 예정: 15일 뒤)';
+            await postMessage(env, slug, { sender: '올라고 개거품', content: replyText, reply_to_id: out.message.id });
+          }
+        }
+      } catch (e) {}
       return json({ ok: true, room, message: out.message }, 201);
     }
 

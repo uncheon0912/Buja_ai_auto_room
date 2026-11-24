@@ -152,8 +152,25 @@ if (Test-Path $EnvFile) {
     Write-Host "⚠️  [5/6] .dev.vars가 없어 AI 기상을 건너뛰었습니다." -ForegroundColor Yellow
 }
 
-# 6) 웹 회의실 브라우저로 자동 열기
-Write-Host "⏳ [6/6] 껌씹는 AI 일진방 웹 회의실 열기 ($RoomBase)..." -ForegroundColor Cyan
+# 6) 로컬 AI 미디어 스튜디오 브릿지(E:\ai-studio\media_bridge.py, 포트 8787) 자동 기동
+$studioPy  = "E:\ai-studio\.venv\Scripts\python.exe"
+$bridgePy  = "E:\ai-studio\media_bridge.py"
+if ((Test-Path $studioPy) -and (Test-Path $bridgePy)) {
+    $bridgeUp = $false
+    try {
+        $null = Invoke-RestMethod -Uri "http://127.0.0.1:8787/health" -TimeoutSec 2 -ErrorAction Stop
+        $bridgeUp = $true
+    } catch {}
+    if (-not $bridgeUp) {
+        Start-Process -FilePath $studioPy -ArgumentList "`"$bridgePy`"" -WorkingDirectory "E:\ai-studio" -WindowStyle Hidden
+        Write-Host "✅ [6/7] 로컬 AI 미디어 스튜디오 브릿지(한국어 성우·MP4·CrewAI) 자동 기동 완료!" -ForegroundColor Green
+    } else {
+        Write-Host "✅ [6/7] 로컬 AI 미디어 스튜디오 브릿지 이미 실행 중 (포트 8787)" -ForegroundColor Green
+    }
+}
+
+# 7) 웹 회의실 브라우저로 자동 열기
+Write-Host "⏳ [7/7] 껌씹는 AI 일진방 웹 회의실 열기 ($RoomBase)..." -ForegroundColor Cyan
 Start-Process $RoomBase
 
 Write-Host ""

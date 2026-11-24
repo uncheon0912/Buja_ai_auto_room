@@ -19,7 +19,10 @@ node_modules
 wrangler.toml
 schema.sql
 README.md
+AGENTS.md
 LICENSE
+AI일진방_전체깨우기.bat
+바탕화면_아이콘_만들기.bat
 .assetsignore
 examples
 

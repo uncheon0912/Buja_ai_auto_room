@@ -160,13 +160,14 @@
         '<h2><span>✅ 발행 예정 콘텐츠 검수 · 원클릭 승인함</span><span class="badge">' + delivs.length + '건</span></h2>' +
         '<div class="deliv-list">' +
           (delivs.length ? delivs.map(function(it){
-            var bCls = it.status === '승인완료' ? 'ok' : (it.status === '수정요청' ? 'warn' : '');
+            var bCls = (it.status === '승인완료' || it.status === '예약확정' || it.status === '발행완료') ? 'ok' : (it.status === '수정요청' ? 'warn' : '');
+            var stLbl = it.status === '예약확정' ? '✅ 승인 · 자동예약 확정' : (it.status === '발행완료' ? '🚀 발행 완료' : it.status);
             return '<div class="item">' +
               '<div class="item-top">' +
                 '<div><span class="badge">' + esc(it.channel) + '</span> <b style="margin-left:6px;font-size:14px">' + esc(it.title) + '</b></div>' +
                 '<div style="display:flex;gap:6px;align-items:center">' +
                   (it.scheduled_date ? '<span style="font-size:11.5px;color:var(--muted)">발행예정 ' + esc(it.scheduled_date) + '</span>' : '') +
-                  '<span class="badge ' + bCls + '">' + esc(it.status) + '</span>' +
+                  '<span class="badge ' + bCls + '">' + esc(stLbl) + '</span>' +
                 '</div>' +
               '</div>' +
               '<div class="item-body">' + esc(it.preview_text || '') + '</div>' +

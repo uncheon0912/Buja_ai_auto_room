@@ -895,7 +895,9 @@
       <button type="button" class="cat-tab" data-tab="proposal">📑 제안서 생성기 <span class="tbadge" id="tabBadgeProp">0</span></button>
       <button type="button" class="cat-tab" data-tab="contract">📄 계약서 생성기 <span class="tbadge" id="tabBadgeCont">0</span></button>
       <button type="button" class="cat-tab" data-tab="portfolio">🎨 회사 포트폴리오 <span class="tbadge" id="tabBadgePort">10</span></button>
-      <button type="button" class="cat-tab" data-tab="video">🎬 웹 영상 편집기</button>
+      <button type="button" class="cat-tab" data-tab="video">🎬 영상·AI 스튜디오</button>
+      <button type="button" class="cat-tab" data-tab="content">📅 캘린더·10편 공장 <span class="tbadge" id="tabBadgeContent">0</span></button>
+      <button type="button" class="cat-tab" data-tab="secret">🤫 AI 시크릿방</button>
     </nav>
 
     <div class="chat-pane" id="chatPane">
@@ -927,6 +929,8 @@
     <section class="ws-pane" id="pane-contract" hidden></section>
     <section class="ws-pane" id="pane-portfolio" hidden></section>
     <section class="ws-pane" id="pane-video" hidden></section>
+    <section class="ws-pane" id="pane-content" hidden></section>
+    <section class="ws-pane" id="pane-secret" hidden></section>
   </main>
 </div>
 
@@ -1401,14 +1405,16 @@ window.pulsePortfolio3D = function(pageIdx) {
 };
 </script>
 
-<script src="/modules/agency-store.js?v=8"></script>
-<script src="/modules/crm.js?v=9"></script>
-<script src="/modules/sns.js?v=8"></script>
-<script src="/modules/proposal.js?v=8"></script>
-<script src="/modules/contract.js?v=8"></script>
-<script src="/modules/portfolio.js?v=8"></script>
-<script src="/modules/video-editor.js?v=8"></script>
-<script src="/modules/souls-ui.js?v=8"></script>
+<script src="/modules/agency-store.js?v=13"></script>
+<script src="/modules/crm.js?v=12"></script>
+<script src="/modules/sns.js?v=10"></script>
+<script src="/modules/proposal.js?v=10"></script>
+<script src="/modules/contract.js?v=10"></script>
+<script src="/modules/portfolio.js?v=10"></script>
+<script src="/modules/video-editor.js?v=11"></script>
+<script src="/modules/content-hub.js?v=10"></script>
+<script src="/modules/secret-room.js?v=13"></script>
+<script src="/modules/souls-ui.js?v=10"></script>
 <script>
 (function(){
   "use strict";

@@ -51,6 +51,41 @@ def run():
         request(base + '/api/presence', {'name': SENDER}, headers=headers, timeout=10)
     except Exception:
         pass
+    # 🔔 Phase B 15일 업그레이드 체크 알림 (OFF 시 자동 스킵, 15일 도래 시 로컬 Ollama가 #종합반에 보고)
+    try:
+        rem_res = request(base + '/api/phase-b-reminder', headers=headers, timeout=10)
+        rem = (rem_res or {}).get('reminder') or {}
+        if rem.get('enabled') and rem.get('due_now'):
+            c_cnt = int(rem.get('client_count') or 0)
+            th = int(rem.get('client_threshold') or 15)
+            ollama_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
+            chk_prompt = (
+                f'너는 껌씹는 AI 일진방의 로컬 Ollama 담당 "올라고 개거품"이다. '
+                f'15일 정기 점검일이 도래하여 부자사람대장님께 Phase B(n8n·Typebot·Papermark·Dify·GPU 미디어 워커) 업그레이드 시기를 짧고 명확한 한국어 4줄로 보고하라. '
+                f'현재 등록 고객사는 {c_cnt}곳이고 권장 기준은 {th}곳이다. '
+                f'마지막 줄에 "이 15일 알림을 끄시려면 채팅에 `Phase B 알림 꺼`라고 입력해 주세요!"를 꼭 포함하라.'
+            )
+            try:
+                note_txt = request(
+                    'http://127.0.0.1:11434/api/generate',
+                    {'model': ollama_model, 'prompt': chk_prompt, 'stream': False, 'keep_alive': '5m', 'options': {'num_predict': 350, 'temperature': 0.2}},
+                    timeout=120
+                ).get('response', '').strip()
+                note_txt = re.sub(r'<think>[\s\S]*?</think>', '', note_txt).strip()
+            except Exception:
+                note_txt = ''
+            if not note_txt:
+                note_txt = (
+                    f'🔔 **[Phase B 15일 정기 업그레이드 시기 점검]**\n'
+                    f'- 현재 등록 고객사: **{c_cnt}곳** (Phase B 권장 기준: {th}곳 이상)\n'
+                    f'- 대기 중인 Phase B 목록: `n8n · Typebot · Papermark · Dify RAG · GPU 미디어 워커`\n'
+                    f'- 이 15일 알림을 끄시려면 채팅에 `Phase B 알림 꺼` (또는 `15일 체크 off`)라고 입력해 주세요!'
+                )
+            request(url, {'sender': SENDER, 'content': note_txt[:3500]}, headers=headers, timeout=15)
+            request(base + '/api/phase-b-reminder', {'action': 'snooze_15d'}, headers=headers, timeout=15)
+            log('Phase B 15일 정기 업그레이드 점검 알림 발송 완료 (다음 알림 +15일)')
+    except Exception as rem_err:
+        log(f'Phase B 알림 체크 건너뜀: {rem_err}')
     if not STATE.exists():
         data = request(url + '?limit=1', headers=headers)
         save({'cursor': data.get('latest_id', 0)})

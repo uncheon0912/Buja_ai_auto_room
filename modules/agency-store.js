@@ -205,7 +205,7 @@
   }
 
   function switchTab(tabId) {
-    var valid = ['chat', 'crm', 'sns', 'proposal', 'contract', 'portfolio', 'video'];
+    var valid = ['chat', 'crm', 'sns', 'proposal', 'contract', 'portfolio', 'video', 'content', 'secret'];
     if (valid.indexOf(tabId) === -1) tabId = 'chat';
     store.activeTab = tabId;
     localStorage.setItem('buja_active_tab', tabId);
@@ -216,7 +216,7 @@
     });
     var chatPane = document.getElementById('chatPane');
     if (chatPane) chatPane.hidden = tabId !== 'chat';
-    ['crm', 'sns', 'proposal', 'contract', 'portfolio', 'video'].forEach(function (id) {
+    ['crm', 'sns', 'proposal', 'contract', 'portfolio', 'video', 'content', 'secret'].forEach(function (id) {
       var el = document.getElementById('pane-' + id);
       if (el) el.hidden = tabId !== id;
     });
@@ -582,6 +582,111 @@
     switchTab('contract');
     emit('transfer-contract', payload || {});
   }
+  function transferToVideo(payload) {
+    switchTab('video');
+    emit('transfer-video', payload || {});
+  }
+
+  // 🔔 Phase B 15일 업그레이드 체크 알림 팝업 & ON/OFF 관리 (Phase B는 자동 실행하지 않고 시기만 점검!)
+  var phaseBState = null;
+
+  function renderPhaseBPill() {
+    var pill = document.getElementById('phaseBReminderPill');
+    if (!pill) {
+      pill = document.createElement('button');
+      pill.id = 'phaseBReminderPill';
+      pill.type = 'button';
+      pill.style.cssText = 'position:fixed;right:16px;bottom:14px;z-index:85;padding:7px 12px;border-radius:999px;border:1px solid rgba(56,189,248,0.45);background:rgba(15,23,42,0.88);color:#e0f2fe;font-size:11.5px;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,0.28);backdrop-filter:blur(8px)';
+      pill.addEventListener('click', function () { openPhaseBPopup(true); });
+      document.body.appendChild(pill);
+    }
+    if (!phaseBState) return;
+    if (phaseBState.enabled) {
+      pill.style.borderColor = phaseBState.due_now ? '#f59e0b' : 'rgba(56,189,248,0.45)';
+      pill.textContent = phaseBState.due_now
+        ? '🚀 Phase B 업그레이드 점검 시점 도래!'
+        : ('🔔 Phase B 15일 알림 ON (D-' + phaseBState.days_left + ')');
+    } else {
+      pill.style.borderColor = 'rgba(148,163,184,0.35)';
+      pill.style.color = '#94a3b8';
+      pill.textContent = '🔕 Phase B 15일 알림 OFF';
+    }
+  }
+
+  function openPhaseBPopup(forceOpen) {
+    if (!phaseBState) return;
+    if (!forceOpen && (!phaseBState.enabled || !phaseBState.due_now)) return;
+    var old = document.getElementById('phaseBModalBg');
+    if (old) old.remove();
+
+    var nextDate = phaseBState.next_due_at ? String(phaseBState.next_due_at).slice(0, 10) : '-';
+    var cCnt = Number(phaseBState.client_count || 0);
+    var th = Number(phaseBState.client_threshold || 15);
+    var readyMsg = cCnt >= th
+      ? '🎯 현재 등록 고객사가 <b>' + cCnt + '곳</b>으로 권장 기준(' + th + '곳)에 도달했습니다! 이제 Phase B 확장을 검토할 최적 시점입니다.'
+      : '📊 현재 등록 고객사는 <b>' + cCnt + '곳</b>입니다. 권장 기준(<b>' + th + '곳 이상</b>)이 될 때까지는 지금 무료 Phase A 체제로 운영하셔도 충분합니다!';
+
+    var bg = document.createElement('div');
+    bg.id = 'phaseBModalBg';
+    bg.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,0.68);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:16px';
+    bg.innerHTML =
+      '<div style="width:100%;max-width:520px;background:#0f172a;color:#f8fafc;border:1px solid rgba(56,189,248,0.42);border-radius:20px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,0.55);font-family:inherit">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px">' +
+          '<h3 style="margin:0;font-size:16.5px;color:#38bdf8">🚀 Phase B 엔터프라이즈 업그레이드 시기 점검</h3>' +
+          '<span style="font-size:11px;padding:4px 9px;border-radius:999px;font-weight:800;background:' + (phaseBState.enabled ? 'rgba(34,197,94,0.18);color:#86efac' : 'rgba(148,163,184,0.2);color:#cbd5e1') + '">' + (phaseBState.enabled ? '🔔 15일 알림 ON' : '🔕 알림 OFF') + '</span>' +
+        '</div>' +
+        '<p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#cbd5e1">' + readyMsg + '</p>' +
+        '<div style="background:rgba(30,41,59,0.85);border:1px solid rgba(148,163,184,0.22);border-radius:12px;padding:12px;font-size:12px;line-height:1.65;color:#e2e8f0;margin-bottom:14px">' +
+          '<div style="font-weight:800;color:#fde047;margin-bottom:4px">📋 Phase B 업그레이드 예정 목록 (아직 미실행 · 대기 중)</div>' +
+          '• <b>n8n + Typebot</b>: 전 채널 실시간 자동화 &amp; 대화형 DB 퍼널 확장<br>' +
+          '• <b>Papermark</b>: 제안서·10장 포트폴리오 페이지별 열람 실시간 추적<br>' +
+          '• <b>Dify RAG</b>: 미담공장 성공사례 + 의료법/금소법 규정 벡터 DB<br>' +
+          '• <b>GPU 미디어 워커</b>: Clips-Studio + ComfyUI(LTX-Video/Wan2.2) 대량 생산<br>' +
+          '<div style="margin-top:6px;font-size:11.2px;color:#94a3b8">다음 정기 체크 예정일: <b>' + esc(nextDate) + '</b> (15일 주기 · 올라고 개거품 Ollama 연동)</div>' +
+        '</div>' +
+        '<div style="font-size:11.5px;color:#94a3b8;margin-bottom:14px">💡 채팅방에서 <code>Phase B 알림 꺼</code> 또는 <code>15일 체크 off</code>라고 입력하셔도 즉시 중지됩니다.</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">' +
+          (phaseBState.enabled
+            ? '<button type="button" id="pbSnoozeBtn" style="padding:8px 13px;border-radius:10px;border:none;background:#0284c7;color:#fff;font-weight:800;font-size:12.5px;cursor:pointer">⏰ 15일 뒤에 다시 알림</button>' +
+              '<button type="button" id="pbOffBtn" style="padding:8px 13px;border-radius:10px;border:1px solid rgba(239,68,68,0.5);background:rgba(239,68,68,0.16);color:#fca5a5;font-weight:800;font-size:12.5px;cursor:pointer">🔕 15일 체크 영구 끄기 (OFF)</button>'
+            : '<button type="button" id="pbOnBtn" style="padding:8px 13px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:800;font-size:12.5px;cursor:pointer">🔔 15일 체크 다시 켜기 (ON)</button>') +
+          '<button type="button" id="pbCloseBtn" style="padding:8px 13px;border-radius:10px;border:1px solid rgba(148,163,184,0.35);background:transparent;color:#e2e8f0;font-weight:700;font-size:12.5px;cursor:pointer">닫기</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(bg);
+
+    var close = function () { bg.remove(); };
+    bg.addEventListener('click', function (e) { if (e.target === bg) close(); });
+    var cBtn = document.getElementById('pbCloseBtn');
+    if (cBtn) cBtn.addEventListener('click', close);
+    var sBtn = document.getElementById('pbSnoozeBtn');
+    if (sBtn) sBtn.addEventListener('click', function () {
+      api('/api/phase-b-reminder', { method: 'POST', body: JSON.stringify({ action: 'snooze_15d' }) })
+        .then(function (r) { phaseBState = r.reminder; renderPhaseBPill(); toast('⏰ Phase B 업그레이드 점검을 15일 뒤로 예약했습니다!'); close(); });
+    });
+    var oBtn = document.getElementById('pbOffBtn');
+    if (oBtn) oBtn.addEventListener('click', function () {
+      api('/api/phase-b-reminder', { method: 'POST', body: JSON.stringify({ action: 'off' }) })
+        .then(function (r) { phaseBState = r.reminder; renderPhaseBPill(); toast('🔕 Phase B 15일 체크 알림을 완전히 OFF(중지)했습니다.'); close(); });
+    });
+    var onBtn = document.getElementById('pbOnBtn');
+    if (onBtn) onBtn.addEventListener('click', function () {
+      api('/api/phase-b-reminder', { method: 'POST', body: JSON.stringify({ action: 'on' }) })
+        .then(function (r) { phaseBState = r.reminder; renderPhaseBPill(); toast('🔔 Phase B 15일 체크 알림을 다시 켰습니다!'); close(); });
+    });
+  }
+
+  function checkPhaseBReminder() {
+    api('/api/phase-b-reminder').then(function (r) {
+      if (r && r.reminder) {
+        phaseBState = r.reminder;
+        renderPhaseBPill();
+        if (phaseBState.enabled && phaseBState.due_now) {
+          openPhaseBPopup(false);
+        }
+      }
+    }).catch(function () {});
+  }
 
   function init(bridge) {
     store.bridge = bridge;
@@ -592,6 +697,7 @@
     });
     switchTab(store.activeTab);
     refreshAll();
+    setTimeout(checkPhaseBReminder, 1200);
   }
 
   window.AgencyApp = {
@@ -624,5 +730,6 @@
     transferToSns: transferToSns,
     transferToProposal: transferToProposal,
     transferToContract: transferToContract,
+    transferToVideo: transferToVideo,
   };
 })();
