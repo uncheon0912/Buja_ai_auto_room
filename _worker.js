@@ -1136,6 +1136,12 @@ function formatDocRow(r) {
       const updated = await env.DB.prepare('select * from deliverables where id = ?').bind(id).first();
       return json({ ok: true, deliverable: updated });
     }
+    if (parts.length === 2 && method === 'DELETE') {
+      const cid = parseInt(url.searchParams.get('client_id') || '0', 10);
+      if (!Number.isFinite(cid) || cid <= 0) return json({ ok: false, error: 'invalid_client_id', message: '삭제할 고객사 ID가 필요합니다.' }, 400);
+      const r = await env.DB.prepare('delete from deliverables where client_id = ?').bind(cid).run();
+      return json({ ok: true, client_id: cid, deleted_count: (r && r.meta && r.meta.changes) || 0 });
+    }
     if (parts.length === 3 && method === 'DELETE') {
       const id = parseInt(parts[2], 10);
       await env.DB.prepare('delete from deliverables where id = ?').bind(id).run();

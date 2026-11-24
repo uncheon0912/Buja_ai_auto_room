@@ -140,11 +140,33 @@
     savingBulk: false,
   };
 
+  var CHANNELS = [
+    { id: '네이버 블로그', icon: '🟢', color: '#4ade80', bg: 'rgba(74,222,128,0.16)', border: '#22c55e', text: '#bbf7d0' },
+    { id: '인스타 릴스',   icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.18)', border: '#a855f7', text: '#e9d5ff' },
+    { id: '유튜브',        icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.18)', border: '#ef4444', text: '#fecaca' },
+    { id: '컨설팅',        icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.18)',  border: '#eab308', text: '#fef08a' },
+    { id: '스레드',        icon: '🧵', color: '#38bdf8', bg: 'rgba(15,23,42,0.22)',    border: 'rgba(148,163,184,0.38)', text: '#e2e8f0' },
+    { id: '기타',          icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: '#64748b', text: '#cbd5e1' },
+  ];
+
+  function channelStyle(ch) {
+    var name = String(ch || '');
+    for (var i = 0; i < CHANNELS.length; i++) {
+      if (CHANNELS[i].id === name) return CHANNELS[i];
+    }
+    if (name.indexOf('블로그') !== -1) return CHANNELS[0];
+    if (name.indexOf('릴스') !== -1) return CHANNELS[1];
+    if (name.indexOf('유튜브') !== -1) return CHANNELS[2];
+    if (name.indexOf('컨설팅') !== -1) return CHANNELS[3];
+    if (name.indexOf('스레드') !== -1) return CHANNELS[4];
+    return CHANNELS[5];
+  }
+
   function statusMeta(status) {
-    if (status === '예약확정' || status === '승인완료') return { cls: 'ok', badge: '✅📅 VIP승인·예약확정', color: '#16a34a' };
-    if (status === '발행완료') return { cls: 'ok', badge: '🚀 발행완료', color: '#0284c7' };
-    if (status === '수정요청') return { cls: 'bad', badge: '✏️ 수정요청', color: '#dc2626' };
-    return { cls: 'warn', badge: '⏳ VIP검수대기', color: '#d97706' };
+    if (status === '예약확정' || status === '승인완료') return { cls: 'ok', badge: '✅ 검수완료·예약확정', short: '✅', color: '#10b981', cardBg: 'rgba(16,185,129,0.22)', cardBorder: '#10b981', textColor: '#a7f3d0', done: false };
+    if (status === '발행완료') return { cls: 'ok', badge: '🏁 발행 완료', short: '🏁', color: '#06b6d4', cardBg: 'rgba(6,182,212,0.16)', cardBorder: '#06b6d4', textColor: '#a5f3fc', done: true };
+    if (status === '수정요청') return { cls: 'bad', badge: '✏️ 수정요청', short: '✏️', color: '#f97316', cardBg: 'rgba(249,115,22,0.22)', cardBorder: '#f97316', textColor: '#fed7aa', done: false };
+    return { cls: 'warn', badge: '⏳ VIP검수대기', short: '', color: '#d97706', cardBg: '', cardBorder: '', textColor: '', done: false };
   }
 
   function clientNameById(cid) {
@@ -239,15 +261,24 @@
             '<span>' + day + '일' + (list.length ? ' <small style="opacity:.65">(' + list.length + ')</small>' : '') + '</span>' +
             '<button type="button" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록" style="border:1px solid rgba(56,189,248,0.4);background:rgba(14,165,233,0.14);color:#7dd3fc;border-radius:6px;width:20px;height:20px;line-height:1;font-size:13px;font-weight:900;cursor:pointer;padding:0">＋</button>' +
           '</div>' +
-          list.slice(0, 3).map(function (it) {
+          list.slice(0, 4).map(function (it) {
             var sm = statusMeta(it.status);
-            var chIcon = it.channel.indexOf('릴스') !== -1 ? '🎬' : (it.channel.indexOf('스레드') !== -1 ? '🧵' : '📝');
+            var cs = channelStyle(it.channel);
             var active = !st.addMode && String(st.selectedId) === String(it.id);
-            return '<button type="button" data-cal-pick="' + it.id + '" style="text-align:left;border:1px solid ' + (active ? '#38bdf8' : 'rgba(148,163,184,0.28)') + ';background:' + (active ? 'rgba(14,165,233,0.22)' : 'rgba(15,23,42,0.15)') + ';border-left:3px solid ' + sm.color + ';border-radius:6px;padding:3px 5px;cursor:pointer;font-size:10.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)" title="' + A.esc('[' + clientNameById(it.client_id) + '] ' + it.title) + '">' +
-              chIcon + ' ' + A.esc(it.title) +
-            '</button>';
+            // 검수완료/발행완료/수정요청은 직관적 상태 색상, 일반 대기 일정은 채널 고유 색상으로 표시!
+            var bgCol = sm.cardBg || cs.bg;
+            var bdCol = active ? '#ffffff' : (sm.cardBorder || cs.border);
+            var txtCol = sm.textColor || cs.text;
+            var leftStripe = cs.color;
+            var strike = sm.done ? 'text-decoration:line-through;opacity:.85;' : '';
+            return '<div style="display:flex;align-items:center;gap:2px;border:1px solid ' + bdCol + ';background:' + bgCol + ';border-left:4px solid ' + leftStripe + ';border-radius:6px;padding:2px 3px 2px 5px;' + (active ? 'box-shadow:0 0 0 1px #38bdf8;' : '') + '">' +
+              '<button type="button" data-cal-pick="' + it.id + '" style="flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:1px 2px;cursor:pointer;font-size:10.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:' + txtCol + ';' + strike + '" title="' + A.esc('[' + clientNameById(it.client_id) + ' · ' + it.channel + ' · ' + it.status + '] ' + it.title) + '">' +
+                (sm.short ? sm.short + ' ' : cs.icon + ' ') + A.esc(it.title) +
+              '</button>' +
+              '<button type="button" data-cal-quickdel="' + it.id + '" title="이 일정 바로 삭제" style="border:0;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;font-size:11px;font-weight:900;padding:0 3px;line-height:1;flex-shrink:0">×</button>' +
+            '</div>';
           }).join('') +
-          (list.length > 3 ? '<div style="font-size:10px;color:var(--muted);text-align:right">+' + (list.length - 3) + '건 더보기</div>' : '') +
+          (list.length > 4 ? '<div style="font-size:10px;color:var(--muted);text-align:right">+' + (list.length - 4) + '건 더보기</div>' : '') +
         '</div>'
       );
     }
@@ -257,22 +288,39 @@
     if (!sel && !filtered.length) st.addMode = true;
     if (!st.newClientId && clients.length) st.newClientId = String(clients[0].id);
     var comp = sel ? checkCompliance(sel.title + '\n' + sel.preview_text) : null;
+    var selectedFilterClient = st.filterClientId ? clients.find(function (c) { return String(c.id) === String(st.filterClientId); }) : null;
 
     return '' +
-      // 직관적인 1줄 4카드 요약 KPI + 쉬운 사용법 안내 주석
+      // 직관적인 1줄 4카드 요약 KPI
       '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px">' +
         '<div class="kpi-card"><div class="k-lbl">전체 등록 콘텐츠</div><div class="k-val">' + filtered.length + '건</div><div class="k-sub">VIP 포털 실시간 연동</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">✅ VIP승인 · 자동예약확정</div><div class="k-val" style="color:#4ade80">' + cntBooked + '건</div><div class="k-sub">고객 승인 시 자동 예약 전환</div></div>' +
+        '<div class="kpi-card"><div class="k-lbl">✅ 검수완료 · 예약확정</div><div class="k-val" style="color:#10b981">' + cntBooked + '건</div><div class="k-sub">민트색 완료 강조 표시</div></div>' +
         '<div class="kpi-card"><div class="k-lbl">⏳ 검수 대기 / ✏️ 수정요청</div><div class="k-val" style="color:#fbbf24">' + cntWait + ' / ' + cntFix + '</div><div class="k-sub">포털 피드백 실시간 반영</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">🚀 발행 완료</div><div class="k-val" style="color:#38bdf8">' + cntDone + '건</div><div class="k-sub">월간 납품 실적 누적</div></div>' +
+        '<div class="kpi-card"><div class="k-lbl">🏁 발행 완료</div><div class="k-val" style="color:#06b6d4">' + cntDone + '건</div><div class="k-sub">청록 완료 표시 누적</div></div>' +
       '</div>' +
 
-      '<div style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.32);border-radius:12px;padding:9px 14px;margin-bottom:12px;font-size:12px;line-height:1.55;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
-        '<span>💡 <b>초간단 캘린더 등록 방법:</b> ① 달력 날짜의 <b style="color:#38bdf8">[＋]</b> 버튼을 눌러 1건씩 바로 등록하거나, ② 상단 <b>[🏭 AI 10편 공장]</b>에서 10편을 한꺼번에 등록하세요! 저장된 콘텐츠는 고객 VIP 포털에 자동 노출되며, 고객 승인 시 자동으로 <b>[예약확정]</b>으로 바뀝니다.</span>' +
-        '<button type="button" class="ws-btn sm primary" id="calOpenAddBtn">➕ 새 일정 바로 등록</button>' +
+      // 직관적 채널·상태 색상 범례 & 쉬운 사용법 주석
+      '<div style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.32);border-radius:12px;padding:9px 14px;margin-bottom:12px;font-size:11.8px;line-height:1.6;color:var(--ink)">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<span>💡 <b>등록법:</b> 달력 날짜의 <b style="color:#38bdf8">[＋]</b>로 1건씩 바로 추가하거나 <b>[🏭 AI 10편 공장]</b>에서 일괄 등록 · 일정 우측 <b>[×]</b>로 즉시 삭제!</span>' +
+          '<button type="button" class="ws-btn sm primary" id="calOpenAddBtn">➕ 새 일정 바로 등록</button>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(148,163,184,0.28);font-size:11.2px">' +
+          '<span><b>채널색:</b></span>' +
+          '<span style="color:#4ade80;font-weight:800">● 네이버(연두)</span>' +
+          '<span style="color:#c084fc;font-weight:800">● 릴스(보라)</span>' +
+          '<span style="color:#f87171;font-weight:800">● 유튜브(빨강)</span>' +
+          '<span style="color:#facc15;font-weight:800">● 컨설팅(노랑)</span>' +
+          '<span style="color:#38bdf8;font-weight:800">● 스레드</span>' +
+          '<span style="color:#94a3b8;font-weight:800">● 기타</span>' +
+          '<span style="margin-left:6px"><b>| 상태색:</b></span>' +
+          '<span style="background:rgba(16,185,129,0.22);border:1px solid #10b981;color:#a7f3d0;padding:0 6px;border-radius:6px;font-weight:800">✅ 검수·예약완료</span>' +
+          '<span style="background:rgba(6,182,212,0.18);border:1px solid #06b6d4;color:#a5f3fc;padding:0 6px;border-radius:6px;font-weight:800">🏁 발행완료</span>' +
+          '<span style="background:rgba(249,115,22,0.22);border:1px solid #f97316;color:#fed7aa;padding:0 6px;border-radius:6px;font-weight:800">✏️ 수정요청</span>' +
+        '</div>' +
       '</div>' +
 
-      '<div class="ws-split" style="grid-template-columns:minmax(0,1.3fr) minmax(350px,0.95fr)">' +
+      '<div class="ws-split" style="grid-template-columns:minmax(0,1.3fr) minmax(350px,0.95fr);align-items:start">' +
         '<div class="ws-card" style="padding:14px">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
             '<div class="ws-actions">' +
@@ -286,9 +334,10 @@
                 '<option value="">전체 고객사</option>' +
                 clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.filterClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + '</option>'; }).join('') +
               '</select>' +
+              (selectedFilterClient ? '<button type="button" class="ws-btn sm danger" id="calBulkDelClientBtn" title="선택한 고객사의 모든 일정을 일괄 삭제">🗑️ [' + A.esc(selectedFilterClient.name) + '] 전체 삭제 (' + filtered.length + '건)</button>' : '') +
               '<select id="calFilterCh" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
                 '<option value="">전체 채널</option>' +
-                ['네이버 블로그', '인스타 릴스', '스레드'].map(function (ch) { return '<option value="' + ch + '"' + (st.filterChannel === ch ? ' selected' : '') + '>' + ch + '</option>'; }).join('') +
+                CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.filterChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
               '</select>' +
             '</div>' +
           '</div>' +
@@ -298,8 +347,8 @@
           '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">' + cells.join('') + '</div>' +
         '</div>' +
 
-        // 오른쪽: [새 일정 간편 등록] 또는 [선택 일정 검수 · 예약 · 심의]
-        '<div class="ws-card" style="padding:14px">' +
+        // 오른쪽: sticky 고정으로 달력 아래 날짜를 클릭해도 스크롤 이동 없이 제자리에서 바로 확인!
+        '<div class="ws-card" style="padding:14px;position:sticky;top:10px">' +
           (st.addMode ? (
             '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
               '<h3 style="margin:0;font-size:14.5px;color:#38bdf8">➕ 새 콘텐츠 일정 바로 등록</h3>' +
@@ -310,7 +359,7 @@
             '</div>' +
             '<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">' +
               '① 아래 4칸만 채우고 <b>[달력·VIP 포털에 등록]</b>을 누르세요.<br>' +
-              '② 등록 즉시 달력 날짜 칸에 카드가 표시되고, 의료법·금소법 심의도 자동 점검됩니다.' +
+              '② 채널에 따라 달력에 <b>연두(네이버)·보라(릴스)·빨강(유튜브)·노랑(컨설팅)</b> 색상으로 자동 분류됩니다.' +
             '</div>' +
             '<div class="ws-grid-2">' +
               '<div class="ws-field"><label>1. 고객사 선택 *</label><select id="calNewClient">' +
@@ -321,13 +370,13 @@
               '<div class="ws-field"><label>2. 발행 예정일 *</label><input type="date" id="calNewDate" value="' + A.esc(st.newDate || A.todayKst()) + '"></div>' +
             '</div>' +
             '<div class="ws-grid-2" style="margin-top:8px">' +
-              '<div class="ws-field"><label>3. 발행 채널</label><select id="calNewCh">' +
-                ['네이버 블로그', '인스타 릴스', '스레드'].map(function (ch) { return '<option value="' + ch + '"' + (st.newChannel === ch ? ' selected' : '') + '>' + ch + '</option>'; }).join('') +
+              '<div class="ws-field"><label>3. 발행 채널 (색상 자동지정)</label><select id="calNewCh">' +
+                CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.newChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
               '</select></div>' +
-              '<div class="ws-field"><label>등록 상태</label><select id="calNewStatus"><option value="검수대기">⏳ VIP 포털 고객 검수 요청</option><option value="예약확정">📅 바로 예약 확정</option></select></div>' +
+              '<div class="ws-field"><label>등록 상태</label><select id="calNewStatus"><option value="검수대기">⏳ VIP 포털 고객 검수 요청</option><option value="예약확정">✅ 바로 예약 확정</option><option value="발행완료">🏁 발행 완료</option></select></div>' +
             '</div>' +
-            '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 12월 무료 건강검진 필수 체크리스트 5가지"></div>' +
-            '<div class="ws-field" style="margin-top:8px"><label>초안 내용 · 3초 후킹 대본 · 해시태그</label><textarea id="calNewBody" style="min-height:130px" placeholder="블로그 핵심 요약이나 릴스 대본을 입력하세요 (비워두고 제목만 먼저 일정 잡아도 됩니다)">' + A.esc(st.newBody) + '</textarea></div>' +
+            '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 12월 유튜브 쇼츠 / 원장님 컨설팅 미팅 / 블로그 포스팅"></div>' +
+            '<div class="ws-field" style="margin-top:8px"><label>초안 내용 · 대본 · 메모</label><textarea id="calNewBody" style="min-height:130px" placeholder="블로그 핵심 요약, 릴스/유튜브 대본, 또는 컨설팅 안건을 입력하세요">' + A.esc(st.newBody) + '</textarea></div>' +
             '<div class="ws-actions" style="margin-top:10px">' +
               '<button type="button" class="ws-btn primary" id="calSubmitNewBtn">💾 달력 · VIP 포털에 일정 등록</button>' +
               '<button type="button" class="ws-btn ok" data-ch-tab="factory">🏭 10편 한꺼번에 자동 생성하기</button>' +
@@ -344,7 +393,7 @@
               '</div>' +
               '<div class="ws-grid-2">' +
                 '<div class="ws-field"><label>발행 채널</label><select id="calEditCh">' +
-                  ['네이버 블로그', '인스타 릴스', '스레드'].map(function (ch) { return '<option value="' + ch + '"' + (sel.channel === ch ? ' selected' : '') + '>' + ch + '</option>'; }).join('') +
+                  CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (sel.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
                 '</select></div>' +
                 '<div class="ws-field"><label>예약 발행일</label><input type="date" id="calEditDate" value="' + A.esc(sel.scheduled_date || '') + '"></div>' +
               '</div>' +
@@ -363,11 +412,11 @@
 
               '<div class="ws-actions" style="margin-top:10px">' +
                 '<button type="button" class="ws-btn sm primary" id="calSaveEdit">💾 수정 저장</button>' +
-                '<button type="button" class="ws-btn sm ok" id="calSetBooked">📅 예약 확정</button>' +
-                '<button type="button" class="ws-btn sm accent" id="calSetPublished">🚀 원클릭 발행 완료</button>' +
+                '<button type="button" class="ws-btn sm ok" id="calSetBooked">✅ 검수·예약 확정</button>' +
+                '<button type="button" class="ws-btn sm accent" id="calSetPublished">🏁 발행 완료</button>' +
                 '<button type="button" class="ws-btn sm" id="calCopyText">📋 본문 복사</button>' +
-                (sel.channel.indexOf('릴스') !== -1 ? '<button type="button" class="ws-btn sm" id="calSendVideo">🎬 영상 편집기로 보내기</button>' : '') +
-                '<button type="button" class="ws-btn sm bad" id="calDeleteItem">🗑️ 삭제</button>' +
+                (sel.channel.indexOf('릴스') !== -1 || sel.channel.indexOf('유튜브') !== -1 ? '<button type="button" class="ws-btn sm" id="calSendVideo">🎬 영상 편집기로 보내기</button>' : '') +
+                '<button type="button" class="ws-btn sm danger" id="calDeleteItem">🗑️ 이 일정 삭제</button>' +
               '</div>'
             ) : '')
           )) +
@@ -437,9 +486,12 @@
   function render() {
     var root = document.getElementById('pane-content');
     if (!root) return;
+    // 클릭 시 스크롤이 맨 위로 튀지 않도록 기존 스크롤 위치 보존!
+    var prevScrollEl = document.getElementById('contentHubScroll');
+    var savedScrollTop = prevScrollEl ? prevScrollEl.scrollTop : 0;
 
     root.innerHTML =
-      '<div style="padding:14px;overflow-y:auto;height:100%">' +
+      '<div id="contentHubScroll" style="padding:14px;overflow-y:auto;height:100%">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">' +
           '<div class="ws-actions">' +
             '<button type="button" class="ws-btn ' + (st.subTab === 'calendar' ? 'primary' : '') + '" data-ch-tab="calendar">📅 월간 콘텐츠 캘린더 · 원클릭 예약 (Phase A-2)</button>' +
@@ -451,6 +503,8 @@
       '</div>';
 
     bindEvents(root);
+    var newScrollEl = document.getElementById('contentHubScroll');
+    if (newScrollEl && savedScrollTop > 0) newScrollEl.scrollTop = savedScrollTop;
   }
 
   function bindEvents(root) {
@@ -478,6 +532,40 @@
         st.selectedId = parseInt(b.getAttribute('data-cal-pick'), 10);
         render();
       });
+    });
+
+    // 달력 카드 우측 '×' 개별 일정 즉시 삭제
+    Array.prototype.forEach.call(root.querySelectorAll('[data-cal-quickdel]'), function (b) {
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var id = parseInt(b.getAttribute('data-cal-quickdel'), 10);
+        if (!confirm('이 일정을 달력에서 바로 삭제할까요?')) return;
+        A.api('/api/deliverables/' + id, { method: 'DELETE' })
+          .then(function () {
+            if (String(st.selectedId) === String(id)) st.selectedId = null;
+            A.toast('🗑️ 일정을 삭제했습니다.');
+            return loadDeliverables();
+          }).catch(function (e) { A.toast('삭제 실패: ' + e.message, 'error'); });
+      });
+    });
+
+    // 선택한 고객사 일정 전체 삭제 버튼
+    var bulkDelClientBtn = q('#calBulkDelClientBtn');
+    if (bulkDelClientBtn) bulkDelClientBtn.addEventListener('click', function () {
+      var cid = parseInt(st.filterClientId, 10);
+      if (!cid) return;
+      var cname = clientNameById(cid);
+      if (!confirm('[' + cname + '] 고객사의 캘린더 일정을 전부 삭제할까요? (복구 불가)')) return;
+      bulkDelClientBtn.disabled = true;
+      A.api('/api/deliverables?client_id=' + cid, { method: 'DELETE' })
+        .then(function (r) {
+          st.selectedId = null;
+          A.toast('🗑️ [' + cname + '] 일정 ' + ((r && r.deleted_count) || '') + '건을 모두 삭제했습니다.');
+          return loadDeliverables();
+        }).catch(function (e) {
+          bulkDelClientBtn.disabled = false;
+          A.toast('일괄 삭제 실패: ' + e.message, 'error');
+        });
     });
 
     // 날짜 칸 '+' 클릭 또는 '새 일정 바로 등록' 클릭 시 직관적 등록 폼 열기
