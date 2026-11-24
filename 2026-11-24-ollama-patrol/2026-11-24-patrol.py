@@ -25,10 +25,10 @@ LOCAL_SQUAD = [
         'role_prompt': (
             '너는 마케팅 대행사 미담공장(껌씹는 AI 일진방)의 실무 즉답 팀장 "올라고 개거품"이다.\n'
             '[절대 규칙]\n'
-            '1. 사용자의 지시 문장을 그대로 따라 쓰거나 복창하지 마라.\n'
-            '2. "알겠습니다" 같은 빈말로 끝내지 말고, 지금 당장 복사해서 촬영·발행·실행할 수 있는 **완성된 실전 결과물**을 100% 구체적으로 써내라.\n'
-            '3. 릴스·숏폼 대본을 요청받으면 반드시 ① 3초 후킹(화면 연출+나레이션+자막) ② 본론 전개(초 단위 장면+대사) ③ 강력 CTA ④ 추천 해시태그 8~10개를 모두 채워서 완성본으로 작성하라.\n'
-            '4. 반드시 자연스러운 한국어만 사용하고, 중국어·영어·인도네시아어나 모델명은 절대 섞지 마라.'
+            '1. 오직 순수 한국어(한글)만 사용하라. 중국어·한자·영어 문장은 단 한 글자도 절대 쓰지 마라.\n'
+            '2. 사용자의 지시 문장을 그대로 따라 쓰거나 복창하지 마라.\n'
+            '3. 일반 질문·상황 문의(예: 왜 안 돼?, 몇 건이야?)에는 핵심 이유와 해결 방법만 깔끔하게 3~5줄로 답하라. (대본 요청이 아닌데 릴스 대본 형식으로 쓰지 마라!)\n'
+            '4. 릴스·블로그 대본이나 기획안 작성 요청일 때만 지금 당장 복사해 쓸 수 있는 완성본(훅·구성·CTA·해시태그)을 구체적으로 작성하라.'
         ),
         'direct_re': r'올라고|개거품|올라마|ollama|큐웬|qwen',
         'topic_re': r'요약|정리|빠르게|즉답|보고|출석|점호|알림',
@@ -139,13 +139,21 @@ def call_ollama(model, prompt, num_predict=1100, temperature=0.5, timeout=180, s
     return txt
 
 
+def has_cjk_chinese(text):
+    """중국어·한자(CJK 통합 한자)가 2글자 이상 섞이면 즉시 감지하여 원천 차단"""
+    if not text:
+        return False
+    return len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf]', text)) >= 2
+
+
 def is_parrot_or_weak(user_content, answer):
-    """명령어 복창(앵무새) 또는 너무 빈약한 2~3줄 응답 감지"""
-    if not answer or len(answer) < 90:
+    """명령어 복창(앵무새), 중국어 혼입, 또는 너무 빈약한 응답 감지"""
+    if not answer or len(answer) < 40:
+        return True
+    if has_cjk_chinese(answer):
         return True
     norm_u = re.sub(r'\s+', '', user_content or '')
     norm_a = re.sub(r'\s+', '', answer or '')
-    # 명령 문장이 거의 그대로 들어있고 추가 살이 거의 없는 경우
     if len(norm_u) >= 12 and norm_u[:20] in norm_a and len(norm_a) < len(norm_u) * 2.2:
         return True
     return False
@@ -256,7 +264,9 @@ def run():
             )
             use_model = resolve_model(chosen['model'], installed_models, default_model)
             line = call_ollama(use_model, s_prompt, num_predict=90, temperature=0.85, timeout=60).strip('"\'')
-            if line:
+            if has_cjk_chinese(line):
+                line = call_ollama(resolve_model('exaone3.5:7.8b', installed_models, default_model), s_prompt, num_predict=90, temperature=0.8, timeout=60).strip('"\'')
+            if line and not has_cjk_chinese(line):
                 request(base + '/api/secret-room', {'who': chosen['secret_who'], 'text': line[:180], 'auto': True}, headers=headers, timeout=10)
                 log(f'시크릿방 자동 수다 남김 [{chosen["sender"]} / {use_model}]: {line[:40]}')
     except Exception:
@@ -400,18 +410,22 @@ def run():
                     )
                     try:
                         answer = call_ollama(use_model, user_prompt, num_predict=1100, temperature=0.55, timeout=180, system_prompt=system_prompt)
-                        # 앵무새 복창 또는 빈약한 응답이면 EXAONE 3.5 한국어 최강 엔진으로 자동 1회 보강 재생성!
+                        # 중국어(한자) 혼입 또는 앵무새 복창/빈약 응답 감지 시 즉시 폐기하고 EXAONE 3.5 한국어 최강 엔진으로 100% 한글 재생성!
                         if is_parrot_or_weak(content, answer):
+                            reason = '중국어/한자 혼입 차단' if has_cjk_chinese(answer) else '약한/복창 응답 보강'
                             retry_model = resolve_model('exaone3.5:7.8b', installed_models, use_model)
-                            log(f'방({room_slug}) [{member["sender"]}] 약한 응답 감지 → {retry_model} 로 고품질 재생성')
+                            log(f'방({room_slug}) [{member["sender"]}] {reason} → {retry_model} 로 순수 한국어 재생성')
                             answer = call_ollama(
                                 retry_model,
-                                user_prompt + '\n(주의: 절대로 요청 문장을 요약/복창하지 말고, 완성된 실제 대본·기획·CTA·해시태그 본문을 최소 350자 이상 구체적으로 작성하라!)',
-                                num_predict=1200,
-                                temperature=0.6,
+                                user_prompt + '\n(절대 주의: 중국어·한자는 단 1글자도 쓰지 말고 100% 자연스러운 순수 한글로만, 질문 의도에 정확히 맞춰 답변하라!)',
+                                num_predict=1100,
+                                temperature=0.45,
                                 timeout=180,
                                 system_prompt=system_prompt,
                             )
+                            # 혹시 그래도 한자가 남았으면 잔여 한자 문자 제거
+                            if has_cjk_chinese(answer):
+                                answer = re.sub(r'[\u4e00-\u9fff\u3400-\u4dbf]+', '', answer).strip()
                         answer = save_memory_notes(member['id'], member['sender'], mem_file, answer)
                         if not answer:
                             log(f'방({room_slug}) [{member["sender"]}/{use_model}] 빈 응답 스킵 #{mid}')
