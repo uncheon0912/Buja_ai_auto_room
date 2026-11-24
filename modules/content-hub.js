@@ -124,6 +124,8 @@
     filterChannel: '',
     items: [],
     selectedId: null,
+    modalDate: null,
+    modalAdding: false,
     addMode: false,
     newDate: A.todayKst(),
     newClientId: '',
@@ -256,9 +258,9 @@
       var list = byDate[ymd] || [];
       var isToday = ymd === todayStr;
       cells.push(
-        '<div style="min-height:94px;background:' + (isToday ? 'rgba(14,165,233,0.1)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (isToday ? '#38bdf8' : 'var(--line)') + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px">' +
+        '<div data-cal-daybox="' + ymd + '" style="min-height:94px;background:' + (isToday ? 'rgba(14,165,233,0.1)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (isToday ? '#38bdf8' : 'var(--line)') + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;cursor:pointer" title="클릭하면 ' + ymd + ' 상세 스케줄 팝업이 크게 열립니다">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:800;color:' + (isToday ? '#38bdf8' : 'var(--ink)') + '">' +
-            '<span>' + day + '일' + (list.length ? ' <small style="opacity:.65">(' + list.length + ')</small>' : '') + '</span>' +
+            '<button type="button" data-cal-open-day="' + ymd + '" style="border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:3px" title="날짜 크게 보기 팝업">' + day + '일' + (list.length ? ' <small style="opacity:.75;color:#7dd3fc">(' + list.length + '건 🔎)</small>' : '') + '</button>' +
             '<button type="button" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록" style="border:1px solid rgba(56,189,248,0.4);background:rgba(14,165,233,0.14);color:#7dd3fc;border-radius:6px;width:20px;height:20px;line-height:1;font-size:13px;font-weight:900;cursor:pointer;padding:0">＋</button>' +
           '</div>' +
           list.slice(0, 4).map(function (it) {
@@ -483,6 +485,103 @@
       ));
   }
 
+  // 📅 날짜 클릭 시 크게 펼쳐지는 상세 스케줄 팝업 모달 (조회 · 수정 · 상태전환 · 삭제 · 바로추가)
+  function renderDayPopupHtml() {
+    if (!st.modalDate) return '';
+    var ymd = st.modalDate;
+    var clients = A.store.clients || [];
+    var dayItems = st.items.filter(function (it) {
+      if (String(it.scheduled_date || '').slice(0, 10) !== ymd) return false;
+      if (st.filterClientId && String(it.client_id) !== String(st.filterClientId)) return false;
+      if (st.filterChannel && it.channel !== st.filterChannel) return false;
+      return true;
+    });
+    if (!st.newClientId && clients.length) st.newClientId = String(clients[0].id);
+
+    return '<div id="calDayModalBg" style="position:fixed;inset:0;z-index:9990;background:rgba(2,6,23,0.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px">' +
+      '<div style="width:100%;max-width:860px;max-height:88dvh;display:flex;flex-direction:column;background:#0f172a;color:#f8fafc;border:1.5px solid rgba(56,189,248,0.48);border-radius:20px;box-shadow:0 28px 70px rgba(0,0,0,0.65);overflow:hidden">' +
+        // 팝업 상단바
+        '<div style="padding:14px 18px;background:rgba(14,165,233,0.14);border-bottom:1px solid rgba(56,189,248,0.28);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<h3 style="margin:0;font-size:16.5px;color:#7dd3fc">📅 ' + A.esc(ymd) + ' 상세 스케줄</h3>' +
+            '<span class="tag-pill ok">총 ' + dayItems.length + '건</span>' +
+          '</div>' +
+          '<div class="ws-actions">' +
+            '<button type="button" class="ws-btn sm primary" id="dmToggleAddBtn">' + (st.modalAdding ? '✖ 입력 닫기' : '＋ 이 날짜에 새 일정 추가') + '</button>' +
+            '<button type="button" class="ws-btn sm" id="dmCloseBtn">닫기 (ESC)</button>' +
+          '</div>' +
+        '</div>' +
+
+        // 팝업 스크롤 본문
+        '<div style="padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px">' +
+          // 팝업 내 새 일정 바로 추가 폼
+          (st.modalAdding ? (
+            '<div style="padding:14px;border-radius:14px;background:rgba(14,165,233,0.09);border:1.5px dashed rgba(56,189,248,0.48)">' +
+              '<div style="font-weight:800;font-size:13.5px;color:#38bdf8;margin-bottom:8px">➕ ' + A.esc(ymd) + ' 새 스케줄 바로 추가</div>' +
+              '<div class="ws-grid-3">' +
+                '<div class="ws-field"><label>고객사 *</label><select id="dmNewClient">' +
+                  (clients.length
+                    ? clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.newClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + '</option>'; }).join('')
+                    : '<option value="">고객사 없음</option>') +
+                '</select></div>' +
+                '<div class="ws-field"><label>채널</label><select id="dmNewCh">' +
+                  CHANNELS.map(function (ch) { return '<option value="' + ch.id + '">' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+                '</select></div>' +
+                '<div class="ws-field"><label>상태</label><select id="dmNewStatus"><option value="검수대기">⏳ VIP검수대기</option><option value="예약확정">✅ 검수·예약확정</option><option value="발행완료">🏁 발행완료</option></select></div>' +
+              '</div>' +
+              '<div class="ws-field" style="margin-top:8px"><label>제목 *</label><input id="dmNewTitle" placeholder="예: 12월 유튜브 쇼츠 / 블로그 포스팅 / 원장님 컨설팅"></div>' +
+              '<div class="ws-field" style="margin-top:8px"><label>내용 · 대본 · 메모</label><textarea id="dmNewBody" style="min-height:86px" placeholder="세부 원고·대본 또는 컨설팅 안건을 입력하세요"></textarea></div>' +
+              '<div class="ws-actions" style="margin-top:8px"><button type="button" class="ws-btn sm primary" id="dmCreateBtn">💾 이 날짜에 바로 저장</button></div>' +
+            '</div>'
+          ) : '') +
+
+          // 해당 날짜 스케줄 카드 목록 (바로 인라인 편집 가능!)
+          (dayItems.length ? dayItems.map(function (it) {
+            var sm = statusMeta(it.status);
+            var cs = channelStyle(it.channel);
+            var cp = checkCompliance(it.title + '\n' + it.preview_text);
+            return '<div data-dm-card="' + it.id + '" style="padding:14px;border-radius:14px;background:rgba(30,41,59,0.88);border:1px solid ' + (sm.cardBorder || cs.border) + ';border-left:5px solid ' + cs.color + '">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
+                '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">' +
+                  '<span style="padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:' + cs.bg + ';color:' + cs.text + ';border:1px solid ' + cs.border + '">' + cs.icon + ' ' + A.esc(it.channel) + '</span>' +
+                  '<span class="tag-pill ' + sm.cls + '">' + sm.badge + '</span>' +
+                  '<span style="font-size:12px;color:#cbd5e1">업체: <b>' + A.esc(clientNameById(it.client_id)) + '</b></span>' +
+                '</div>' +
+                '<span style="font-size:11px;font-weight:800;color:' + (cp.safe ? '#4ade80' : '#fca5a5') + '">' + cp.label + '</span>' +
+              '</div>' +
+              '<div class="ws-grid-3">' +
+                '<div class="ws-field"><label>채널 변경</label><select data-dm-f="channel">' +
+                  CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (it.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+                '</select></div>' +
+                '<div class="ws-field"><label>날짜 이동</label><input type="date" data-dm-f="scheduled_date" value="' + A.esc(it.scheduled_date || ymd) + '"></div>' +
+                '<div class="ws-field"><label>상태 변경</label><select data-dm-f="status">' +
+                  [['검수대기', '⏳ VIP검수대기'], ['예약확정', '✅ 검수완료·예약확정'], ['발행완료', '🏁 발행 완료'], ['수정요청', '✏️ 수정요청']].map(function (o) {
+                    return '<option value="' + o[0] + '"' + ((it.status === o[0] || (it.status === '승인완료' && o[0] === '예약확정')) ? ' selected' : '') + '>' + o[1] + '</option>';
+                  }).join('') +
+                '</select></div>' +
+              '</div>' +
+              '<div class="ws-field" style="margin-top:8px"><label>콘텐츠 제목</label><input data-dm-f="title" value="' + A.esc(it.title) + '"></div>' +
+              '<div class="ws-field" style="margin-top:8px"><label>원고 · 대본 · 메모</label><textarea data-dm-f="preview_text" style="min-height:110px">' + A.esc(it.preview_text || '') + '</textarea></div>' +
+              (it.client_feedback ? '<div style="margin-top:8px;padding:7px 10px;border-radius:8px;background:rgba(245,158,11,0.14);font-size:12px;color:#fde68a">💬 고객 피드백: ' + A.esc(it.client_feedback) + '</div>' : '') +
+              '<div class="ws-actions" style="margin-top:10px">' +
+                '<button type="button" class="ws-btn sm primary" data-dm-save="' + it.id + '">💾 수정 저장</button>' +
+                '<button type="button" class="ws-btn sm ok" data-dm-quick="' + it.id + ':예약확정">✅ 검수·예약 확정</button>' +
+                '<button type="button" class="ws-btn sm accent" data-dm-quick="' + it.id + ':발행완료">🏁 발행 완료</button>' +
+                '<button type="button" class="ws-btn sm" data-dm-copy="' + it.id + '">📋 복사</button>' +
+                '<button type="button" class="ws-btn sm danger" data-dm-del="' + it.id + '">🗑️ 삭제</button>' +
+              '</div>' +
+            '</div>';
+          }).join('') : (
+            '<div style="text-align:center;padding:34px 16px;color:#94a3b8;font-size:13px">' +
+              '이 날짜(' + A.esc(ymd) + ')에 등록된 스케줄이 아직 없습니다.<br>' +
+              '위 <b>[＋ 이 날짜에 새 일정 추가]</b> 버튼을 눌러 바로 일정을 추가해 보세요!' +
+            '</div>'
+          )) +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function render() {
     var root = document.getElementById('pane-content');
     if (!root) return;
@@ -497,10 +596,11 @@
             '<button type="button" class="ws-btn ' + (st.subTab === 'calendar' ? 'primary' : '') + '" data-ch-tab="calendar">📅 월간 콘텐츠 캘린더 · 원클릭 예약 (Phase A-2)</button>' +
             '<button type="button" class="ws-btn ' + (st.subTab === 'factory' ? 'primary' : '') + '" data-ch-tab="factory">🏭 AI 업종별 3초 후킹 10편 공장 (Phase A-3)</button>' +
           '</div>' +
-          '<span style="font-size:11.8px;color:var(--muted)">💡 고객 VIP 포털에서 <b>✅ 발행 승인</b> 클릭 시 캘린더에 <b>자동 예약 확정</b>으로 즉시 반영됩니다.</span>' +
+          '<span style="font-size:11.8px;color:var(--muted)">💡 날짜를 클릭하면 <b>크게 보는 상세 팝업</b>이 열리고, 팝업 안에서 바로 수정·완료 처리할 수 있습니다.</span>' +
         '</div>' +
         (st.subTab === 'calendar' ? renderCalendar(root) : renderFactory()) +
-      '</div>';
+      '</div>' +
+      renderDayPopupHtml();
 
     bindEvents(root);
     var newScrollEl = document.getElementById('contentHubScroll');
@@ -526,8 +626,108 @@
     if (fc) fc.addEventListener('change', function () { st.filterClientId = fc.value; render(); });
     if (fch) fch.addEventListener('change', function () { st.filterChannel = fch.value; render(); });
 
+    // 날짜 숫자 또는 날짜 칸 빈 곳 클릭 시 상세 확대 팝업 열기
+    function openDayModal(ymd, withAdd) {
+      st.modalDate = ymd;
+      st.modalAdding = !!withAdd;
+      render();
+    }
+    Array.prototype.forEach.call(root.querySelectorAll('[data-cal-open-day]'), function (b) {
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        openDayModal(b.getAttribute('data-cal-open-day'), false);
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-cal-daybox]'), function (box) {
+      box.addEventListener('click', function (ev) {
+        if (ev.target.closest('button')) return;
+        openDayModal(box.getAttribute('data-cal-daybox'), false);
+      });
+    });
+
+    // 날짜 상세 팝업 모달 내부 이벤트 바인딩
+    var dmBg = q('#calDayModalBg');
+    if (dmBg) {
+      var closeDm = function () { st.modalDate = null; st.modalAdding = false; render(); };
+      dmBg.addEventListener('click', function (ev) { if (ev.target === dmBg) closeDm(); });
+      var dmClose = q('#dmCloseBtn');
+      if (dmClose) dmClose.addEventListener('click', closeDm);
+      var dmTogAdd = q('#dmToggleAddBtn');
+      if (dmTogAdd) dmTogAdd.addEventListener('click', function () { st.modalAdding = !st.modalAdding; render(); });
+
+      var dmCreate = q('#dmCreateBtn');
+      if (dmCreate) dmCreate.addEventListener('click', function () {
+        var cid = parseInt((q('#dmNewClient') && q('#dmNewClient').value) || '0', 10);
+        var title = (q('#dmNewTitle') && q('#dmNewTitle').value || '').trim();
+        var ch = (q('#dmNewCh') && q('#dmNewCh').value) || '네이버 블로그';
+        var body = (q('#dmNewBody') && q('#dmNewBody').value || '').trim();
+        var initSt = (q('#dmNewStatus') && q('#dmNewStatus').value) || '검수대기';
+        if (!cid) { A.toast('⚠️ 고객사를 선택해 주세요.', 'error'); return; }
+        if (!title) { A.toast('⚠️ 제목을 입력해 주세요.', 'error'); return; }
+        dmCreate.disabled = true;
+        A.api('/api/deliverables', {
+          method: 'POST',
+          body: JSON.stringify({ client_id: cid, channel: ch, title: title, preview_text: body, scheduled_date: st.modalDate, status: initSt }),
+        }).then(function () {
+          st.modalAdding = false;
+          A.toast('✅ ' + st.modalDate + ' 일정이 추가되었습니다!');
+          return loadDeliverables();
+        }).catch(function (e) { dmCreate.disabled = false; A.toast('저장 실패: ' + e.message, 'error'); });
+      });
+
+      function readModalCard(id) {
+        var card = dmBg.querySelector('[data-dm-card="' + id + '"]');
+        if (!card) return null;
+        return {
+          channel: card.querySelector('[data-dm-f="channel"]').value,
+          scheduled_date: card.querySelector('[data-dm-f="scheduled_date"]').value,
+          status: card.querySelector('[data-dm-f="status"]').value,
+          title: card.querySelector('[data-dm-f="title"]').value.trim(),
+          preview_text: card.querySelector('[data-dm-f="preview_text"]').value,
+        };
+      }
+      Array.prototype.forEach.call(dmBg.querySelectorAll('[data-dm-save]'), function (b) {
+        b.addEventListener('click', function () {
+          var id = parseInt(b.getAttribute('data-dm-save'), 10);
+          var payload = readModalCard(id);
+          if (!payload || !payload.title) { A.toast('⚠️ 제목을 입력하세요.', 'error'); return; }
+          A.api('/api/deliverables/' + id, { method: 'PATCH', body: JSON.stringify(payload) })
+            .then(function () { A.toast('✅ 수정 저장 완료!'); return loadDeliverables(); })
+            .catch(function (e) { A.toast('저장 실패: ' + e.message, 'error'); });
+        });
+      });
+      Array.prototype.forEach.call(dmBg.querySelectorAll('[data-dm-quick]'), function (b) {
+        b.addEventListener('click', function () {
+          var sp = b.getAttribute('data-dm-quick').split(':');
+          var id = parseInt(sp[0], 10);
+          var nextSt = sp[1];
+          var payload = readModalCard(id) || {};
+          payload.status = nextSt;
+          A.api('/api/deliverables/' + id, { method: 'PATCH', body: JSON.stringify(payload) })
+            .then(function () { A.toast('✅ 상태가 [' + nextSt + '](으)로 변경되었습니다!'); return loadDeliverables(); })
+            .catch(function (e) { A.toast('변경 실패: ' + e.message, 'error'); });
+        });
+      });
+      Array.prototype.forEach.call(dmBg.querySelectorAll('[data-dm-copy]'), function (b) {
+        b.addEventListener('click', function () {
+          var payload = readModalCard(parseInt(b.getAttribute('data-dm-copy'), 10));
+          if (!payload) return;
+          navigator.clipboard.writeText(payload.title + '\n\n' + payload.preview_text).then(function () { A.toast('📋 제목+내용 복사 완료!'); });
+        });
+      });
+      Array.prototype.forEach.call(dmBg.querySelectorAll('[data-dm-del]'), function (b) {
+        b.addEventListener('click', function () {
+          var id = parseInt(b.getAttribute('data-dm-del'), 10);
+          if (!confirm('이 일정을 삭제할까요?')) return;
+          A.api('/api/deliverables/' + id, { method: 'DELETE' })
+            .then(function () { A.toast('🗑️ 삭제 완료'); return loadDeliverables(); });
+        });
+      });
+    }
+
     Array.prototype.forEach.call(root.querySelectorAll('[data-cal-pick]'), function (b) {
-      b.addEventListener('click', function () {
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
         st.addMode = false;
         st.selectedId = parseInt(b.getAttribute('data-cal-pick'), 10);
         render();
@@ -897,6 +1097,14 @@
     st.subTab = 'factory';
     render();
     A.toast('🎬 AI 종합반 최종안 컨펌 완료! 10편 공장에 ' + updatedCnt + '편이 자동 재입력되었습니다.');
+  });
+
+  window.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && st.modalDate) {
+      st.modalDate = null;
+      st.modalAdding = false;
+      render();
+    }
   });
 
   A.on('data-refreshed', function () { loadDeliverables(); });
