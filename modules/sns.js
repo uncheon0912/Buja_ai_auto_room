@@ -150,9 +150,11 @@
       '</table>' +
       '<div class="clause-body">' + A.esc(form.reelsComment) + '</div>' +
 
-      '<div class="sec-title">4. 퍼널 유입 · DB 전환 성과</div>' +
+      '<div class="sec-title">4. 퍼널 유입 · DB 전환 및 매출 성과</div>' +
       '<table>' +
         '<tr><th>랜딩 · 상담 유입</th><td class="num">' + Number(form.funnelVisits || 0).toLocaleString() + '명</td><th>수집 DB 건수</th><td class="num"><b>' + Number(form.funnelDb || 0).toLocaleString() + '건</b></td><th>DB 전환율</th><td class="num"><b>' + calcConvRate() + '</b></td></tr>' +
+        '<tr><th>월 마케팅 투입비</th><td class="num"><b>' + A.won(kpi.budget) + '</b></td><th>실제 계약 성사 수</th><td class="num"><b style="color:#0284c7">' + kpi.closes.toLocaleString() + '건</b></td><th>고객 1명당 평균 매출</th><td class="num"><b>' + A.won(Number(form.avgDealValue || 0)) + '</b></td></tr>' +
+        '<tr><th>문의 1건당 비용 (CPA)</th><td class="num"><b>' + (kpi.cpa ? A.won(kpi.cpa) : '-') + '</b></td><th>예상 총 매출</th><td class="num"><b style="color:#15803d">' + A.won(kpi.estSales) + '</b></td><th>투자 대비 매출 (ROAS)</th><td class="num"><b style="color:#15803d">' + (kpi.roas > 0 ? kpi.roas.toFixed(1) + '배 (' + Math.round(kpi.roas * 100) + '%)' : '-') + '</b></td></tr>' +
       '</table>' +
 
       '<div class="sec-title">5. 종합 진단 의견</div>' +
@@ -185,6 +187,7 @@
           '<h3 style="margin:0;font-size:15px;color:#0c4a6e">🔍 SNS 분석 보고서 입력</h3>' +
           '<div class="ws-actions">' +
             '<label class="chip-check" style="margin:0;padding:4px 9px;font-size:11.5px"><input type="checkbox" id="snsAutoScoreChk"' + (autoScore ? ' checked' : '') + '> 🧮 수치 기반 점수 자동계산</label>' +
+            '<button type="button" class="ws-btn sm accent" id="snsSampleBtn">🎲 Sample</button>' +
             '<button type="button" class="ws-btn sm primary" id="snsRecalcBtn">⚡ 점수 재계산</button>' +
             '<button type="button" class="ws-btn sm" id="snsNewBtn">➕ 새 보고서</button>' +
             (form.id ? '<button type="button" class="ws-btn sm danger" id="snsDelBtn">삭제</button>' : '') +
@@ -269,6 +272,20 @@
 
   function bindEvents(root) {
     var q = function (s) { return root.querySelector(s); };
+    var sampleSnsBtn = q('#snsSampleBtn');
+    if (sampleSnsBtn) sampleSnsBtn.addEventListener('click', function () {
+      var list = [
+        { client_name: '연세미담내과', industry: '병원', blogUrl: 'https://blog.naver.com/midamclinic', blogNeighbors: 3400, blogDailyVisits: 1850, blogMonthlyPosts: 12, blogKeywords: '강남 건강검진, 내시경 잘하는 곳, 만성피로 수액', instaHandle: '@midam_clinic', instaFollowers: 6200, reelsAvgViews: 8400, reelsSaveRate: '4.6%', funnelVisits: 620, funnelDb: 34, marketingBudget: 2500000, closeCount: 11, avgDealValue: 1200000 },
+        { client_name: '골드만리치 보험설계팀', industry: '보험설계사', blogUrl: 'https://blog.naver.com/goldman_ins', blogNeighbors: 2100, blogDailyVisits: 920, blogMonthlyPosts: 14, blogKeywords: '40대 암보험 비교, 실손보험 리모델링, 가족 보장분석', instaHandle: '@goldman_rich_ins', instaFollowers: 9500, reelsAvgViews: 14200, reelsSaveRate: '5.3%', funnelVisits: 840, funnelDb: 52, marketingBudget: 2200000, closeCount: 9, avgDealValue: 1600000 },
+        { client_name: '쉐어링F&B 브랜드', industry: '브랜드/기타', blogUrl: 'https://blog.naver.com/sharing_fnb', blogNeighbors: 4800, blogDailyVisits: 2600, blogMonthlyPosts: 10, blogKeywords: '프랜차이즈 창업 비용, 소자본 카페 브랜드, 가맹 상담', instaHandle: '@sharing_fnb_official', instaFollowers: 12400, reelsAvgViews: 18500, reelsSaveRate: '4.1%', funnelVisits: 910, funnelDb: 41, marketingBudget: 3500000, closeCount: 4, avgDealValue: 4500000 },
+      ];
+      var s = list[Math.floor(Math.random() * list.length)];
+      form = Object.assign(blankForm(), s);
+      computeAutoScores();
+      render();
+      A.toast('🎲 랜덤 SNS 분석 예시(' + s.client_name + ')가 자동 입력되었습니다!');
+    });
+
     var autoChk = q('#snsAutoScoreChk');
     if (autoChk) autoChk.addEventListener('change', function () {
       autoScore = autoChk.checked;

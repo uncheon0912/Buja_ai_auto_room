@@ -169,7 +169,10 @@
         '<div style="display:flex;flex-direction:column;gap:14px">' +
           '<div class="ws-card">' +
             '<h3><span>' + (sel ? '✏️ 고객사 정보 수정 (#' + sel.id + ')' : '➕ 새 고객사 등록') + '</span>' +
-              (sel ? '<button type="button" class="ws-btn sm danger" id="crmDeleteBtn">삭제</button>' : '') +
+              '<span style="display:flex;gap:6px;align-items:center">' +
+                '<button type="button" class="ws-btn sm accent" id="crmSampleBtn" title="랜덤 예시 고객사 자동 채우기">🎲 Sample</button>' +
+                (sel ? '<button type="button" class="ws-btn sm danger" id="crmDeleteBtn">삭제</button>' : '') +
+              '</span>' +
             '</h3>' +
             '<div class="ws-grid-2">' +
               '<div class="ws-field"><label>업체명 *</label><input id="cName" value="' + A.esc(sel ? sel.name : '') + '" placeholder="예: 연세투석검진센터, 한화 홍길동 팀장"></div>' +
@@ -408,6 +411,33 @@
         render();
         loadRepliesForSelected();
       });
+    });
+
+    var sampleCrmBtn = q('#crmSampleBtn');
+    if (sampleCrmBtn) sampleCrmBtn.addEventListener('click', function () {
+      var samples = [
+        { name: '연세프라임내과', industry: '병원', contact: '김도현 원장', phone: '010-4821-3390', stage: '운영중', fee: 3200000, db: 28, goal: 35, blog: 'https://blog.naver.com/yonseiprime', insta: '@yonsei_prime', svcs: ['네이버 블로그 대행', '인스타 릴스 대행', '퍼널·DB 수집 마케팅'], memo: '개원 6개월 차. 건강검진·내시경 신환 문의 확대 필요. 원장님 1분 팩트체크 릴스 촬영 적극 협조 가능.' },
+        { name: '프라임에셋 강민수 지점', industry: '보험설계사', contact: '강민수 지점장', phone: '010-7712-9045', stage: '계약진행', fee: 2400000, db: 42, goal: 50, blog: 'https://blog.naver.com/prime_kms', insta: '@kms_ins_lab', svcs: ['인스타 릴스 대행', '퍼널·DB 수집 마케팅', '스레드 대행'], memo: '40대 가장 암보험·실손 리모델링 가망고객 DB 확보 집중. 댓글 DM 자동화 퍼널 도입 희망.' },
+        { name: '한빛정책자금경영연구소', industry: '정책자금', contact: '이정훈 대표', phone: '010-5590-1823', stage: 'SNS진단', fee: 2800000, db: 19, goal: 30, blog: 'https://blog.naver.com/hanbitfund', insta: '@hanbit_fund', svcs: ['네이버 블로그 대행', '퍼널·DB 수집 마케팅'], memo: '소상공인·법인 대표자 대상 1분 무료 한도진단 폼 유입 희망. 허수 문의 필터링이 핵심 과제.' },
+        { name: '성수 브루잉 하우스', industry: '자영업/소상공인', contact: '박서연 대표', phone: '010-9124-6601', stage: '업셀링대기', fee: 1600000, db: 64, goal: 60, blog: 'https://blog.naver.com/seongsu_brew', insta: '@seongsu_brewing', svcs: ['인스타 릴스 대행', '브랜딩 기획'], memo: '주말 웨이팅 매장. 네이버 알림받기 쿠폰과 릴스 지역 알고리즘 확산으로 평일 예약률 끌어올리기 목표.' },
+        { name: '쉐어링F&B 프랜차이즈', industry: '브랜드/기타', contact: '장남길 대표', phone: '010-3566-3255', stage: '운영중', fee: 8000000, db: 40, goal: 25, blog: 'https://blog.naver.com/sharing_fnb', insta: '@sharing_fnb', svcs: ['브랜딩 기획', '퍼널·DB 수집 마케팅', '스레드 대행'], memo: '가맹 상담 DB 월 40건 돌파 중. 브랜드 릴스 및 스레드 확장으로 전국 가맹점주 문의 확대 추진.' },
+      ];
+      var s = samples[Math.floor(Math.random() * samples.length)];
+      if (q('#cName')) q('#cName').value = s.name;
+      if (q('#cIndustry')) q('#cIndustry').value = s.industry;
+      if (q('#cContact')) q('#cContact').value = s.contact;
+      if (q('#cPhone')) q('#cPhone').value = formatPhone(s.phone);
+      if (q('#cStage')) q('#cStage').value = s.stage;
+      if (q('#cFee')) q('#cFee').value = formatComma(s.fee);
+      if (q('#cDbCnt')) q('#cDbCnt').value = s.db;
+      if (q('#cDbGoal')) q('#cDbGoal').value = s.goal;
+      if (q('#cBlog')) q('#cBlog').value = s.blog;
+      if (q('#cInsta')) q('#cInsta').value = s.insta;
+      if (q('#cMemo')) q('#cMemo').value = s.memo;
+      Array.prototype.forEach.call(root.querySelectorAll('.cSvcChk'), function (chk) {
+        chk.checked = s.svcs.indexOf(chk.value) !== -1;
+      });
+      A.toast('🎲 랜덤 샘플 고객사(' + s.name + ')가 입력되었습니다! 그대로 [고객사 등록] 또는 수정해 보세요.');
     });
 
     var phoneEl = q('#cPhone');

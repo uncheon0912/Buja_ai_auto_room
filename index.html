@@ -1048,17 +1048,19 @@
       <label class="lbl" for="connNameInput">서비스 이름</label>
       <input type="text" id="connNameInput" placeholder="예: 노션, 지메일, 슬랙...">
     </div>
+    <div id="connGuideBox" style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:11px 13px;font-size:12px;line-height:1.6;color:#e0f2fe;margin-bottom:2px"></div>
     <div>
-      <label class="lbl" for="connUrlInput">연결 주소 / 메모 (선택)</label>
-      <input type="text" id="connUrlInput" placeholder="예: 워크스페이스 URL, 웹훅 또는 연동 메모">
+      <label class="lbl" for="connUrlInput">연결 주소 / 메모 (주소를 입력하면 자동으로 형광 녹색 연결이 켜집니다!)</label>
+      <input type="text" id="connUrlInput" placeholder="예: https://www.notion.so/... 또는 https://drive.google.com/...">
     </div>
     <label class="priority-row" style="background:rgba(57,255,20,0.12);border-color:#22c55e;color:inherit">
       <input type="checkbox" id="connToggle">
-      <span>🟢 연결 활성화 (켜면 왼쪽 탭이 형광색으로 켜집니다)</span>
+      <span>🟢 연결 활성화 (주소 입력 시 자동 ON · 왼쪽 탭 형광 연두색 점등!)</span>
     </label>
     <div class="modal-foot">
       <span class="mstat" id="connStat"></span>
       <div class="mbtns">
+        <a class="mbtn" id="connOpenLink" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:none">🔗 연결된 주소 열기</a>
         <button type="button" class="mbtn" id="connCancel">닫기</button>
         <button type="button" class="mbtn primary" id="connSave">저장</button>
       </div>
@@ -1405,14 +1407,14 @@ window.pulsePortfolio3D = function(pageIdx) {
 };
 </script>
 
-<script src="/modules/agency-store.js?v=14"></script>
-<script src="/modules/crm.js?v=14"></script>
-<script src="/modules/sns.js?v=14"></script>
-<script src="/modules/proposal.js?v=14"></script>
-<script src="/modules/contract.js?v=14"></script>
+<script src="/modules/agency-store.js?v=15"></script>
+<script src="/modules/crm.js?v=15"></script>
+<script src="/modules/sns.js?v=15"></script>
+<script src="/modules/proposal.js?v=15"></script>
+<script src="/modules/contract.js?v=15"></script>
 <script src="/modules/portfolio.js?v=10"></script>
 <script src="/modules/video-editor.js?v=11"></script>
-<script src="/modules/content-hub.js?v=14"></script>
+<script src="/modules/content-hub.js?v=15"></script>
 <script src="/modules/secret-room.js?v=14"></script>
 <script src="/modules/souls-ui.js?v=10"></script>
 <script>
@@ -1757,6 +1759,7 @@ window.pulsePortfolio3D = function(pageIdx) {
       out += '<div class="ai-approve-bar">' +
         '<button type="button" class="ws-btn sm primary" data-apply-prop="' + m.id + '">✅ 승인 · 제안서에 적용</button>' +
         '<button type="button" class="ws-btn sm ok" data-apply-cont="' + m.id + '">📄 승인 · 계약서에 적용</button>' +
+        '<button type="button" class="ws-btn sm warn" data-apply-factory="' + m.id + '">🎬 승인 · 10편 공장 재입력</button>' +
         '<button type="button" class="ws-btn sm ai" data-apply-mail="' + m.id + '">📧 계약서 적용 + 전자서명 메일 발송</button>' +
       '</div>';
     }
@@ -1937,6 +1940,13 @@ window.pulsePortfolio3D = function(pageIdx) {
       var cid = parseInt(appCont.getAttribute('data-apply-cont'), 10);
       var cm = state.messages.filter(function(x){ return x.id === cid; })[0];
       if (cm) window.AgencyApp.applyChatMessageToContract(cm, false);
+      return;
+    }
+    var appFac = e.target.closest('[data-apply-factory]');
+    if (appFac && window.AgencyApp && window.AgencyApp.applyChatMessageToFactory){
+      var fid = parseInt(appFac.getAttribute('data-apply-factory'), 10);
+      var fm = state.messages.filter(function(x){ return x.id === fid; })[0];
+      if (fm) window.AgencyApp.applyChatMessageToFactory(fm);
       return;
     }
     var appMail = e.target.closest('[data-apply-mail]');
@@ -2121,6 +2131,42 @@ window.pulsePortfolio3D = function(pageIdx) {
       });
     });
   }
+  function buildConnGuideHtml(name){
+    var n = String(name || '');
+    if (n.indexOf('노션') !== -1 || /notion/i.test(n)){
+      return '<b style="color:#7dd3fc">📘 노션(Notion) 연결 방법 (30초 완성)</b><br>' +
+        '1) <a href="https://www.notion.so" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:800">노션(notion.so)</a>에서 미담공장 워크스페이스 또는 고객사 DB 페이지를 엽니다.<br>' +
+        '2) 오른쪽 위 <b>[공유] → [링크 복사]</b>를 눌러 주소를 복사합니다.<br>' +
+        '3) 아래 <b>연결 주소</b> 칸에 붙여넣고 <b>[저장]</b>을 누르면 자동으로 <b style="color:#4ade80">형광 연두색 연결됨</b>으로 켜집니다!';
+    }
+    if (n.indexOf('지메일') !== -1 || /gmail|mail/i.test(n)){
+      return '<b style="color:#7dd3fc">📧 지메일(Gmail) 연결 방법 (30초 완성)</b><br>' +
+        '1) <a href="https://mail.google.com" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:800">Gmail(mail.google.com)</a>에 업무용 계정으로 로그인합니다.<br>' +
+        '2) 아래 <b>연결 주소</b> 칸에 <code>https://mail.google.com</code> 또는 업무용 이메일(예: <code>midam@gmail.com</code>)을 입력합니다.<br>' +
+        '3) <b>[저장]</b>을 누르면 자동으로 <b style="color:#4ade80">형광 연두색 연결됨</b>으로 표시되며 언제든 새 창으로 열 수 있습니다!';
+    }
+    if (n.indexOf('구글드라이브') !== -1 || /drive/i.test(n)){
+      return '<b style="color:#7dd3fc">📁 구글 드라이브(Google Drive) 연결 방법 (30초 완성)</b><br>' +
+        '1) <a href="https://drive.google.com" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:800">구글 드라이브(drive.google.com)</a>에서 고객사 사진·릴스 원본 공유 폴더를 엽니다.<br>' +
+        '2) 폴더 우클릭 → <b>[공유] → [링크 복사]</b>를 클릭합니다.<br>' +
+        '3) 아래 <b>연결 주소</b> 칸에 붙여넣고 <b>[저장]</b>을 누르면 자동으로 <b style="color:#4ade80">형광 연두색 연결됨</b>으로 활성화됩니다!';
+    }
+    return '<b style="color:#7dd3fc">🔗 외부 서비스 / 툴 연결 방법</b><br>' +
+      '1) 자주 쓰는 외부 서비스 이름(예: <b>Typebot, Umami, DocuSeal, 네이버 스마트플레이스, 인스타그램, 슬랙</b>)을 입력하세요.<br>' +
+      '2) 해당 서비스의 대시보드 주소(<code>https://...</code>)나 웹훅 URL을 아래 칸에 붙여넣으세요.<br>' +
+      '3) 주소를 입력하면 자동으로 체크가 켜지고, <b>[저장]</b> 즉시 왼쪽 탭이 <b style="color:#4ade80">형광 연두색</b>으로 빛납니다!';
+  }
+  function updateConnOpenBtn(){
+    var openA = $('connOpenLink');
+    if (!openA) return;
+    var u = ($('connUrlInput') ? $('connUrlInput').value : '').trim();
+    if (/^https?:\/\//i.test(u)){
+      openA.href = u;
+      openA.style.display = 'inline-flex';
+    } else {
+      openA.style.display = 'none';
+    }
+  }
   function openConnModal(idx){
     editingConnIdx = idx;
     var c = integrations[idx];
@@ -2130,7 +2176,22 @@ window.pulsePortfolio3D = function(pageIdx) {
     $('connUrlInput').value = c.url || '';
     $('connToggle').checked = !!c.connected;
     $('connStat').textContent = '';
+    if ($('connGuideBox')) $('connGuideBox').innerHTML = buildConnGuideHtml(c.name);
+    updateConnOpenBtn();
     elConnModal.hidden = false;
+  }
+  if ($('connNameInput')){
+    $('connNameInput').addEventListener('input', function(){
+      if ($('connGuideBox')) $('connGuideBox').innerHTML = buildConnGuideHtml($('connNameInput').value);
+    });
+  }
+  if ($('connUrlInput')){
+    $('connUrlInput').addEventListener('input', function(){
+      var val = $('connUrlInput').value.trim();
+      // 주소를 입력하면 자동으로 연결 활성화(형광색 ON), 비우면 자동 OFF
+      $('connToggle').checked = val.length > 0;
+      updateConnOpenBtn();
+    });
   }
   function closeConnModal(){ elConnModal.hidden = true; }
   if ($('connClose')) $('connClose').addEventListener('click', closeConnModal);
@@ -2143,13 +2204,14 @@ window.pulsePortfolio3D = function(pageIdx) {
       var newName = $('connNameInput').value.trim();
       if (newName){ c.name = newName; c.empty = false; if (c.icon === '➕') c.icon = '🔗'; }
       c.url = $('connUrlInput').value.trim();
-      c.connected = $('connToggle').checked;
+      // 주소가 입력되어 있으면 자동 연결(형광 점등), 사용자가 수동으로 켠 경우도 유지
+      c.connected = $('connToggle').checked || (c.url.length > 0 && $('connToggle').checked !== false);
       $('connStat').textContent = '저장 중…';
       api('/api/integrations', { method: 'POST', body: JSON.stringify({ items: integrations }) })
         .then(function(){
           renderConns();
-          $('connStat').textContent = '저장 완료!';
-          setTimeout(closeConnModal, 450);
+          $('connStat').textContent = c.connected ? '🟢 연결 완료! 왼쪽 탭이 형광색으로 켜졌습니다.' : '저장 완료!';
+          setTimeout(closeConnModal, 550);
         })
         .catch(function(err){ $('connStat').textContent = '저장 실패: ' + (err.message || ''); });
     });

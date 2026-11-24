@@ -124,6 +124,12 @@
     filterChannel: '',
     items: [],
     selectedId: null,
+    addMode: false,
+    newDate: A.todayKst(),
+    newClientId: '',
+    newChannel: '네이버 블로그',
+    newTitle: '',
+    newBody: '',
     loading: false,
     // 공장(Phase A-3) 상태
     factoryClientId: '',
@@ -228,16 +234,16 @@
       var list = byDate[ymd] || [];
       var isToday = ymd === todayStr;
       cells.push(
-        '<div style="min-height:94px;background:' + (isToday ? 'rgba(14,165,233,0.09)' : 'rgba(255,255,255,0.04)') + ';border:1px solid ' + (isToday ? '#0284c7' : 'var(--line)') + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:800;color:' + (isToday ? '#0284c7' : 'var(--ink)') + '">' +
-            '<span>' + day + '일</span>' +
-            (list.length ? '<span style="font-size:10px;opacity:.7">' + list.length + '건</span>' : '') +
+        '<div style="min-height:94px;background:' + (isToday ? 'rgba(14,165,233,0.1)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (isToday ? '#38bdf8' : 'var(--line)') + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:800;color:' + (isToday ? '#38bdf8' : 'var(--ink)') + '">' +
+            '<span>' + day + '일' + (list.length ? ' <small style="opacity:.65">(' + list.length + ')</small>' : '') + '</span>' +
+            '<button type="button" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록" style="border:1px solid rgba(56,189,248,0.4);background:rgba(14,165,233,0.14);color:#7dd3fc;border-radius:6px;width:20px;height:20px;line-height:1;font-size:13px;font-weight:900;cursor:pointer;padding:0">＋</button>' +
           '</div>' +
           list.slice(0, 3).map(function (it) {
             var sm = statusMeta(it.status);
             var chIcon = it.channel.indexOf('릴스') !== -1 ? '🎬' : (it.channel.indexOf('스레드') !== -1 ? '🧵' : '📝');
-            var active = String(st.selectedId) === String(it.id);
-            return '<button type="button" data-cal-pick="' + it.id + '" style="text-align:left;border:1px solid ' + (active ? '#0284c7' : 'rgba(148,163,184,0.28)') + ';background:' + (active ? 'rgba(14,165,233,0.18)' : 'rgba(15,23,42,0.04)') + ';border-left:3px solid ' + sm.color + ';border-radius:6px;padding:3px 5px;cursor:pointer;font-size:10.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)" title="' + A.esc('[' + clientNameById(it.client_id) + '] ' + it.title) + '">' +
+            var active = !st.addMode && String(st.selectedId) === String(it.id);
+            return '<button type="button" data-cal-pick="' + it.id + '" style="text-align:left;border:1px solid ' + (active ? '#38bdf8' : 'rgba(148,163,184,0.28)') + ';background:' + (active ? 'rgba(14,165,233,0.22)' : 'rgba(15,23,42,0.15)') + ';border-left:3px solid ' + sm.color + ';border-radius:6px;padding:3px 5px;cursor:pointer;font-size:10.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)" title="' + A.esc('[' + clientNameById(it.client_id) + '] ' + it.title) + '">' +
               chIcon + ' ' + A.esc(it.title) +
             '</button>';
           }).join('') +
@@ -246,19 +252,27 @@
       );
     }
 
-    var sel = filtered.find(function (x) { return String(x.id) === String(st.selectedId); }) || filtered[0] || null;
+    var sel = !st.addMode ? (filtered.find(function (x) { return String(x.id) === String(st.selectedId); }) || filtered[0] || null) : null;
     if (sel) st.selectedId = sel.id;
+    if (!sel && !filtered.length) st.addMode = true;
+    if (!st.newClientId && clients.length) st.newClientId = String(clients[0].id);
     var comp = sel ? checkCompliance(sel.title + '\n' + sel.preview_text) : null;
 
     return '' +
-      '<div class="ws-grid-4" style="margin-bottom:12px">' +
+      // 직관적인 1줄 4카드 요약 KPI + 쉬운 사용법 안내 주석
+      '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px">' +
         '<div class="kpi-card"><div class="k-lbl">전체 등록 콘텐츠</div><div class="k-val">' + filtered.length + '건</div><div class="k-sub">VIP 포털 실시간 연동</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">✅ VIP승인 · 자동예약확정</div><div class="k-val" style="color:#16a34a">' + cntBooked + '건</div><div class="k-sub">고객 승인 시 자동 예약 전환</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">⏳ 검수 대기 / ✏️ 수정요청</div><div class="k-val" style="color:#d97706">' + cntWait + ' / ' + cntFix + '</div><div class="k-sub">포털 피드백 실시간 반영</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">🚀 발행 완료</div><div class="k-val" style="color:#0284c7">' + cntDone + '건</div><div class="k-sub">월간 납품 실적 누적</div></div>' +
+        '<div class="kpi-card"><div class="k-lbl">✅ VIP승인 · 자동예약확정</div><div class="k-val" style="color:#4ade80">' + cntBooked + '건</div><div class="k-sub">고객 승인 시 자동 예약 전환</div></div>' +
+        '<div class="kpi-card"><div class="k-lbl">⏳ 검수 대기 / ✏️ 수정요청</div><div class="k-val" style="color:#fbbf24">' + cntWait + ' / ' + cntFix + '</div><div class="k-sub">포털 피드백 실시간 반영</div></div>' +
+        '<div class="kpi-card"><div class="k-lbl">🚀 발행 완료</div><div class="k-val" style="color:#38bdf8">' + cntDone + '건</div><div class="k-sub">월간 납품 실적 누적</div></div>' +
       '</div>' +
 
-      '<div class="ws-split" style="grid-template-columns:minmax(0,1.35fr) minmax(320px,0.9fr)">' +
+      '<div style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.32);border-radius:12px;padding:9px 14px;margin-bottom:12px;font-size:12px;line-height:1.55;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<span>💡 <b>초간단 캘린더 등록 방법:</b> ① 달력 날짜의 <b style="color:#38bdf8">[＋]</b> 버튼을 눌러 1건씩 바로 등록하거나, ② 상단 <b>[🏭 AI 10편 공장]</b>에서 10편을 한꺼번에 등록하세요! 저장된 콘텐츠는 고객 VIP 포털에 자동 노출되며, 고객 승인 시 자동으로 <b>[예약확정]</b>으로 바뀝니다.</span>' +
+        '<button type="button" class="ws-btn sm primary" id="calOpenAddBtn">➕ 새 일정 바로 등록</button>' +
+      '</div>' +
+
+      '<div class="ws-split" style="grid-template-columns:minmax(0,1.3fr) minmax(350px,0.95fr)">' +
         '<div class="ws-card" style="padding:14px">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
             '<div class="ws-actions">' +
@@ -279,49 +293,83 @@
             '</div>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;text-align:center;font-size:11.5px;font-weight:800;color:var(--muted)">' +
-            '<span style="color:#ef4444">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#0284c7">토</span>' +
+            '<span style="color:#ef4444">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#38bdf8">토</span>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">' + cells.join('') + '</div>' +
         '</div>' +
 
-        // 오른쪽: 선택 콘텐츠 상세 검수 · 의료법/금소법 AI 심의 체크 · 원클릭 예약 발행
+        // 오른쪽: [새 일정 간편 등록] 또는 [선택 일정 검수 · 예약 · 심의]
         '<div class="ws-card" style="padding:14px">' +
-          '<h3 style="margin:0 0 10px;font-size:14px">🚀 원클릭 예약 발행 &amp; 🛡️ AI 심의 검수</h3>' +
-          (sel ? (
-            '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
-              '<span class="tag-pill ' + statusMeta(sel.status).cls + '">' + statusMeta(sel.status).badge + '</span>' +
-              '<span style="font-size:11.5px;color:var(--muted)">고객사: <b>' + A.esc(clientNameById(sel.client_id)) + '</b></span>' +
+          (st.addMode ? (
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
+              '<h3 style="margin:0;font-size:14.5px;color:#38bdf8">➕ 새 콘텐츠 일정 바로 등록</h3>' +
+              '<div class="ws-actions">' +
+                '<button type="button" class="ws-btn sm accent" id="calSampleAddBtn">🎲 Sample</button>' +
+                (filtered.length ? '<button type="button" class="ws-btn sm" id="calCancelAddBtn">목록 보기</button>' : '') +
+              '</div>' +
+            '</div>' +
+            '<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">' +
+              '① 아래 4칸만 채우고 <b>[달력·VIP 포털에 등록]</b>을 누르세요.<br>' +
+              '② 등록 즉시 달력 날짜 칸에 카드가 표시되고, 의료법·금소법 심의도 자동 점검됩니다.' +
             '</div>' +
             '<div class="ws-grid-2">' +
-              '<div class="ws-field"><label>발행 채널</label><select id="calEditCh">' +
-                ['네이버 블로그', '인스타 릴스', '스레드'].map(function (ch) { return '<option value="' + ch + '"' + (sel.channel === ch ? ' selected' : '') + '>' + ch + '</option>'; }).join('') +
+              '<div class="ws-field"><label>1. 고객사 선택 *</label><select id="calNewClient">' +
+                (clients.length
+                  ? clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.newClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>'; }).join('')
+                  : '<option value="">먼저 고객사 탭에서 1곳 등록하세요</option>') +
               '</select></div>' +
-              '<div class="ws-field"><label>예약 발행일</label><input type="date" id="calEditDate" value="' + A.esc(sel.scheduled_date || '') + '"></div>' +
+              '<div class="ws-field"><label>2. 발행 예정일 *</label><input type="date" id="calNewDate" value="' + A.esc(st.newDate || A.todayKst()) + '"></div>' +
             '</div>' +
-            '<div class="ws-field" style="margin-top:6px"><label>콘텐츠 제목</label><input id="calEditTitle" value="' + A.esc(sel.title) + '"></div>' +
-            '<div class="ws-field" style="margin-top:6px"><label>원고 · 릴스 대본 · 해시태그</label><textarea id="calEditBody" style="min-height:140px">' + A.esc(sel.preview_text || '') + '</textarea></div>' +
-            (sel.client_feedback ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);font-size:12px">💬 <b>고객 대표님 피드백:</b> ' + A.esc(sel.client_feedback) + '</div>' : '') +
-
-            // 🛡️ 의료법·금소법 심의 스캔 결과
-            '<div style="margin-top:10px;padding:10px;border-radius:10px;border:1px solid ' + (comp.safe ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.4)') + ';background:' + (comp.safe ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)') + ';font-size:11.8px">' +
-              '<div style="font-weight:800;margin-bottom:4px">🛡️ 의료법 · 금소법 · 표시광고법 자동 심의: ' + comp.label + '</div>' +
-              (comp.safe
-                ? '<div style="color:var(--muted)">금지어·과장광고 위험 표현이 발견되지 않았습니다. 바로 예약 발행하셔도 안전합니다!</div>'
-                : comp.hits.map(function (h) {
-                    return '<div style="margin-top:4px;color:#b91c1c">• <b>[' + h.group + ']</b> “' + A.esc(h.word) + '” 탐지 → <span style="color:var(--ink)">' + A.esc(h.tip) + '</span></div>';
-                  }).join('')) +
+            '<div class="ws-grid-2" style="margin-top:8px">' +
+              '<div class="ws-field"><label>3. 발행 채널</label><select id="calNewCh">' +
+                ['네이버 블로그', '인스타 릴스', '스레드'].map(function (ch) { return '<option value="' + ch + '"' + (st.newChannel === ch ? ' selected' : '') + '>' + ch + '</option>'; }).join('') +
+              '</select></div>' +
+              '<div class="ws-field"><label>등록 상태</label><select id="calNewStatus"><option value="검수대기">⏳ VIP 포털 고객 검수 요청</option><option value="예약확정">📅 바로 예약 확정</option></select></div>' +
             '</div>' +
-
+            '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 12월 무료 건강검진 필수 체크리스트 5가지"></div>' +
+            '<div class="ws-field" style="margin-top:8px"><label>초안 내용 · 3초 후킹 대본 · 해시태그</label><textarea id="calNewBody" style="min-height:130px" placeholder="블로그 핵심 요약이나 릴스 대본을 입력하세요 (비워두고 제목만 먼저 일정 잡아도 됩니다)">' + A.esc(st.newBody) + '</textarea></div>' +
             '<div class="ws-actions" style="margin-top:10px">' +
-              '<button type="button" class="ws-btn sm primary" id="calSaveEdit">💾 수정 저장</button>' +
-              '<button type="button" class="ws-btn sm ok" id="calSetBooked">📅 예약 확정</button>' +
-              '<button type="button" class="ws-btn sm accent" id="calSetPublished">🚀 원클릭 발행 완료</button>' +
-              '<button type="button" class="ws-btn sm" id="calCopyText">📋 본문 복사</button>' +
-              (sel.channel.indexOf('릴스') !== -1 ? '<button type="button" class="ws-btn sm" id="calSendVideo">🎬 영상 편집기로 보내기</button>' : '') +
-              '<button type="button" class="ws-btn sm bad" id="calDeleteItem">🗑️ 삭제</button>' +
+              '<button type="button" class="ws-btn primary" id="calSubmitNewBtn">💾 달력 · VIP 포털에 일정 등록</button>' +
+              '<button type="button" class="ws-btn ok" data-ch-tab="factory">🏭 10편 한꺼번에 자동 생성하기</button>' +
             '</div>'
           ) : (
-            '<div class="ws-empty">아직 캘린더에 등록된 콘텐츠가 없습니다.<br>상단 <b>🏭 AI 10편 일괄 생성 공장</b>에서 한 번에 10편을 만들어 등록해 보세요!</div>'
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
+              '<h3 style="margin:0;font-size:14px">🚀 원클릭 예약 발행 &amp; 🛡️ AI 심의 검수</h3>' +
+              '<button type="button" class="ws-btn sm primary" id="calSwitchAddBtn">＋ 새 일정 추가</button>' +
+            '</div>' +
+            (sel ? (
+              '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+                '<span class="tag-pill ' + statusMeta(sel.status).cls + '">' + statusMeta(sel.status).badge + '</span>' +
+                '<span style="font-size:11.5px;color:var(--muted)">고객사: <b>' + A.esc(clientNameById(sel.client_id)) + '</b></span>' +
+              '</div>' +
+              '<div class="ws-grid-2">' +
+                '<div class="ws-field"><label>발행 채널</label><select id="calEditCh">' +
+                  ['네이버 블로그', '인스타 릴스', '스레드'].map(function (ch) { return '<option value="' + ch + '"' + (sel.channel === ch ? ' selected' : '') + '>' + ch + '</option>'; }).join('') +
+                '</select></div>' +
+                '<div class="ws-field"><label>예약 발행일</label><input type="date" id="calEditDate" value="' + A.esc(sel.scheduled_date || '') + '"></div>' +
+              '</div>' +
+              '<div class="ws-field" style="margin-top:6px"><label>콘텐츠 제목</label><input id="calEditTitle" value="' + A.esc(sel.title) + '"></div>' +
+              '<div class="ws-field" style="margin-top:6px"><label>원고 · 릴스 대본 · 해시태그</label><textarea id="calEditBody" style="min-height:140px">' + A.esc(sel.preview_text || '') + '</textarea></div>' +
+              (sel.client_feedback ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);font-size:12px">💬 <b>고객 대표님 피드백:</b> ' + A.esc(sel.client_feedback) + '</div>' : '') +
+
+              '<div style="margin-top:10px;padding:10px;border-radius:10px;border:1px solid ' + (comp.safe ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.4)') + ';background:' + (comp.safe ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)') + ';font-size:11.8px">' +
+                '<div style="font-weight:800;margin-bottom:4px">🛡️ 의료법 · 금소법 · 표시광고법 자동 심의: ' + comp.label + '</div>' +
+                (comp.safe
+                  ? '<div style="color:var(--muted)">금지어·과장광고 위험 표현이 발견되지 않았습니다. 바로 예약 발행하셔도 안전합니다!</div>'
+                  : comp.hits.map(function (h) {
+                      return '<div style="margin-top:4px;color:#fca5a5">• <b>[' + h.group + ']</b> “' + A.esc(h.word) + '” 탐지 → <span style="color:var(--ink)">' + A.esc(h.tip) + '</span></div>';
+                    }).join('')) +
+              '</div>' +
+
+              '<div class="ws-actions" style="margin-top:10px">' +
+                '<button type="button" class="ws-btn sm primary" id="calSaveEdit">💾 수정 저장</button>' +
+                '<button type="button" class="ws-btn sm ok" id="calSetBooked">📅 예약 확정</button>' +
+                '<button type="button" class="ws-btn sm accent" id="calSetPublished">🚀 원클릭 발행 완료</button>' +
+                '<button type="button" class="ws-btn sm" id="calCopyText">📋 본문 복사</button>' +
+                (sel.channel.indexOf('릴스') !== -1 ? '<button type="button" class="ws-btn sm" id="calSendVideo">🎬 영상 편집기로 보내기</button>' : '') +
+                '<button type="button" class="ws-btn sm bad" id="calDeleteItem">🗑️ 삭제</button>' +
+              '</div>'
+            ) : '')
           )) +
         '</div>' +
       '</div>';
@@ -426,8 +474,65 @@
 
     Array.prototype.forEach.call(root.querySelectorAll('[data-cal-pick]'), function (b) {
       b.addEventListener('click', function () {
+        st.addMode = false;
         st.selectedId = parseInt(b.getAttribute('data-cal-pick'), 10);
         render();
+      });
+    });
+
+    // 날짜 칸 '+' 클릭 또는 '새 일정 바로 등록' 클릭 시 직관적 등록 폼 열기
+    Array.prototype.forEach.call(root.querySelectorAll('[data-cal-add-date]'), function (b) {
+      b.addEventListener('click', function () {
+        st.addMode = true;
+        st.newDate = b.getAttribute('data-cal-add-date');
+        render();
+        var ti = root.querySelector('#calNewTitle');
+        if (ti) ti.focus();
+      });
+    });
+    var openAdd = q('#calOpenAddBtn'), swAdd = q('#calSwitchAddBtn'), cancelAdd = q('#calCancelAddBtn');
+    if (openAdd) openAdd.addEventListener('click', function () { st.addMode = true; render(); });
+    if (swAdd) swAdd.addEventListener('click', function () { st.addMode = true; render(); });
+    if (cancelAdd) cancelAdd.addEventListener('click', function () { st.addMode = false; render(); });
+
+    var sampleAddBtn = q('#calSampleAddBtn');
+    if (sampleAddBtn) sampleAddBtn.addEventListener('click', function () {
+      var list = [
+        { ch: '네이버 블로그', title: '12월 무료 사전 진단 체크리스트 5가지 총정리', body: '🎯 [도입]\n처음 문의하시는 대표님/고객님들이 가장 자주 묻는 핵심 질문 5가지를 정리했습니다.\n\n📝 [핵심 구성]\n1) 사전 준비물 체크\n2) 자주 발생하는 실수 TOP3\n3) 1분 무료 상담 신청 안내\n\n🏷️ #브랜드블로그 #무료진단 #고객상담' },
+        { ch: '인스타 릴스', title: '3초 후킹 릴스 — 똑같은 비용 쓰고 실패하는 사람들의 공통점', body: '[0~3초 후킹] "아직도 가격표만 보고 고르세요? 이 1가지 꼭 확인하세요!"\n[4~20초 본론] 실제 사례로 보는 핵심 비교 포인트 3가지\n[21~30초 CTA] "프로필 링크에서 무료 비교 체크리스트 받아가세요!"' },
+      ];
+      var s = list[Math.floor(Math.random() * list.length)];
+      st.newChannel = s.ch;
+      st.newTitle = s.title;
+      st.newBody = s.body;
+      render();
+      A.toast('🎲 샘플 일정이 채워졌습니다! [달력 · VIP 포털에 일정 등록]을 눌러보세요.');
+    });
+
+    var submitNew = q('#calSubmitNewBtn');
+    if (submitNew) submitNew.addEventListener('click', function () {
+      var cid = parseInt((q('#calNewClient') && q('#calNewClient').value) || '0', 10);
+      var title = (q('#calNewTitle') && q('#calNewTitle').value || '').trim();
+      var date = (q('#calNewDate') && q('#calNewDate').value || '').trim();
+      var ch = (q('#calNewCh') && q('#calNewCh').value) || '네이버 블로그';
+      var body = (q('#calNewBody') && q('#calNewBody').value || '').trim();
+      var initSt = (q('#calNewStatus') && q('#calNewStatus').value) || '검수대기';
+      if (!cid) { A.toast('⚠️ 먼저 고객사를 1곳 이상 등록해 주세요!', 'error'); return; }
+      if (!title) { A.toast('⚠️ 콘텐츠 제목을 입력해 주세요!', 'error'); return; }
+      submitNew.disabled = true;
+      A.api('/api/deliverables', {
+        method: 'POST',
+        body: JSON.stringify({ client_id: cid, channel: ch, title: title, preview_text: body, scheduled_date: date, status: initSt }),
+      }).then(function (r) {
+        st.addMode = false;
+        st.newTitle = '';
+        st.newBody = '';
+        if (r && r.deliverable) st.selectedId = r.deliverable.id;
+        A.toast('✅ 캘린더 & VIP 포털에 일정이 등록되었습니다!');
+        return loadDeliverables();
+      }).catch(function (e) {
+        submitNew.disabled = false;
+        A.toast('❌ 등록 실패: ' + e.message, 'error');
       });
     });
 
@@ -633,17 +738,78 @@
     var aiBtn = q('#facAskAiBtn');
     if (aiBtn) aiBtn.addEventListener('click', function () {
       var cName = st.factoryClientId ? clientNameById(st.factoryClientId) : '신규 고객사';
-      var summary = st.drafts.slice(0, 5).map(function (d) { return d.idx + '. [' + d.channel + '] ' + d.title; }).join('\n');
-      A.requestAiAssist(
-        '[AI 콘텐츠 10편 공장 카피 고도화 요청]\n' +
-        '- 고객사: ' + cName + ' (' + st.factoryIndustry + ')\n' +
-        '- 핵심 주제: ' + (st.factoryTopic || '월간 정규 운영') + '\n' +
-        '- 초안 일부:\n' + summary + '\n\n' +
-        '요청: 홍보부 드럼통·CS 딸랑이·대장 비서실이 합동으로 위 릴스 3초 후킹 카피와 블로그 제목을 훨씬 더 클릭률 높게 업그레이드하고, 의료법/금소법 리스크도 체크해 줘!',
-        'general'
-      );
+      var summary = st.drafts.map(function (d) { return d.idx + '. [' + d.channel + '] ' + d.title; }).join('\n');
+      var promptText = [
+        '@홍보부 드럼통 @CS 딸랑이 @지피고 씹던껌 @대장 비서실',
+        '[AI 콘텐츠 10편 공장 카피 고도화 요청 · 종합반 합동 의논]',
+        '- 고객사: ' + cName + ' (' + st.factoryIndustry + ')',
+        '- 핵심 주제: ' + (st.factoryTopic || '월간 정규 운영'),
+        '- 현재 10편 초안 목록:',
+        summary,
+        '',
+        '요청: 위 10편(블로그 6편 + 릴스 4편)을 의료법·금소법 심의에 안전하면서도 클릭률과 DB 문의 전환율이 폭발하도록 업그레이드해 줘!',
+        '※ 대장님이 [🎬 승인 · 10편 공장 재입력] 버튼 한 번으로 자동 반영할 수 있도록 반드시 아래 형식으로 1번~10번을 정리해 줘:',
+        '1. [네이버 블로그] 업그레이드 제목',
+        '후킹/구성: 핵심 도입 + 본문 3줄 + CTA',
+        '2. [인스타 릴스] 업그레이드 제목',
+        '후킹/구성: [0~3초 후킹] ... [4~20초 본론] ... [21~30초 CTA] ...',
+      ].join('\n');
+      A.requestAiAssist({ room: 'general', prompt: promptText }).then(function () {
+        if (window.BujaChat && window.BujaChat.openRoom) window.BujaChat.openRoom('general');
+        A.switchTab('chat');
+        A.toast('🏫 #부자사람 일진 종합반으로 10편 고도화 요청을 보냈습니다! AI 답장 후 [🎬 승인 · 10편 공장 재입력]을 누르세요.');
+      }).catch(function (err) {
+        A.toast('❌ AI 요청 실패: ' + (err && err.message ? err.message : ''), 'error');
+      });
     });
   }
+
+  // 🎬 채팅방에서 AI가 다듬어준 10편 수정안을 대장님이 컨펌하면 10편 공장에 자동 재입력!
+  A.on('apply-ai-factory', function (payload) {
+    var raw = String((payload && payload.text) || '').replace(/\*\*/g, '').trim();
+    if (!raw) return;
+    if (!st.drafts.length) generate10Drafts();
+
+    // "1. [채널] 제목" 또는 "1) 제목" 블록 단위로 1~10번 파싱
+    var blocks = raw.split(/\r?\n(?=\s*(?:#?\d{1,2})[\.\)]\s+)/);
+    var parsedItems = [];
+    blocks.forEach(function (blk) {
+      var m = blk.match(/^\s*#?(\d{1,2})[\.\)]\s*(?:\[([^\]]+)\]\s*)?([^\r\n]+)([\s\S]*)$/);
+      if (m) {
+        var num = parseInt(m[1], 10);
+        if (num >= 1 && num <= 10) {
+          var chRaw = (m[2] || '').trim();
+          var title = (m[3] || '').trim();
+          var body = (m[4] || '').trim();
+          parsedItems.push({ num: num, chRaw: chRaw, title: title, body: body });
+        }
+      }
+    });
+
+    var updatedCnt = 0;
+    if (parsedItems.length >= 2) {
+      parsedItems.forEach(function (pi) {
+        var target = st.drafts[pi.num - 1];
+        if (!target) return;
+        if (pi.chRaw) {
+          target.channel = pi.chRaw.indexOf('릴스') !== -1 ? '인스타 릴스' : (pi.chRaw.indexOf('스레드') !== -1 ? '스레드' : '네이버 블로그');
+        }
+        if (pi.title) target.title = pi.title;
+        if (pi.body) target.preview_text = pi.body;
+        target.compliance = checkCompliance(target.title + '\n' + target.preview_text);
+        updatedCnt++;
+      });
+    } else {
+      // 번호 형식이 아닌 자유 서술이면 1번 카드와 릴스 카드에 AI 고도화 본문 자동 반영
+      st.drafts[0].preview_text = '✨ [AI 종합반 컨펌 반영안]\n' + raw + '\n\n' + st.drafts[0].preview_text;
+      st.drafts[0].compliance = checkCompliance(st.drafts[0].title + '\n' + st.drafts[0].preview_text);
+      updatedCnt = 1;
+    }
+
+    st.subTab = 'factory';
+    render();
+    A.toast('🎬 AI 종합반 최종안 컨펌 완료! 10편 공장에 ' + updatedCnt + '편이 자동 재입력되었습니다.');
+  });
 
   A.on('data-refreshed', function () { loadDeliverables(); });
   A.on('tab-changed', function (t) {

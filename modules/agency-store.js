@@ -437,6 +437,12 @@
     emit('apply-ai-contract', { message: msg, parsed: parsed, autoSendEmail: !!autoSendEmail });
   }
 
+  function applyChatMessageToFactory(msg) {
+    if (!msg || !msg.content) return;
+    switchTab('content');
+    emit('apply-ai-factory', { message: msg, text: String(msg.content || '') });
+  }
+
   // #일진홍보부 및 #종합반에서 특정 고객사 이름이 언급된 AI 팀 답장 회수
   function fetchAiRepliesForClient(clientName) {
     if (!clientName) return Promise.resolve([]);
@@ -725,6 +731,7 @@
     parseAiContractText: parseAiContractText,
     applyChatMessageToProposal: applyChatMessageToProposal,
     applyChatMessageToContract: applyChatMessageToContract,
+    applyChatMessageToFactory: applyChatMessageToFactory,
     renderTimelineGantt: renderTimelineGantt,
     printPane: printPane,
     transferToSns: transferToSns,
