@@ -109,19 +109,20 @@ def resolve_model(preferred, installed, fallback):
 
 
 def call_ollama(model, prompt, num_predict=650, temperature=0.35, timeout=180):
-    res = request(
-        'http://127.0.0.1:11434/api/generate',
-        {
-            'model': model,
-            'prompt': prompt,
-            'stream': False,
-            'keep_alive': '2m',
-            'options': {'num_predict': num_predict, 'temperature': temperature},
-        },
-        timeout=timeout,
-    )
+    payload = {
+        'model': model,
+        'prompt': prompt,
+        'stream': False,
+        'keep_alive': '2m',
+        'options': {'num_predict': max(num_predict, 900) if 'deepseek-r1' in model else num_predict, 'temperature': temperature},
+    }
+    if 'deepseek-r1' in model:
+        # DeepSeek-R1 추론 토큰으로 본문이 잘리는 현상 방지
+        payload['think'] = False
+    res = request('http://127.0.0.1:11434/api/generate', payload, timeout=timeout)
     txt = (res.get('response') or '').strip()
     txt = re.sub(r'<think>[\s\S]*?</think>', '', txt).strip()
+    txt = re.sub(r'<think>[\s\S]*$', '', txt).strip()
     return txt
 
 
