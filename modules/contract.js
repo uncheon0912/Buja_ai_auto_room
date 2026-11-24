@@ -125,99 +125,99 @@
     var tot = calcTotals();
     return '<div class="a4-sheet">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#64748b;margin-bottom:8px">' +
-        '<span>계약번호: <b>' + A.esc(form.contract_no) + '</b></span>' +
-        '<span>상태: <b>' + A.esc(form.status) + '</b></span>' +
+      '<span>계약번호: <b>' + A.esc(form.contract_no) + '</b></span>' +
+      '<span>상태: <b>' + A.esc(form.status) + '</b></span>' +
       '</div>' +
       '<h1>' + A.esc(form.title || '마케팅 대행 용역 계약서') + '</h1>' +
       '<div class="doc-sub">계약기간: ' + A.esc(form.startDate) + ' ~ ' + A.esc(form.endDate) + ' · 체결일: ' + A.esc(form.contractDate) + '</div>' +
 
       '<p style="font-size:12.6px;margin:0 0 14px">' +
-        '<b>' + A.esc(form.client_name || '(고객사명)') + '</b>(이하 "갑"이라 한다)와 ' +
-        '<b>' + A.esc(form.agencyCompany || '미담공장') + '</b>(이하 "을"이라 한다)은 아래와 같이 마케팅 대행 용역 계약을 체결한다.' +
+      '<b>' + A.esc(form.client_name || '(고객사명)') + '</b>(이하 "갑"이라 한다)와 ' +
+      '<b>' + A.esc(form.agencyCompany || '미담공장') + '</b>(이하 "을"이라 한다)은 아래와 같이 마케팅 대행 용역 계약을 체결한다.' +
       '</p>' +
 
       '<div class="sec-title">1. 서비스 내역 및 계약 대금</div>' +
       '<table>' +
-        '<thead><tr><th>대행 서비스 항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:110px">단가</th><th class="num" style="width:115px">공급가액</th><th>비고</th></tr></thead>' +
-        '<tbody>' +
-          (form.items || []).map(function (it) {
-            var amt = Number(it.qty || 1) * Number(it.price || 0);
-            return '<tr><td><b>' + A.esc(it.name) + '</b></td><td class="num">' + Number(it.qty || 1) + '</td><td class="num">' + A.won(it.price) + '</td><td class="num"><b>' + A.won(amt) + '</b></td><td>' + A.esc(it.note || '') + '</td></tr>';
-          }).join('') +
-        '</tbody>' +
+      '<thead><tr><th>대행 서비스 항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:110px">단가</th><th class="num" style="width:115px">공급가액</th><th>비고</th></tr></thead>' +
+      '<tbody>' +
+      (form.items || []).map(function (it) {
+        var amt = Number(it.qty || 1) * Number(it.price || 0);
+        return '<tr><td><b>' + A.esc(it.name) + '</b></td><td class="num">' + Number(it.qty || 1) + '</td><td class="num">' + A.won(it.price) + '</td><td class="num"><b>' + A.won(amt) + '</b></td><td>' + A.esc(it.note || '') + '</td></tr>';
+      }).join('') +
+      '</tbody>' +
       '</table>' +
 
       '<div class="sum-box">' +
-        '<div style="font-size:12.2px;color:#334155">' +
-          '공급가액 <b>' + A.won(tot.supply) + '</b> · ' +
-          (form.includeVat ? '부가세(10%) <b>' + A.won(tot.vat) + '</b>' : '부가세 별도') +
-          '<div style="margin-top:3px;font-size:11.6px;color:#475569">결제조건: ' + A.esc(form.paymentTerms) + (form.agencyBank ? ' · 입금계좌: ' + A.esc(form.agencyBank) : '') + '</div>' +
-        '</div>' +
-        '<div class="big">총 계약금액 ' + A.won(tot.total) + '</div>' +
+      '<div style="font-size:12.2px;color:#334155">' +
+      '공급가액 <b>' + A.won(tot.supply) + '</b> · ' +
+      (form.includeVat ? '부가세(10%) <b>' + A.won(tot.vat) + '</b>' : '부가세 별도') +
+      '<div style="margin-top:3px;font-size:11.6px;color:#475569">결제조건: ' + A.esc(form.paymentTerms) + (form.agencyBank ? ' · 입금계좌: ' + A.esc(form.agencyBank) : '') + '</div>' +
+      '</div>' +
+      '<div class="big">총 계약금액 ' + A.won(tot.total) + '</div>' +
       '</div>' +
 
       '<div class="sec-title">2. 계약 일반 및 특약 조항</div>' +
       '<div class="clause-body">' + A.esc(form.clauses) + '</div>' +
 
       '<p style="text-align:center;font-weight:700;font-size:12.6px;margin:24px 0 6px">' +
-        '본 계약의 성립을 증명하기 위하여 계약서 2부를 작성하고 갑과 을이 기명날인 후 각 1부씩 보관한다.' +
+      '본 계약의 성립을 증명하기 위하여 계약서 2부를 작성하고 갑과 을이 기명날인 후 각 1부씩 보관한다.' +
       '</p>' +
       '<div style="text-align:center;font-size:13px;font-weight:800;color:#0c4a6e;margin-bottom:14px">' + A.esc(form.contractDate) + '</div>' +
 
       '<div class="sign-grid">' +
-        '<div class="sign-box">' +
-          '<h4>갑 (위탁자 · 고객사)</h4>' +
-          '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.client_name || '-') + '</b></div>' +
-          '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.clientCeo || '-') + ' (인)</b></div>' +
-          '<div class="sign-row"><span>사업자번호</span><span>' + A.esc(form.clientBizNo || '-') + '</span></div>' +
-          '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.clientPhone || '-') + '</span></div>' +
-          '<div class="sign-row"><span>주소</span><span>' + A.esc(form.clientAddress || '-') + '</span></div>' +
-        '</div>' +
-        '<div class="sign-box">' +
-          '<h4>을 (수탁자 · 대행사)</h4>' +
-          '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.agencyCompany || '미담공장') + '</b></div>' +
-          '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.agencyCeo || '-') + ' (인)</b></div>' +
-          '<div class="sign-row"><span>사업자번호</span><span>' + A.esc(form.agencyBizNo || '-') + '</span></div>' +
-          '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.agencyPhone || '-') + '</span></div>' +
-          '<div class="sign-row"><span>주소</span><span>' + A.esc(form.agencyAddress || '-') + '</span></div>' +
-          (form.stampDataUrl ? '<img class="stamp-img" src="' + A.esc(form.stampDataUrl) + '" alt="직인">' : '') +
-        '</div>' +
+      '<div class="sign-box">' +
+      '<h4>갑 (위탁자 · 고객사)</h4>' +
+      '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.client_name || '-') + '</b></div>' +
+      '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.clientCeo || '-') + ' (인)</b></div>' +
+      '<div class="sign-row"><span>사업자번호</span><span>' + A.esc(form.clientBizNo || '-') + '</span></div>' +
+      '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.clientPhone || '-') + '</span></div>' +
+      '<div class="sign-row"><span>주소</span><span>' + A.esc(form.clientAddress || '-') + '</span></div>' +
       '</div>' +
-    '</div>' +
-    // 📜 A4 2페이지: 추가 특약사항 합의서 (별지) — 체크박스(usePage2) ON일 때만 표시
-    (form.usePage2 ? (
-      '<div class="a4-sheet a4-page2" style="margin-top:22px;page-break-before:always;break-before:page">' +
+      '<div class="sign-box">' +
+      '<h4>을 (수탁자 · 대행사)</h4>' +
+      '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.agencyCompany || '미담공장') + '</b></div>' +
+      '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.agencyCeo || '-') + ' (인)</b></div>' +
+      '<div class="sign-row"><span>사업자번호</span><span>' + A.esc(form.agencyBizNo || '-') + '</span></div>' +
+      '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.agencyPhone || '-') + '</span></div>' +
+      '<div class="sign-row"><span>주소</span><span>' + A.esc(form.agencyAddress || '-') + '</span></div>' +
+      (form.stampDataUrl ? '<img class="stamp-img" src="' + A.esc(form.stampDataUrl) + '" alt="직인">' : '') +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      // 📜 A4 2페이지: 추가 특약사항 합의서 (별지) — 체크박스(usePage2) ON일 때만 표시
+      (form.usePage2 ? (
+        '<div class="a4-sheet a4-page2" style="margin-top:22px;page-break-before:always;break-before:page">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#64748b;margin-bottom:8px">' +
-          '<span>계약번호: <b>' + A.esc(form.contract_no) + '</b> (별지 2 / 2페이지)</span>' +
-          '<span>상호: <b>' + A.esc(form.client_name || '(고객사명)') + '</b></span>' +
+        '<span>계약번호: <b>' + A.esc(form.contract_no) + '</b> (별지 2 / 2페이지)</span>' +
+        '<span>상호: <b>' + A.esc(form.client_name || '(고객사명)') + '</b></span>' +
         '</div>' +
         '<h1>[별지] 추가 특약사항 합의서</h1>' +
         '<div class="doc-sub">본 별지는 원 계약서(' + A.esc(form.contract_no) + ', 체결일 ' + A.esc(form.contractDate) + ')의 일부로서 원 계약서와 동일한 법적 효력을 가진다.</div>' +
         '<div class="sec-title">추가 특약 및 세부 합의 조항</div>' +
         '<div class="clause-body" style="min-height:420px;padding:14px 16px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc">' +
-          A.esc((form.extraSpecialTerms || '').trim() || '여기에 클라이언트 요청 추가 특약사항을 입력하면 A4 2페이지에 자동 기재됩니다.') +
+        A.esc((form.extraSpecialTerms || '').trim() || '여기에 클라이언트 요청 추가 특약사항을 입력하면 A4 2페이지에 자동 기재됩니다.') +
         '</div>' +
         '<p style="text-align:center;font-weight:700;font-size:12.4px;margin:24px 0 6px">' +
-          '갑과 을은 위 추가 특약사항의 내용을 충분히 확인하고 합의하였음을 증명하기 위하여 아래와 같이 서명·날인한다.' +
+        '갑과 을은 위 추가 특약사항의 내용을 충분히 확인하고 합의하였음을 증명하기 위하여 아래와 같이 서명·날인한다.' +
         '</p>' +
         '<div style="text-align:center;font-size:13px;font-weight:800;color:#0c4a6e;margin-bottom:14px">' + A.esc(form.contractDate) + '</div>' +
         '<div class="sign-grid">' +
-          '<div class="sign-box">' +
-            '<h4>갑 (위탁자 · 고객사 확인)</h4>' +
-            '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.client_name || '-') + '</b></div>' +
-            '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.clientCeo || '-') + ' (인)</b></div>' +
-            '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.clientPhone || '-') + '</span></div>' +
-          '</div>' +
-          '<div class="sign-box">' +
-            '<h4>을 (수탁자 · 대행사 확인)</h4>' +
-            '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.agencyCompany || '미담공장') + '</b></div>' +
-            '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.agencyCeo || '-') + ' (인)</b></div>' +
-            '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.agencyPhone || '-') + '</span></div>' +
-            (form.stampDataUrl ? '<img class="stamp-img" src="' + A.esc(form.stampDataUrl) + '" alt="직인">' : '') +
-          '</div>' +
+        '<div class="sign-box">' +
+        '<h4>갑 (위탁자 · 고객사 확인)</h4>' +
+        '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.client_name || '-') + '</b></div>' +
+        '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.clientCeo || '-') + ' (인)</b></div>' +
+        '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.clientPhone || '-') + '</span></div>' +
         '</div>' +
-      '</div>'
-    ) : '');
+        '<div class="sign-box">' +
+        '<h4>을 (수탁자 · 대행사 확인)</h4>' +
+        '<div class="sign-row"><span>상호/업체명</span><b>' + A.esc(form.agencyCompany || '미담공장') + '</b></div>' +
+        '<div class="sign-row"><span>대표자</span><b>' + A.esc(form.agencyCeo || '-') + ' (인)</b></div>' +
+        '<div class="sign-row"><span>연락처</span><span>' + A.esc(form.agencyPhone || '-') + '</span></div>' +
+        (form.stampDataUrl ? '<img class="stamp-img" src="' + A.esc(form.stampDataUrl) + '" alt="직인">' : '') +
+        '</div>' +
+        '</div>' +
+        '</div>'
+      ) : '');
   }
 
   function updatePreviewOnly() {
@@ -235,156 +235,156 @@
     root.innerHTML = '<div class="ws-split">' +
       // 왼쪽: 계약서 입력 및 텍스트 편집
       '<div class="split-editor">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
-          '<h3 style="margin:0;font-size:15px;color:#0c4a6e">📄 계약서 작성 · 텍스트 편집</h3>' +
-          '<div class="ws-actions">' +
-            '<button type="button" class="ws-btn sm accent" id="contSampleBtn">🎲 Sample</button>' +
-            '<button type="button" class="ws-btn sm" id="contNewBtn">➕ 새 계약서</button>' +
-            (form.id ? '<button type="button" class="ws-btn sm danger" id="contDelBtn">삭제</button>' : '') +
-          '</div>' +
-        '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
+      '<h3 style="margin:0;font-size:15px;color:#0c4a6e">📄 계약서 작성 · 텍스트 편집</h3>' +
+      '<div class="ws-actions">' +
+      '<button type="button" class="ws-btn sm accent" id="contSampleBtn">🎲 Sample</button>' +
+      '<button type="button" class="ws-btn sm" id="contNewBtn">➕ 새 계약서</button>' +
+      (form.id ? '<button type="button" class="ws-btn sm danger" id="contDelBtn">삭제</button>' : '') +
+      '</div>' +
+      '</div>' +
 
-        (contracts.length ? '<div class="saved-bar"><span style="font-size:11px;font-weight:800;color:#0369a1">저장된 계약서:</span>' +
-          contracts.slice(0, 10).map(function (ct) {
-            return '<button type="button" class="saved-chip' + (form.id === ct.id ? ' active' : '') + '" data-ctid="' + ct.id + '">' + A.esc(ct.client_name || ct.contract_no) + ' (' + A.won(ct.total_amount) + ')</button>';
-          }).join('') + '</div>' : '') +
+      (contracts.length ? '<div class="saved-bar"><span style="font-size:11px;font-weight:800;color:#0369a1">저장된 계약서:</span>' +
+        contracts.slice(0, 10).map(function (ct) {
+          return '<button type="button" class="saved-chip' + (form.id === ct.id ? ' active' : '') + '" data-ctid="' + ct.id + '">' + A.esc(ct.client_name || ct.contract_no) + ' (' + A.won(ct.total_amount) + ')</button>';
+        }).join('') + '</div>' : '') +
 
-        '<div class="ws-grid-2">' +
-          '<div class="ws-field"><label>고객사 불러오기</label><select id="contClientSel">' +
-            '<option value="">직접 입력</option>' +
-            clients.map(function (c) {
-              return '<option value="' + c.id + '"' + (String(form.client_id) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>';
-            }).join('') +
-          '</select></div>' +
-          '<div class="ws-field"><label>저장된 제안서에서 금액·서비스 불러오기</label><select id="contPropSel">' +
-            '<option value="">제안서 선택…</option>' +
-            proposals.map(function (p) {
-              return '<option value="' + p.id + '"' + (String(form.proposal_id) === String(p.id) ? ' selected' : '') + '>' + A.esc(p.client_name || p.title) + ' · ' + A.won(p.total_amount) + '</option>';
-            }).join('') +
-          '</select></div>' +
-        '</div>' +
+      '<div class="ws-grid-2">' +
+      '<div class="ws-field"><label>고객사 불러오기</label><select id="contClientSel">' +
+      '<option value="">직접 입력</option>' +
+      clients.map(function (c) {
+        return '<option value="' + c.id + '"' + (String(form.client_id) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>';
+      }).join('') +
+      '</select></div>' +
+      '<div class="ws-field"><label>저장된 제안서에서 금액·서비스 불러오기</label><select id="contPropSel">' +
+      '<option value="">제안서 선택…</option>' +
+      proposals.map(function (p) {
+        return '<option value="' + p.id + '"' + (String(form.proposal_id) === String(p.id) ? ' selected' : '') + '>' + A.esc(p.client_name || p.title) + ' · ' + A.won(p.total_amount) + '</option>';
+      }).join('') +
+      '</select></div>' +
+      '</div>' +
 
-        '<div class="ws-grid-3">' +
-          '<div class="ws-field"><label>계약번호</label><input data-cf="contract_no" value="' + A.esc(form.contract_no) + '"></div>' +
-          '<div class="ws-field"><label>계약서 제목</label><input data-cf="title" value="' + A.esc(form.title) + '"></div>' +
-          '<div class="ws-field"><label>계약 상태</label><select data-cf="status">' +
-            ['초안', '확정', '서명요청중', '서명완료'].map(function (s) { return '<option value="' + s + '"' + (form.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
-          '</select></div>' +
-          '<div class="ws-field"><label>계약 체결일</label><input type="date" data-cf="contractDate" value="' + A.esc(form.contractDate) + '"></div>' +
-          '<div class="ws-field"><label>시작일</label><input type="date" data-cf="startDate" value="' + A.esc(form.startDate) + '"></div>' +
-          '<div class="ws-field"><label>종료일</label><input type="date" data-cf="endDate" value="' + A.esc(form.endDate) + '"></div>' +
-        '</div>' +
+      '<div class="ws-grid-3">' +
+      '<div class="ws-field"><label>계약번호</label><input data-cf="contract_no" value="' + A.esc(form.contract_no) + '"></div>' +
+      '<div class="ws-field"><label>계약서 제목</label><input data-cf="title" value="' + A.esc(form.title) + '"></div>' +
+      '<div class="ws-field"><label>계약 상태</label><select data-cf="status">' +
+      ['초안', '확정', '서명요청중', '서명완료'].map(function (s) { return '<option value="' + s + '"' + (form.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="ws-field"><label>계약 체결일</label><input type="date" data-cf="contractDate" value="' + A.esc(form.contractDate) + '"></div>' +
+      '<div class="ws-field"><label>시작일</label><input type="date" data-cf="startDate" value="' + A.esc(form.startDate) + '"></div>' +
+      '<div class="ws-field"><label>종료일</label><input type="date" data-cf="endDate" value="' + A.esc(form.endDate) + '"></div>' +
+      '</div>' +
 
-        '<div class="ws-card" style="padding:12px">' +
-          '<h3 style="margin-bottom:8px;font-size:13px">👤 갑 (고객사) 정보</h3>' +
-          '<div class="ws-grid-2">' +
-            '<div class="ws-field"><label>업체명 *</label><input data-cf="client_name" value="' + A.esc(form.client_name) + '" placeholder="예: 미담투석검진센터"></div>' +
-            '<div class="ws-field"><label>대표자명</label><input data-cf="clientCeo" value="' + A.esc(form.clientCeo) + '" placeholder="예: 홍길동"></div>' +
-            '<div class="ws-field"><label>사업자번호</label><input data-cf="clientBizNo" value="' + A.esc(form.clientBizNo) + '" placeholder="000-00-00000"></div>' +
-            '<div class="ws-field"><label>연락처</label><input data-cf="clientPhone" value="' + A.esc(form.clientPhone) + '" placeholder="010-0000-0000"></div>' +
-            '<div class="ws-field"><label>고객 이메일 (전자서명 수신용) *</label><input type="email" data-cf="clientEmail" value="' + A.esc(form.clientEmail || '') + '" placeholder="client@company.co.kr"></div>' +
-            '<div class="ws-field"><label>주소</label><input data-cf="clientAddress" value="' + A.esc(form.clientAddress) + '" placeholder="고객사 사업장 주소"></div>' +
-          '</div>' +
-          (form.docuseal ? (
-            '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.35);font-size:11.8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
-              '<span>✍️ <b>DocuSeal 전자서명 상태:</b> ' + (form.docuseal.status === 'completed' ? '✅ 서명 완료' : '📨 이메일 발송됨 (' + A.esc(form.docuseal.client_email || '') + ')') + '</span>' +
-              (form.docuseal.signed_url ? '<a href="' + A.esc(form.docuseal.signed_url) + '" target="_blank" rel="noopener" class="ws-btn sm ok" style="text-decoration:none">최종 서명본 열기</a>' :
-                (form.docuseal.signing_url ? '<a href="' + A.esc(form.docuseal.signing_url) + '" target="_blank" rel="noopener" class="ws-btn sm" style="text-decoration:none">서명 링크 열기</a>' : '')) +
-            '</div>'
-          ) : '') +
-        '</div>' +
+      '<div class="ws-card" style="padding:12px">' +
+      '<h3 style="margin-bottom:8px;font-size:13px">👤 갑 (고객사) 정보</h3>' +
+      '<div class="ws-grid-2">' +
+      '<div class="ws-field"><label>업체명 *</label><input data-cf="client_name" value="' + A.esc(form.client_name) + '" placeholder="예: 미담투석검진센터"></div>' +
+      '<div class="ws-field"><label>대표자명</label><input data-cf="clientCeo" value="' + A.esc(form.clientCeo) + '" placeholder="예: 홍길동"></div>' +
+      '<div class="ws-field"><label>사업자번호</label><input data-cf="clientBizNo" value="' + A.esc(form.clientBizNo) + '" placeholder="000-00-00000"></div>' +
+      '<div class="ws-field"><label>연락처</label><input data-cf="clientPhone" value="' + A.esc(form.clientPhone) + '" placeholder="010-0000-0000"></div>' +
+      '<div class="ws-field"><label>고객 이메일 (전자서명 수신용) *</label><input type="email" data-cf="clientEmail" value="' + A.esc(form.clientEmail || '') + '" placeholder="client@company.co.kr"></div>' +
+      '<div class="ws-field"><label>주소</label><input data-cf="clientAddress" value="' + A.esc(form.clientAddress) + '" placeholder="고객사 사업장 주소"></div>' +
+      '</div>' +
+      (form.docuseal ? (
+        '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.35);font-size:11.8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
+        '<span>✍️ <b>DocuSeal 전자서명 상태:</b> ' + (form.docuseal.status === 'completed' ? '✅ 서명 완료' : '📨 이메일 발송됨 (' + A.esc(form.docuseal.client_email || '') + ')') + '</span>' +
+        (form.docuseal.signed_url ? '<a href="' + A.esc(form.docuseal.signed_url) + '" target="_blank" rel="noopener" class="ws-btn sm ok" style="text-decoration:none">최종 서명본 열기</a>' :
+          (form.docuseal.signing_url ? '<a href="' + A.esc(form.docuseal.signing_url) + '" target="_blank" rel="noopener" class="ws-btn sm" style="text-decoration:none">서명 링크 열기</a>' : '')) +
+        '</div>'
+      ) : '') +
+      '</div>' +
 
-        '<div class="ws-card" style="padding:12px">' +
-          '<h3 style="margin-bottom:8px;font-size:13px"><span>💰 서비스 항목 및 계약 금액</span><span style="display:flex;gap:5px"><button type="button" class="ws-btn sm danger" id="contPopItem" title="마지막 항목 삭제">− 항목 빼기</button><button type="button" class="ws-btn sm primary" id="contAddItem">+ 항목 추가</button></span></h3>' +
-          '<div class="line-items" id="contItemsBox">' +
-            '<div class="line-head"><span>서비스 항목명</span><span>수량</span><span>단가(원)</span><span>비고</span><span>삭제</span></div>' +
-            (form.items || []).map(function (it, idx) {
-              return '<div class="line-row" data-cidx="' + idx + '">' +
-                '<input placeholder="서비스명" data-ck="name" value="' + A.esc(it.name) + '">' +
-                '<input type="number" min="1" placeholder="수량" data-ck="qty" value="' + A.esc(it.qty) + '">' +
-                '<input type="number" step="50000" min="0" placeholder="단가" data-ck="price" value="' + A.esc(it.price) + '">' +
-                '<input placeholder="비고" data-ck="note" value="' + A.esc(it.note || '') + '">' +
-                '<button type="button" class="ws-btn sm danger line-del" data-cdel="' + idx + '" title="이 항목 삭제">−</button>' +
-              '</div>';
-            }).join('') +
-          '</div>' +
-          '<div class="ws-grid-2" style="margin-top:10px">' +
-            '<div class="ws-field"><label>결제 조건</label><input data-cf="paymentTerms" value="' + A.esc(form.paymentTerms) + '"></div>' +
-            '<div class="ws-field"><label>부가세 (10%)</label><label class="chip-check" style="margin-top:4px"><input type="checkbox" id="contVatChk"' + (form.includeVat ? ' checked' : '') + '> 부가세 10% 포함</label></div>' +
-          '</div>' +
-        '</div>' +
+      '<div class="ws-card" style="padding:12px">' +
+      '<h3 style="margin-bottom:8px;font-size:13px"><span>💰 서비스 항목 및 계약 금액</span><span style="display:flex;gap:5px"><button type="button" class="ws-btn sm danger" id="contPopItem" title="마지막 항목 삭제">− 항목 빼기</button><button type="button" class="ws-btn sm primary" id="contAddItem">+ 항목 추가</button></span></h3>' +
+      '<div class="line-items" id="contItemsBox">' +
+      '<div class="line-head"><span>서비스 항목명</span><span>수량</span><span>단가(원)</span><span>비고</span><span>삭제</span></div>' +
+      (form.items || []).map(function (it, idx) {
+        return '<div class="line-row" data-cidx="' + idx + '">' +
+          '<input placeholder="서비스명" data-ck="name" value="' + A.esc(it.name) + '">' +
+          '<input type="number" min="1" placeholder="수량" data-ck="qty" value="' + A.esc(it.qty) + '">' +
+          '<input type="number" step="50000" min="0" placeholder="단가" data-ck="price" value="' + A.esc(it.price) + '">' +
+          '<input placeholder="비고" data-ck="note" value="' + A.esc(it.note || '') + '">' +
+          '<button type="button" class="ws-btn sm danger line-del" data-cdel="' + idx + '" title="이 항목 삭제">−</button>' +
+          '</div>';
+      }).join('') +
+      '</div>' +
+      '<div class="ws-grid-2" style="margin-top:10px">' +
+      '<div class="ws-field"><label>결제 조건</label><input data-cf="paymentTerms" value="' + A.esc(form.paymentTerms) + '"></div>' +
+      '<div class="ws-field"><label>부가세 (10%)</label><label class="chip-check" style="margin-top:4px"><input type="checkbox" id="contVatChk"' + (form.includeVat ? ' checked' : '') + '> 부가세 10% 포함</label></div>' +
+      '</div>' +
+      '</div>' +
 
-        '<div class="ws-card" style="padding:12px">' +
-          '<h3 style="margin-bottom:8px;font-size:13px"><span>🏢 을 (우리 회사 · 직인)</span><button type="button" class="ws-btn sm primary" id="contSaveProfileBtn">기본정보로 영구 저장</button></h3>' +
-          '<div class="ws-grid-2">' +
-            '<div class="ws-field"><label>대행사 상호</label><input data-cf="agencyCompany" value="' + A.esc(form.agencyCompany) + '"></div>' +
-            '<div class="ws-field"><label>대표자명</label><input data-cf="agencyCeo" value="' + A.esc(form.agencyCeo) + '"></div>' +
-            '<div class="ws-field"><label>사업자번호</label><input data-cf="agencyBizNo" value="' + A.esc(form.agencyBizNo) + '"></div>' +
-            '<div class="ws-field"><label>연락처</label><input data-cf="agencyPhone" value="' + A.esc(form.agencyPhone) + '"></div>' +
-            '<div class="ws-field"><label>주소</label><input data-cf="agencyAddress" value="' + A.esc(form.agencyAddress) + '"></div>' +
-            '<div class="ws-field"><label>입금 계좌</label><input data-cf="agencyBank" value="' + A.esc(form.agencyBank) + '"></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">' +
-            '<input type="file" id="contStampInput" accept="image/*" hidden>' +
-            '<button type="button" class="ws-btn sm" id="contStampBtn">🔴 회사 직인(도장) 이미지 업로드</button>' +
-            (form.stampDataUrl ? '<button type="button" class="ws-btn sm danger" id="contStampClear">직인 제거</button><span style="font-size:11.5px;color:#16a34a;font-weight:700">✓ 직인 적용됨</span>' : '<span style="font-size:11.5px;color:var(--muted)">투명 PNG 도장 이미지를 올리면 서명란에 자동 날인됩니다</span>') +
-          '</div>' +
-        '</div>' +
+      '<div class="ws-card" style="padding:12px">' +
+      '<h3 style="margin-bottom:8px;font-size:13px"><span>🏢 을 (우리 회사 · 직인)</span><button type="button" class="ws-btn sm primary" id="contSaveProfileBtn">기본정보로 영구 저장</button></h3>' +
+      '<div class="ws-grid-2">' +
+      '<div class="ws-field"><label>대행사 상호</label><input data-cf="agencyCompany" value="' + A.esc(form.agencyCompany) + '"></div>' +
+      '<div class="ws-field"><label>대표자명</label><input data-cf="agencyCeo" value="' + A.esc(form.agencyCeo) + '"></div>' +
+      '<div class="ws-field"><label>사업자번호</label><input data-cf="agencyBizNo" value="' + A.esc(form.agencyBizNo) + '"></div>' +
+      '<div class="ws-field"><label>연락처</label><input data-cf="agencyPhone" value="' + A.esc(form.agencyPhone) + '"></div>' +
+      '<div class="ws-field"><label>주소</label><input data-cf="agencyAddress" value="' + A.esc(form.agencyAddress) + '"></div>' +
+      '<div class="ws-field"><label>입금 계좌</label><input data-cf="agencyBank" value="' + A.esc(form.agencyBank) + '"></div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">' +
+      '<input type="file" id="contStampInput" accept="image/*" hidden>' +
+      '<button type="button" class="ws-btn sm" id="contStampBtn">🔴 회사 직인(도장) 이미지 업로드</button>' +
+      (form.stampDataUrl ? '<button type="button" class="ws-btn sm danger" id="contStampClear">직인 제거</button><span style="font-size:11.5px;color:#16a34a;font-weight:700">✓ 직인 적용됨</span>' : '<span style="font-size:11.5px;color:var(--muted)">투명 PNG 도장 이미지를 올리면 서명란에 자동 날인됩니다</span>') +
+      '</div>' +
+      '</div>' +
 
-        '<div class="ws-card" style="padding:12px">' +
-          '<h3 style="margin-bottom:8px;font-size:13px"><span>🔑 DocuSeal 전자서명 API 키 설정</span>' +
-            ((A.store.agencyProfile && A.store.agencyProfile.hasDocusealKey)
-              ? '<span class="tag-pill ok" style="box-shadow:0 0 8px rgba(34,197,94,0.45)">● 연동됨 (' + A.esc(A.store.agencyProfile.docusealKeyHint || '') + ')</span>'
-              : '<span class="tag-pill stage">미연동</span>') +
-          '</h3>' +
-          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
-            '<input type="password" id="dsApiKeyInput" placeholder="발급받은 DocuSeal API 키를 여기에 붙여넣으세요" style="flex:1;min-width:180px;font-size:12.4px;padding:7px 10px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--panel-strong);color:var(--text)">' +
-            '<button type="button" class="ws-btn sm primary" id="dsKeySaveBtn">💾 API 키 저장</button>' +
-          '</div>' +
-          '<div style="margin-top:6px;font-size:11.2px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap">' +
-            '<span>완료 웹훅 URL: <code>' + A.esc(location.origin) + '/api/webhooks/docuseal</code></span>' +
-            '<button type="button" class="ws-btn sm" id="dsCopyWebhook">📋 웹훅 주소 복사</button>' +
-          '</div>' +
-        '</div>' +
+      '<div class="ws-card" style="padding:12px">' +
+      '<h3 style="margin-bottom:8px;font-size:13px"><span>🔑 DocuSeal 전자서명 API 키 설정</span>' +
+      ((A.store.agencyProfile && A.store.agencyProfile.hasDocusealKey)
+        ? '<span class="tag-pill ok" style="box-shadow:0 0 8px rgba(34,197,94,0.45)">● 연동됨 (' + A.esc(A.store.agencyProfile.docusealKeyHint || '') + ')</span>'
+        : '<span class="tag-pill stage">미연동</span>') +
+      '</h3>' +
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+      '<input type="password" id="dsApiKeyInput" placeholder="발급받은 DocuSeal API 키를 여기에 붙여넣으세요" style="flex:1;min-width:180px;font-size:12.4px;padding:7px 10px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--panel-strong);color:var(--text)">' +
+      '<button type="button" class="ws-btn sm primary" id="dsKeySaveBtn">💾 API 키 저장</button>' +
+      '</div>' +
+      '<div style="margin-top:6px;font-size:11.2px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap">' +
+      '<span>완료 웹훅 URL: <code>' + A.esc(location.origin) + '/api/webhooks/docuseal</code></span>' +
+      '<button type="button" class="ws-btn sm" id="dsCopyWebhook">📋 웹훅 주소 복사</button>' +
+      '</div>' +
+      '</div>' +
 
-        '<div class="ws-field">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center">' +
-            '<label>📝 계약서 조항 텍스트 편집 (1페이지 본문)</label>' +
-            '<button type="button" class="ws-btn sm" id="contResetClauses">🔄 표준 조항 복원</button>' +
-          '</div>' +
-          '<textarea data-cf="clauses" style="min-height:220px;font-size:12.6px">' + A.esc(form.clauses) + '</textarea>' +
-        '</div>' +
+      '<div class="ws-field">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<label>📝 계약서 조항 텍스트 편집 (1페이지 본문)</label>' +
+      '<button type="button" class="ws-btn sm" id="contResetClauses">🔄 표준 조항 복원</button>' +
+      '</div>' +
+      '<textarea data-cf="clauses" style="min-height:220px;font-size:12.6px">' + A.esc(form.clauses) + '</textarea>' +
+      '</div>' +
 
-        '<div class="ws-card" style="padding:12px;border-color:rgba(56,189,248,0.45)">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">' +
-            '<h3 style="margin:0;font-size:13.2px">📜 별지 A4 2페이지 — 추가 특약사항 (선택)</h3>' +
-            '<label class="chip-check" style="margin:0;padding:4px 9px;font-size:11.5px"><input type="checkbox" id="contPage2Chk"' + (form.usePage2 ? ' checked' : '') + '> A4 2장으로 출력/발송</label>' +
-          '</div>' +
-          '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">' +
-            EXTRA_TERM_PRESETS.map(function (p, i) {
-              return '<button type="button" class="ws-btn sm" data-etp="' + i + '">+ ' + p.label + '</button>';
-            }).join('') +
-          '</div>' +
-          '<div class="ws-field">' +
-            '<textarea data-cf="extraSpecialTerms" style="min-height:130px;font-size:12.6px" placeholder="클라이언트가 추가 특약사항을 요청할 경우 여기에 입력하세요. 위 [A4 2장으로 출력/발송] 체크를 켜면 오른쪽 미리보기·PDF·전자서명에 별지 2페이지가 자동으로 붙고, 체크를 해제하면 1장으로 표시됩니다.">' + A.esc(form.extraSpecialTerms || '') + '</textarea>' +
-          '</div>' +
-        '</div>' +
+      '<div class="ws-card" style="padding:12px;border-color:rgba(56,189,248,0.45)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">' +
+      '<h3 style="margin:0;font-size:13.2px">📜 별지 A4 2페이지 — 추가 특약사항 (선택)</h3>' +
+      '<label class="chip-check" style="margin:0;padding:4px 9px;font-size:11.5px"><input type="checkbox" id="contPage2Chk"' + (form.usePage2 ? ' checked' : '') + '> A4 2장으로 출력/발송</label>' +
+      '</div>' +
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">' +
+      EXTRA_TERM_PRESETS.map(function (p, i) {
+        return '<button type="button" class="ws-btn sm" data-etp="' + i + '">+ ' + p.label + '</button>';
+      }).join('') +
+      '</div>' +
+      '<div class="ws-field">' +
+      '<textarea data-cf="extraSpecialTerms" style="min-height:130px;font-size:12.6px" placeholder="클라이언트가 추가 특약사항을 요청할 경우 여기에 입력하세요. 위 [A4 2장으로 출력/발송] 체크를 켜면 오른쪽 미리보기·PDF·전자서명에 별지 2페이지가 자동으로 붙고, 체크를 해제하면 1장으로 표시됩니다.">' + A.esc(form.extraSpecialTerms || '') + '</textarea>' +
+      '</div>' +
+      '</div>' +
       '</div>' +
 
       // 오른쪽: 실시간 A4 계약서 미리보기
       '<div class="split-preview">' +
-        '<div class="preview-toolbar">' +
-          '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 계약서 미리보기 (' + (form.usePage2 ? '2장' : '1장') + ')</span>' +
-          '<div class="ws-actions">' +
-            '<button type="button" class="ws-btn sm primary" id="contSaveBtn">💾 계약서 저장</button>' +
-            '<button type="button" class="ws-btn sm ai" id="contSendSignBtn">📧 이메일 · 전자서명 발송</button>' +
-            '<button type="button" class="ws-btn sm ok" id="contPrintBtn">🖨️ A4 PDF 저장 / 출력</button>' +
-          '</div>' +
-        '</div>' +
-        '<div id="contSignNotice" style="width:100%;max-width:794px" hidden></div>' +
-        '<div id="contPreviewBox" style="width:100%;display:flex;flex-direction:column;align-items:center">' + previewHtml() + '</div>' +
+      '<div class="preview-toolbar">' +
+      '<span style="font-size:12.5px;font-weight:800;color:#0c4a6e">👁️ 실시간 A4 계약서 미리보기 (' + (form.usePage2 ? '2장' : '1장') + ')</span>' +
+      '<div class="ws-actions">' +
+      '<button type="button" class="ws-btn sm primary" id="contSaveBtn">💾 계약서 저장</button>' +
+      '<button type="button" class="ws-btn sm ai" id="contSendSignBtn">📧 이메일 · 전자서명 발송</button>' +
+      '<button type="button" class="ws-btn sm ok" id="contPrintBtn">🖨️ A4 PDF 저장 / 출력</button>' +
       '</div>' +
-    '</div>';
+      '</div>' +
+      '<div id="contSignNotice" style="width:100%;max-width:794px" hidden></div>' +
+      '<div id="contPreviewBox" style="width:100%;display:flex;flex-direction:column;align-items:center">' + previewHtml() + '</div>' +
+      '</div>' +
+      '</div>';
 
     bindEvents(root);
   }
@@ -696,15 +696,15 @@
               '<b style="color:#d97706">⚙️ DocuSeal API 키 연동 안내</b><br>' +
               A.esc(err.message || '발송에 실패했습니다.') +
               '<div style="margin-top:8px;padding:8px 10px;border-radius:9px;background:rgba(2,132,199,0.08);font-size:11.8px">' +
-                '1) 왼쪽 <b>🔑 DocuSeal 전자서명 API 키 설정</b> 칸에 발급받은 API 키를 붙여넣고 <b>API 키 저장</b> 클릭<br>' +
-                '2) DocuSeal Settings → Webhooks에 <code>' + A.esc(location.origin) + '/api/webhooks/docuseal</code> 등록 (이벤트: <code>form.completed</code>)' +
+              '1) 왼쪽 <b>🔑 DocuSeal 전자서명 API 키 설정</b> 칸에 발급받은 API 키를 붙여넣고 <b>API 키 저장</b> 클릭<br>' +
+              '2) DocuSeal Settings → Webhooks에 <code>' + A.esc(location.origin) + '/api/webhooks/docuseal</code> 등록 (이벤트: <code>form.completed</code>)' +
               '</div>' +
               '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
-                '<a class="ws-btn sm primary" href="https://www.docuseal.com" target="_blank" rel="noopener noreferrer" style="text-decoration:none">🔗 DocuSeal 열기 (새 창)</a>' +
-                '<a class="ws-btn sm ok" href="' + gmailUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none">📧 Gmail 새 창으로 보내기</a>' +
-                '<a class="ws-btn sm" href="mailto:' + encodeURIComponent(email) + '?subject=' + mailSub + '&body=' + mailBody + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none">✉️ PC 기본 메일 앱 (새 창)</a>' +
+              '<a class="ws-btn sm primary" href="https://www.docuseal.com" target="_blank" rel="noopener noreferrer" style="text-decoration:none">🔗 DocuSeal 열기 (새 창)</a>' +
+              '<a class="ws-btn sm ok" href="' + gmailUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none">📧 Gmail 새 창으로 보내기</a>' +
+              '<a class="ws-btn sm" href="mailto:' + encodeURIComponent(email) + '?subject=' + mailSub + '&body=' + mailBody + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none">✉️ PC 기본 메일 앱 (새 창)</a>' +
               '</div>' +
-            '</div>';
+              '</div>';
           }
           A.toast('ℹ️ 왼쪽 "DocuSeal API 키 설정" 칸에 키를 입력 후 저장해 주세요.');
         });

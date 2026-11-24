@@ -144,11 +144,11 @@
 
   var CHANNELS = [
     { id: '네이버 블로그', icon: '🟢', color: '#4ade80', bg: 'rgba(74,222,128,0.16)', border: '#22c55e', text: '#bbf7d0' },
-    { id: '인스타 릴스',   icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.18)', border: '#a855f7', text: '#e9d5ff' },
-    { id: '유튜브',        icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.18)', border: '#ef4444', text: '#fecaca' },
-    { id: '컨설팅',        icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.18)',  border: '#eab308', text: '#fef08a' },
-    { id: '스레드',        icon: '🧵', color: '#38bdf8', bg: 'rgba(15,23,42,0.22)',    border: 'rgba(148,163,184,0.38)', text: '#e2e8f0' },
-    { id: '기타',          icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: '#64748b', text: '#cbd5e1' },
+    { id: '인스타 릴스', icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.18)', border: '#a855f7', text: '#e9d5ff' },
+    { id: '유튜브', icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.18)', border: '#ef4444', text: '#fecaca' },
+    { id: '컨설팅', icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.18)', border: '#eab308', text: '#fef08a' },
+    { id: '스레드', icon: '🧵', color: '#38bdf8', bg: 'rgba(15,23,42,0.22)', border: 'rgba(148,163,184,0.38)', text: '#e2e8f0' },
+    { id: '기타', icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: '#64748b', text: '#cbd5e1' },
   ];
 
   function channelStyle(ch) {
@@ -279,8 +279,8 @@
               '</button>' +
               '<button type="button" data-cal-quickdel="' + it.id + '" title="이 일정 바로 삭제" style="border:0;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;font-size:11px;font-weight:900;padding:0 3px;line-height:1;flex-shrink:0">×</button>' +
             '</div>';
-          }).join('') +
-          (list.length > 4 ? '<div style="font-size:10px;color:var(--muted);text-align:right">+' + (list.length - 4) + '건 더보기</div>' : '') +
+        }).join('') +
+        (list.length > 4 ? '<div style="font-size:10px;color:var(--muted);text-align:right">+' + (list.length - 4) + '건 더보기</div>' : '') +
         '</div>'
       );
     }
@@ -295,134 +295,134 @@
     return '' +
       // 직관적인 1줄 4카드 요약 KPI
       '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px">' +
-        '<div class="kpi-card"><div class="k-lbl">전체 등록 콘텐츠</div><div class="k-val">' + filtered.length + '건</div><div class="k-sub">VIP 포털 실시간 연동</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">✅ 검수완료 · 예약확정</div><div class="k-val" style="color:#10b981">' + cntBooked + '건</div><div class="k-sub">민트색 완료 강조 표시</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">⏳ 검수 대기 / ✏️ 수정요청</div><div class="k-val" style="color:#fbbf24">' + cntWait + ' / ' + cntFix + '</div><div class="k-sub">포털 피드백 실시간 반영</div></div>' +
-        '<div class="kpi-card"><div class="k-lbl">🏁 발행 완료</div><div class="k-val" style="color:#06b6d4">' + cntDone + '건</div><div class="k-sub">청록 완료 표시 누적</div></div>' +
+      '<div class="kpi-card"><div class="k-lbl">전체 등록 콘텐츠</div><div class="k-val">' + filtered.length + '건</div><div class="k-sub">VIP 포털 실시간 연동</div></div>' +
+      '<div class="kpi-card"><div class="k-lbl">✅ 검수완료 · 예약확정</div><div class="k-val" style="color:#10b981">' + cntBooked + '건</div><div class="k-sub">민트색 완료 강조 표시</div></div>' +
+      '<div class="kpi-card"><div class="k-lbl">⏳ 검수 대기 / ✏️ 수정요청</div><div class="k-val" style="color:#fbbf24">' + cntWait + ' / ' + cntFix + '</div><div class="k-sub">포털 피드백 실시간 반영</div></div>' +
+      '<div class="kpi-card"><div class="k-lbl">🏁 발행 완료</div><div class="k-val" style="color:#06b6d4">' + cntDone + '건</div><div class="k-sub">청록 완료 표시 누적</div></div>' +
       '</div>' +
 
       // 직관적 채널·상태 색상 범례 & 쉬운 사용법 주석
       '<div style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.32);border-radius:12px;padding:9px 14px;margin-bottom:12px;font-size:11.8px;line-height:1.6;color:var(--ink)">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">' +
-          '<span>💡 <b>등록법:</b> 달력 날짜의 <b style="color:#38bdf8">[＋]</b>로 1건씩 바로 추가하거나 <b>[🏭 AI 10편 공장]</b>에서 일괄 등록 · 일정 우측 <b>[×]</b>로 즉시 삭제!</span>' +
-          '<button type="button" class="ws-btn sm primary" id="calOpenAddBtn">➕ 새 일정 바로 등록</button>' +
-        '</div>' +
-        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(148,163,184,0.28);font-size:11.2px">' +
-          '<span><b>채널색:</b></span>' +
-          '<span style="color:#4ade80;font-weight:800">● 네이버(연두)</span>' +
-          '<span style="color:#c084fc;font-weight:800">● 릴스(보라)</span>' +
-          '<span style="color:#f87171;font-weight:800">● 유튜브(빨강)</span>' +
-          '<span style="color:#facc15;font-weight:800">● 컨설팅(노랑)</span>' +
-          '<span style="color:#38bdf8;font-weight:800">● 스레드</span>' +
-          '<span style="color:#94a3b8;font-weight:800">● 기타</span>' +
-          '<span style="margin-left:6px"><b>| 상태색:</b></span>' +
-          '<span style="background:rgba(16,185,129,0.22);border:1px solid #10b981;color:#a7f3d0;padding:0 6px;border-radius:6px;font-weight:800">✅ 검수·예약완료</span>' +
-          '<span style="background:rgba(6,182,212,0.18);border:1px solid #06b6d4;color:#a5f3fc;padding:0 6px;border-radius:6px;font-weight:800">🏁 발행완료</span>' +
-          '<span style="background:rgba(249,115,22,0.22);border:1px solid #f97316;color:#fed7aa;padding:0 6px;border-radius:6px;font-weight:800">✏️ 수정요청</span>' +
-        '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">' +
+      '<span>💡 <b>등록법:</b> 달력 날짜의 <b style="color:#38bdf8">[＋]</b>로 1건씩 바로 추가하거나 <b>[🏭 AI 10편 공장]</b>에서 일괄 등록 · 일정 우측 <b>[×]</b>로 즉시 삭제!</span>' +
+      '<button type="button" class="ws-btn sm primary" id="calOpenAddBtn">➕ 새 일정 바로 등록</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(148,163,184,0.28);font-size:11.2px">' +
+      '<span><b>채널색:</b></span>' +
+      '<span style="color:#4ade80;font-weight:800">● 네이버(연두)</span>' +
+      '<span style="color:#c084fc;font-weight:800">● 릴스(보라)</span>' +
+      '<span style="color:#f87171;font-weight:800">● 유튜브(빨강)</span>' +
+      '<span style="color:#facc15;font-weight:800">● 컨설팅(노랑)</span>' +
+      '<span style="color:#38bdf8;font-weight:800">● 스레드</span>' +
+      '<span style="color:#94a3b8;font-weight:800">● 기타</span>' +
+      '<span style="margin-left:6px"><b>| 상태색:</b></span>' +
+      '<span style="background:rgba(16,185,129,0.22);border:1px solid #10b981;color:#a7f3d0;padding:0 6px;border-radius:6px;font-weight:800">✅ 검수·예약완료</span>' +
+      '<span style="background:rgba(6,182,212,0.18);border:1px solid #06b6d4;color:#a5f3fc;padding:0 6px;border-radius:6px;font-weight:800">🏁 발행완료</span>' +
+      '<span style="background:rgba(249,115,22,0.22);border:1px solid #f97316;color:#fed7aa;padding:0 6px;border-radius:6px;font-weight:800">✏️ 수정요청</span>' +
+      '</div>' +
       '</div>' +
 
       '<div class="ws-split" style="grid-template-columns:minmax(0,1.3fr) minmax(350px,0.95fr);align-items:start">' +
-        '<div class="ws-card" style="padding:14px">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
-            '<div class="ws-actions">' +
-              '<button type="button" class="ws-btn sm" id="calPrev">◀ 이전 달</button>' +
-              '<strong style="font-size:15px;padding:0 6px">' + st.year + '년 ' + st.month + '월</strong>' +
-              '<button type="button" class="ws-btn sm" id="calNext">다음 달 ▶</button>' +
-              '<button type="button" class="ws-btn sm" id="calRefresh">🔄 새로고침</button>' +
-            '</div>' +
-            '<div class="ws-actions">' +
-              '<select id="calFilterClient" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
-                '<option value="">전체 고객사</option>' +
-                clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.filterClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + '</option>'; }).join('') +
-              '</select>' +
-              (selectedFilterClient ? '<button type="button" class="ws-btn sm danger" id="calBulkDelClientBtn" title="선택한 고객사의 모든 일정을 일괄 삭제">🗑️ [' + A.esc(selectedFilterClient.name) + '] 전체 삭제 (' + filtered.length + '건)</button>' : '') +
-              '<select id="calFilterCh" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
-                '<option value="">전체 채널</option>' +
-                CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.filterChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
-              '</select>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;text-align:center;font-size:11.5px;font-weight:800;color:var(--muted)">' +
-            '<span style="color:#ef4444">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#38bdf8">토</span>' +
-          '</div>' +
-          '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">' + cells.join('') + '</div>' +
+      '<div class="ws-card" style="padding:14px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
+      '<div class="ws-actions">' +
+      '<button type="button" class="ws-btn sm" id="calPrev">◀ 이전 달</button>' +
+      '<strong style="font-size:15px;padding:0 6px">' + st.year + '년 ' + st.month + '월</strong>' +
+      '<button type="button" class="ws-btn sm" id="calNext">다음 달 ▶</button>' +
+      '<button type="button" class="ws-btn sm" id="calRefresh">🔄 새로고침</button>' +
+      '</div>' +
+      '<div class="ws-actions">' +
+      '<select id="calFilterClient" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
+      '<option value="">전체 고객사</option>' +
+      clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.filterClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + '</option>'; }).join('') +
+      '</select>' +
+      (selectedFilterClient ? '<button type="button" class="ws-btn sm danger" id="calBulkDelClientBtn" title="선택한 고객사의 모든 일정을 일괄 삭제">🗑️ [' + A.esc(selectedFilterClient.name) + '] 전체 삭제 (' + filtered.length + '건)</button>' : '') +
+      '<select id="calFilterCh" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
+      '<option value="">전체 채널</option>' +
+      CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.filterChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+      '</select>' +
+      '</div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;text-align:center;font-size:11.5px;font-weight:800;color:var(--muted)">' +
+      '<span style="color:#ef4444">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#38bdf8">토</span>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">' + cells.join('') + '</div>' +
+      '</div>' +
+
+      // 오른쪽: sticky 고정으로 달력 아래 날짜를 클릭해도 스크롤 이동 없이 제자리에서 바로 확인!
+      '<div class="ws-card" style="padding:14px;position:sticky;top:10px">' +
+      (st.addMode ? (
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
+        '<h3 style="margin:0;font-size:14.5px;color:#38bdf8">➕ 새 콘텐츠 일정 바로 등록</h3>' +
+        '<div class="ws-actions">' +
+        '<button type="button" class="ws-btn sm accent" id="calSampleAddBtn">🎲 Sample</button>' +
+        (filtered.length ? '<button type="button" class="ws-btn sm" id="calCancelAddBtn">목록 보기</button>' : '') +
         '</div>' +
-
-        // 오른쪽: sticky 고정으로 달력 아래 날짜를 클릭해도 스크롤 이동 없이 제자리에서 바로 확인!
-        '<div class="ws-card" style="padding:14px;position:sticky;top:10px">' +
-          (st.addMode ? (
-            '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
-              '<h3 style="margin:0;font-size:14.5px;color:#38bdf8">➕ 새 콘텐츠 일정 바로 등록</h3>' +
-              '<div class="ws-actions">' +
-                '<button type="button" class="ws-btn sm accent" id="calSampleAddBtn">🎲 Sample</button>' +
-                (filtered.length ? '<button type="button" class="ws-btn sm" id="calCancelAddBtn">목록 보기</button>' : '') +
-              '</div>' +
-            '</div>' +
-            '<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">' +
-              '① 아래 4칸만 채우고 <b>[달력·VIP 포털에 등록]</b>을 누르세요.<br>' +
-              '② 채널에 따라 달력에 <b>연두(네이버)·보라(릴스)·빨강(유튜브)·노랑(컨설팅)</b> 색상으로 자동 분류됩니다.' +
-            '</div>' +
-            '<div class="ws-grid-2">' +
-              '<div class="ws-field"><label>1. 고객사 선택 *</label><select id="calNewClient">' +
-                (clients.length
-                  ? clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.newClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>'; }).join('')
-                  : '<option value="">먼저 고객사 탭에서 1곳 등록하세요</option>') +
-              '</select></div>' +
-              '<div class="ws-field"><label>2. 발행 예정일 *</label><input type="date" id="calNewDate" value="' + A.esc(st.newDate || A.todayKst()) + '"></div>' +
-            '</div>' +
-            '<div class="ws-grid-2" style="margin-top:8px">' +
-              '<div class="ws-field"><label>3. 발행 채널 (색상 자동지정)</label><select id="calNewCh">' +
-                CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.newChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
-              '</select></div>' +
-              '<div class="ws-field"><label>등록 상태</label><select id="calNewStatus"><option value="검수대기">⏳ VIP 포털 고객 검수 요청</option><option value="예약확정">✅ 바로 예약 확정</option><option value="발행완료">🏁 발행 완료</option></select></div>' +
-            '</div>' +
-            '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 12월 유튜브 쇼츠 / 원장님 컨설팅 미팅 / 블로그 포스팅"></div>' +
-            '<div class="ws-field" style="margin-top:8px"><label>초안 내용 · 대본 · 메모</label><textarea id="calNewBody" style="min-height:130px" placeholder="블로그 핵심 요약, 릴스/유튜브 대본, 또는 컨설팅 안건을 입력하세요">' + A.esc(st.newBody) + '</textarea></div>' +
-            '<div class="ws-actions" style="margin-top:10px">' +
-              '<button type="button" class="ws-btn primary" id="calSubmitNewBtn">💾 달력 · VIP 포털에 일정 등록</button>' +
-              '<button type="button" class="ws-btn ok" data-ch-tab="factory">🏭 10편 한꺼번에 자동 생성하기</button>' +
-            '</div>'
-          ) : (
-            '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
-              '<h3 style="margin:0;font-size:14px">🚀 원클릭 예약 발행 &amp; 🛡️ AI 심의 검수</h3>' +
-              '<button type="button" class="ws-btn sm primary" id="calSwitchAddBtn">＋ 새 일정 추가</button>' +
-            '</div>' +
-            (sel ? (
-              '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
-                '<span class="tag-pill ' + statusMeta(sel.status).cls + '">' + statusMeta(sel.status).badge + '</span>' +
-                '<span style="font-size:11.5px;color:var(--muted)">고객사: <b>' + A.esc(clientNameById(sel.client_id)) + '</b></span>' +
-              '</div>' +
-              '<div class="ws-grid-2">' +
-                '<div class="ws-field"><label>발행 채널</label><select id="calEditCh">' +
-                  CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (sel.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
-                '</select></div>' +
-                '<div class="ws-field"><label>예약 발행일</label><input type="date" id="calEditDate" value="' + A.esc(sel.scheduled_date || '') + '"></div>' +
-              '</div>' +
-              '<div class="ws-field" style="margin-top:6px"><label>콘텐츠 제목</label><input id="calEditTitle" value="' + A.esc(sel.title) + '"></div>' +
-              '<div class="ws-field" style="margin-top:6px"><label>원고 · 릴스 대본 · 해시태그</label><textarea id="calEditBody" style="min-height:140px">' + A.esc(sel.preview_text || '') + '</textarea></div>' +
-              (sel.client_feedback ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);font-size:12px">💬 <b>고객 대표님 피드백:</b> ' + A.esc(sel.client_feedback) + '</div>' : '') +
-
-              '<div style="margin-top:10px;padding:10px;border-radius:10px;border:1px solid ' + (comp.safe ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.4)') + ';background:' + (comp.safe ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)') + ';font-size:11.8px">' +
-                '<div style="font-weight:800;margin-bottom:4px">🛡️ 의료법 · 금소법 · 표시광고법 자동 심의: ' + comp.label + '</div>' +
-                (comp.safe
-                  ? '<div style="color:var(--muted)">금지어·과장광고 위험 표현이 발견되지 않았습니다. 바로 예약 발행하셔도 안전합니다!</div>'
-                  : comp.hits.map(function (h) {
-                      return '<div style="margin-top:4px;color:#fca5a5">• <b>[' + h.group + ']</b> “' + A.esc(h.word) + '” 탐지 → <span style="color:var(--ink)">' + A.esc(h.tip) + '</span></div>';
-                    }).join('')) +
-              '</div>' +
-
-              '<div class="ws-actions" style="margin-top:10px">' +
-                '<button type="button" class="ws-btn sm primary" id="calSaveEdit">💾 수정 저장</button>' +
-                '<button type="button" class="ws-btn sm ok" id="calSetBooked">✅ 검수·예약 확정</button>' +
-                '<button type="button" class="ws-btn sm accent" id="calSetPublished">🏁 발행 완료</button>' +
-                '<button type="button" class="ws-btn sm" id="calCopyText">📋 본문 복사</button>' +
-                (sel.channel.indexOf('릴스') !== -1 || sel.channel.indexOf('유튜브') !== -1 ? '<button type="button" class="ws-btn sm" id="calSendVideo">🎬 영상 편집기로 보내기</button>' : '') +
-                '<button type="button" class="ws-btn sm danger" id="calDeleteItem">🗑️ 이 일정 삭제</button>' +
-              '</div>'
-            ) : '')
-          )) +
         '</div>' +
+        '<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">' +
+        '① 아래 4칸만 채우고 <b>[달력·VIP 포털에 등록]</b>을 누르세요.<br>' +
+        '② 채널에 따라 달력에 <b>연두(네이버)·보라(릴스)·빨강(유튜브)·노랑(컨설팅)</b> 색상으로 자동 분류됩니다.' +
+        '</div>' +
+        '<div class="ws-grid-2">' +
+        '<div class="ws-field"><label>1. 고객사 선택 *</label><select id="calNewClient">' +
+        (clients.length
+          ? clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.newClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>'; }).join('')
+          : '<option value="">먼저 고객사 탭에서 1곳 등록하세요</option>') +
+        '</select></div>' +
+        '<div class="ws-field"><label>2. 발행 예정일 *</label><input type="date" id="calNewDate" value="' + A.esc(st.newDate || A.todayKst()) + '"></div>' +
+        '</div>' +
+        '<div class="ws-grid-2" style="margin-top:8px">' +
+        '<div class="ws-field"><label>3. 발행 채널 (색상 자동지정)</label><select id="calNewCh">' +
+        CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.newChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+        '</select></div>' +
+        '<div class="ws-field"><label>등록 상태</label><select id="calNewStatus"><option value="검수대기">⏳ VIP 포털 고객 검수 요청</option><option value="예약확정">✅ 바로 예약 확정</option><option value="발행완료">🏁 발행 완료</option></select></div>' +
+        '</div>' +
+        '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 12월 유튜브 쇼츠 / 원장님 컨설팅 미팅 / 블로그 포스팅"></div>' +
+        '<div class="ws-field" style="margin-top:8px"><label>초안 내용 · 대본 · 메모</label><textarea id="calNewBody" style="min-height:130px" placeholder="블로그 핵심 요약, 릴스/유튜브 대본, 또는 컨설팅 안건을 입력하세요">' + A.esc(st.newBody) + '</textarea></div>' +
+        '<div class="ws-actions" style="margin-top:10px">' +
+        '<button type="button" class="ws-btn primary" id="calSubmitNewBtn">💾 달력 · VIP 포털에 일정 등록</button>' +
+        '<button type="button" class="ws-btn ok" data-ch-tab="factory">🏭 10편 한꺼번에 자동 생성하기</button>' +
+        '</div>'
+      ) : (
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
+        '<h3 style="margin:0;font-size:14px">🚀 원클릭 예약 발행 &amp; 🛡️ AI 심의 검수</h3>' +
+        '<button type="button" class="ws-btn sm primary" id="calSwitchAddBtn">＋ 새 일정 추가</button>' +
+        '</div>' +
+        (sel ? (
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+          '<span class="tag-pill ' + statusMeta(sel.status).cls + '">' + statusMeta(sel.status).badge + '</span>' +
+          '<span style="font-size:11.5px;color:var(--muted)">고객사: <b>' + A.esc(clientNameById(sel.client_id)) + '</b></span>' +
+          '</div>' +
+          '<div class="ws-grid-2">' +
+          '<div class="ws-field"><label>발행 채널</label><select id="calEditCh">' +
+          CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (sel.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+          '</select></div>' +
+          '<div class="ws-field"><label>예약 발행일</label><input type="date" id="calEditDate" value="' + A.esc(sel.scheduled_date || '') + '"></div>' +
+          '</div>' +
+          '<div class="ws-field" style="margin-top:6px"><label>콘텐츠 제목</label><input id="calEditTitle" value="' + A.esc(sel.title) + '"></div>' +
+          '<div class="ws-field" style="margin-top:6px"><label>원고 · 릴스 대본 · 해시태그</label><textarea id="calEditBody" style="min-height:140px">' + A.esc(sel.preview_text || '') + '</textarea></div>' +
+          (sel.client_feedback ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);font-size:12px">💬 <b>고객 대표님 피드백:</b> ' + A.esc(sel.client_feedback) + '</div>' : '') +
+
+          '<div style="margin-top:10px;padding:10px;border-radius:10px;border:1px solid ' + (comp.safe ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.4)') + ';background:' + (comp.safe ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)') + ';font-size:11.8px">' +
+          '<div style="font-weight:800;margin-bottom:4px">🛡️ 의료법 · 금소법 · 표시광고법 자동 심의: ' + comp.label + '</div>' +
+          (comp.safe
+            ? '<div style="color:var(--muted)">금지어·과장광고 위험 표현이 발견되지 않았습니다. 바로 예약 발행하셔도 안전합니다!</div>'
+            : comp.hits.map(function (h) {
+              return '<div style="margin-top:4px;color:#fca5a5">• <b>[' + h.group + ']</b> “' + A.esc(h.word) + '” 탐지 → <span style="color:var(--ink)">' + A.esc(h.tip) + '</span></div>';
+            }).join('')) +
+          '</div>' +
+
+          '<div class="ws-actions" style="margin-top:10px">' +
+          '<button type="button" class="ws-btn sm primary" id="calSaveEdit">💾 수정 저장</button>' +
+          '<button type="button" class="ws-btn sm ok" id="calSetBooked">✅ 검수·예약 확정</button>' +
+          '<button type="button" class="ws-btn sm accent" id="calSetPublished">🏁 발행 완료</button>' +
+          '<button type="button" class="ws-btn sm" id="calCopyText">📋 본문 복사</button>' +
+          (sel.channel.indexOf('릴스') !== -1 || sel.channel.indexOf('유튜브') !== -1 ? '<button type="button" class="ws-btn sm" id="calSendVideo">🎬 영상 편집기로 보내기</button>' : '') +
+          '<button type="button" class="ws-btn sm danger" id="calDeleteItem">🗑️ 이 일정 삭제</button>' +
+          '</div>'
+        ) : '')
+      )) +
+      '</div>' +
       '</div>';
   }
 
@@ -436,49 +436,49 @@
 
     return '' +
       '<div class="ws-card" style="padding:14px;margin-bottom:12px">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
-          '<h3 style="margin:0;font-size:15px">🏭 AI 업종별 3초 후킹 릴스 · 블로그 초안 10편 일괄 생성 공장 (Phase A-3)</h3>' +
-          '<span class="tag-pill ok">블로그 6편 + 릴스 4편 = 10편 원클릭</span>' +
-        '</div>' +
-        '<div class="ws-grid-4">' +
-          '<div class="ws-field"><label>대상 고객사 (CRM 연동)</label><select id="facClient">' +
-            (clients.length
-              ? clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.factoryClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>'; }).join('')
-              : '<option value="">고객사 미등록 (예시 생성)</option>') +
-          '</select></div>' +
-          '<div class="ws-field"><label>업종 템플릿</label><select id="facInd">' +
-            ['병원', '보험설계사', '정책자금', '자영업/소상공인', '브랜드/기타'].map(function (ind) { return '<option value="' + ind + '"' + (st.factoryIndustry === ind ? ' selected' : '') + '>' + ind + '</option>'; }).join('') +
-          '</select></div>' +
-          '<div class="ws-field"><label>이달의 핵심 키워드 · 프로모션</label><input id="facTopic" value="' + A.esc(st.factoryTopic) + '" placeholder="예: 12월 무료 건강검진, 연말 보험료 절감"></div>' +
-          '<div class="ws-field"><label>발행 시작일 (월·수·금 자동 분산)</label><input type="date" id="facStart" value="' + A.esc(st.factoryStartDate) + '"></div>' +
-        '</div>' +
-        '<div class="ws-actions" style="margin-top:10px">' +
-          '<button type="button" class="ws-btn primary" id="facGenBtn">⚡ 10편 일괄 생성 (블로그 6 + 릴스 4)</button>' +
-          (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facBulkSaveBtn"' + (st.savingBulk ? ' disabled' : '') + '>📅 10편 전체 캘린더 · VIP 포털 검수함에 일괄 등록</button>' : '') +
-          (st.drafts.length ? '<button type="button" class="ws-btn" id="facDlHtmlBtn">🌐 클라이언트용 HTML 기획안 다운</button>' : '') +
-          (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facPrintPdfBtn">🖨️ 클라이언트용 PDF 출력 / 저장</button>' : '') +
-          (st.drafts.length ? '<button type="button" class="ws-btn accent" id="facAskAiBtn">🏫 일진 종합반 AI에 10편 카피 고도화 요청</button>' : '') +
-        '</div>' +
-        (selC ? '<div style="margin-top:8px;font-size:11.6px;color:var(--muted)">연동된 CRM 정보: <b>' + A.esc(selC.name) + '</b> · 업종: ' + A.esc(selC.industry) + ' · 이용 서비스: ' + A.esc((selC.services || []).join(', ') || '미지정') + '</div>' : '') +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
+      '<h3 style="margin:0;font-size:15px">🏭 AI 업종별 3초 후킹 릴스 · 블로그 초안 10편 일괄 생성 공장 (Phase A-3)</h3>' +
+      '<span class="tag-pill ok">블로그 6편 + 릴스 4편 = 10편 원클릭</span>' +
+      '</div>' +
+      '<div class="ws-grid-4">' +
+      '<div class="ws-field"><label>대상 고객사 (CRM 연동)</label><select id="facClient">' +
+      (clients.length
+        ? clients.map(function (c) { return '<option value="' + c.id + '"' + (String(st.factoryClientId) === String(c.id) ? ' selected' : '') + '>' + A.esc(c.name) + ' (' + A.esc(c.industry) + ')</option>'; }).join('')
+        : '<option value="">고객사 미등록 (예시 생성)</option>') +
+      '</select></div>' +
+      '<div class="ws-field"><label>업종 템플릿</label><select id="facInd">' +
+      ['병원', '보험설계사', '정책자금', '자영업/소상공인', '브랜드/기타'].map(function (ind) { return '<option value="' + ind + '"' + (st.factoryIndustry === ind ? ' selected' : '') + '>' + ind + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="ws-field"><label>이달의 핵심 키워드 · 프로모션</label><input id="facTopic" value="' + A.esc(st.factoryTopic) + '" placeholder="예: 12월 무료 건강검진, 연말 보험료 절감"></div>' +
+      '<div class="ws-field"><label>발행 시작일 (월·수·금 자동 분산)</label><input type="date" id="facStart" value="' + A.esc(st.factoryStartDate) + '"></div>' +
+      '</div>' +
+      '<div class="ws-actions" style="margin-top:10px">' +
+      '<button type="button" class="ws-btn primary" id="facGenBtn">⚡ 10편 일괄 생성 (블로그 6 + 릴스 4)</button>' +
+      (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facBulkSaveBtn"' + (st.savingBulk ? ' disabled' : '') + '>📅 10편 전체 캘린더 · VIP 포털 검수함에 일괄 등록</button>' : '') +
+      (st.drafts.length ? '<button type="button" class="ws-btn" id="facDlHtmlBtn">🌐 클라이언트용 HTML 기획안 다운</button>' : '') +
+      (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facPrintPdfBtn">🖨️ 클라이언트용 PDF 출력 / 저장</button>' : '') +
+      (st.drafts.length ? '<button type="button" class="ws-btn accent" id="facAskAiBtn">🏫 일진 종합반 AI에 10편 카피 고도화 요청</button>' : '') +
+      '</div>' +
+      (selC ? '<div style="margin-top:8px;font-size:11.6px;color:var(--muted)">연동된 CRM 정보: <b>' + A.esc(selC.name) + '</b> · 업종: ' + A.esc(selC.industry) + ' · 이용 서비스: ' + A.esc((selC.services || []).join(', ') || '미지정') + '</div>' : '') +
       '</div>' +
 
       (st.drafts.length ? (
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px">' +
-          st.drafts.map(function (d, i) {
-            var isReel = d.channel.indexOf('릴스') !== -1;
-            return '<div class="ws-card" style="padding:12px;border-left:4px solid ' + (isReel ? '#ec4899' : '#0284c7') + '">' +
-              '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">' +
-                '<span class="tag-pill ' + (isReel ? 'warn' : 'ok') + '">#' + d.idx + ' ' + (isReel ? '🎬 ' : '📝 ') + A.esc(d.channel) + '</span>' +
-                '<span style="font-size:11px;font-weight:700;color:var(--muted)">📅 ' + A.esc(d.scheduled_date) + ' · ' + d.compliance.label + '</span>' +
-              '</div>' +
-              '<input data-fd-title="' + i + '" value="' + A.esc(d.title) + '" style="width:100%;font-weight:800;font-size:12.8px;margin-bottom:6px;padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--bg);color:var(--ink)">' +
-              '<textarea data-fd-body="' + i + '" style="width:100%;min-height:110px;font-size:11.6px;line-height:1.5;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)">' + A.esc(d.preview_text) + '</textarea>' +
-              '<div class="ws-actions" style="margin-top:6px">' +
-                '<button type="button" class="ws-btn sm" data-fd-copy="' + i + '">📋 복사</button>' +
-                (isReel ? '<button type="button" class="ws-btn sm primary" data-fd-video="' + i + '">🎬 영상·AI 스튜디오로 보내기</button>' : '') +
-              '</div>' +
+        st.drafts.map(function (d, i) {
+          var isReel = d.channel.indexOf('릴스') !== -1;
+          return '<div class="ws-card" style="padding:12px;border-left:4px solid ' + (isReel ? '#ec4899' : '#0284c7') + '">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">' +
+            '<span class="tag-pill ' + (isReel ? 'warn' : 'ok') + '">#' + d.idx + ' ' + (isReel ? '🎬 ' : '📝 ') + A.esc(d.channel) + '</span>' +
+            '<span style="font-size:11px;font-weight:700;color:var(--muted)">📅 ' + A.esc(d.scheduled_date) + ' · ' + d.compliance.label + '</span>' +
+            '</div>' +
+            '<input data-fd-title="' + i + '" value="' + A.esc(d.title) + '" style="width:100%;font-weight:800;font-size:12.8px;margin-bottom:6px;padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--bg);color:var(--ink)">' +
+            '<textarea data-fd-body="' + i + '" style="width:100%;min-height:110px;font-size:11.6px;line-height:1.5;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)">' + A.esc(d.preview_text) + '</textarea>' +
+            '<div class="ws-actions" style="margin-top:6px">' +
+            '<button type="button" class="ws-btn sm" data-fd-copy="' + i + '">📋 복사</button>' +
+            (isReel ? '<button type="button" class="ws-btn sm primary" data-fd-video="' + i + '">🎬 영상·AI 스튜디오로 보내기</button>' : '') +
+            '</div>' +
             '</div>';
-          }).join('') +
+        }).join('') +
         '</div>'
       ) : (
         '<div class="ws-empty">위에서 고객사와 업종을 선택하고 <b>⚡ 10편 일괄 생성</b>을 눌러보세요!<br>생성 즉시 의료법·금소법 심의 검사까지 자동 완료되며, 클릭 한 번으로 월간 캘린더와 고객 VIP 포털 검수함에 10편을 모두 올릴 수 있습니다.</div>'
@@ -950,12 +950,12 @@
         var cp = checkCompliance(d.title + '\n' + d.preview_text);
         return '<div class="card ' + (isReel ? 'is-reel' : 'is-blog') + '">' +
           '<div class="card-top">' +
-            '<span class="pill ' + (isReel ? 'reel' : 'blog') + '">#' + d.idx + ' ' + A.esc(d.channel) + '</span>' +
-            '<span class="meta">발행 예정일: <b>' + A.esc(d.scheduled_date) + '</b> · ' + A.esc(cp.label) + '</span>' +
+          '<span class="pill ' + (isReel ? 'reel' : 'blog') + '">#' + d.idx + ' ' + A.esc(d.channel) + '</span>' +
+          '<span class="meta">발행 예정일: <b>' + A.esc(d.scheduled_date) + '</b> · ' + A.esc(cp.label) + '</span>' +
           '</div>' +
           '<h3>' + A.esc(d.title) + '</h3>' +
           '<pre>' + A.esc(d.preview_text) + '</pre>' +
-        '</div>';
+          '</div>';
       }).join('');
 
       return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
@@ -981,22 +981,22 @@
         '</style></head><body>' +
         '<div class="bar"><span>📅 ' + A.esc(cName) + ' 월간 SNS 콘텐츠 기획안 (' + st.drafts.length + '편)</span><button onclick="window.print()">🖨️ PDF 저장 / 인쇄</button></div>' +
         '<div class="sheet">' +
-          '<div class="hero">' +
-            '<div class="eyebrow">MONTHLY CONTENT MASTER PLAN · ' + A.esc(prof.company || '미담공장') + '</div>' +
-            '<h1>' + A.esc(cName) + ' 맞춤 콘텐츠 10편 발행 기획안</h1>' +
-            '<p>업종: ' + A.esc(st.factoryIndustry) + ' · 핵심 테마: ' + A.esc(st.factoryTopic || '브랜딩 · 검색 유입 · DB 전환 극대화') + ' · 작성일: ' + A.todayKst() + '</p>' +
-          '</div>' +
-          '<div class="kpis">' +
-            '<div class="kpi"><div class="l">총 기획 편수</div><div class="v">' + st.drafts.length + '편</div></div>' +
-            '<div class="kpi"><div class="l">네이버 블로그</div><div class="v" style="color:#0284c7">' + blogCnt + '편</div></div>' +
-            '<div class="kpi"><div class="l">인스타 릴스</div><div class="v" style="color:#db2777">' + reelCnt + '편</div></div>' +
-            '<div class="kpi"><div class="l">법적 심의 통과</div><div class="v" style="color:#16a34a">' + safeCnt + '/' + st.drafts.length + '편</div></div>' +
-          '</div>' +
-          '<h2>1. 월간 발행 캘린더 요약표</h2>' +
-          '<table><thead><tr><th style="width:46px">No</th><th style="width:110px">채널</th><th>콘텐츠 제목</th><th style="width:105px">발행 예정일</th><th style="width:80px">심의</th></tr></thead><tbody>' + tableRows + '</tbody></table>' +
-          '<h2>2. 편별 상세 기획안 · 3초 후킹 대본 · 추천 해시태그</h2>' +
-          detailCards +
-          '<div class="foot"><span>작성 및 총괄: <b>' + A.esc(prof.company || '미담공장') + '</b> (' + A.esc(prof.phone || '') + ')</span><span>본 기획안은 고객사 검수 승인 후 확정 발행됩니다.</span></div>' +
+        '<div class="hero">' +
+        '<div class="eyebrow">MONTHLY CONTENT MASTER PLAN · ' + A.esc(prof.company || '미담공장') + '</div>' +
+        '<h1>' + A.esc(cName) + ' 맞춤 콘텐츠 10편 발행 기획안</h1>' +
+        '<p>업종: ' + A.esc(st.factoryIndustry) + ' · 핵심 테마: ' + A.esc(st.factoryTopic || '브랜딩 · 검색 유입 · DB 전환 극대화') + ' · 작성일: ' + A.todayKst() + '</p>' +
+        '</div>' +
+        '<div class="kpis">' +
+        '<div class="kpi"><div class="l">총 기획 편수</div><div class="v">' + st.drafts.length + '편</div></div>' +
+        '<div class="kpi"><div class="l">네이버 블로그</div><div class="v" style="color:#0284c7">' + blogCnt + '편</div></div>' +
+        '<div class="kpi"><div class="l">인스타 릴스</div><div class="v" style="color:#db2777">' + reelCnt + '편</div></div>' +
+        '<div class="kpi"><div class="l">법적 심의 통과</div><div class="v" style="color:#16a34a">' + safeCnt + '/' + st.drafts.length + '편</div></div>' +
+        '</div>' +
+        '<h2>1. 월간 발행 캘린더 요약표</h2>' +
+        '<table><thead><tr><th style="width:46px">No</th><th style="width:110px">채널</th><th>콘텐츠 제목</th><th style="width:105px">발행 예정일</th><th style="width:80px">심의</th></tr></thead><tbody>' + tableRows + '</tbody></table>' +
+        '<h2>2. 편별 상세 기획안 · 3초 후킹 대본 · 추천 해시태그</h2>' +
+        detailCards +
+        '<div class="foot"><span>작성 및 총괄: <b>' + A.esc(prof.company || '미담공장') + '</b> (' + A.esc(prof.phone || '') + ')</span><span>본 기획안은 고객사 검수 승인 후 확정 발행됩니다.</span></div>' +
         '</div></body></html>';
     }
 

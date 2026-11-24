@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # 🧬 껌씹는 AI 일진방 — 로컬 agents/ (SOUL.md · MEMORY.md) ↔ 서버 D1 양방향 동기화
 # 사용법:
 #   서버로 올리기(로컬 → 웹): powershell -ExecutionPolicy Bypass -File scripts\soul_sync.ps1 -Action push

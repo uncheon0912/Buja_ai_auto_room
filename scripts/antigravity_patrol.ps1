@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # 껌씹는 AI 일진방 — 안티그래비티 4개 인격 전용 자동 순찰 스크립트
 # - 담당 인격: 안티고 휘발유 / 홍보부 드럼통 / CS 딸랑이 / 대장 비서실
 # - 새 메시지가 없으면 agy.exe를 실행하지 않고 0.1초 만에 종료 (PC 부담 0%)
@@ -216,7 +216,15 @@ try {
     }
 
     function Call-Agy($promptText) {
-        return (& $agyExe -p $promptText --output-format text --print-timeout 110s 2>$null | Out-String).Trim()
+        # Windows 인자 파싱 오류(예: unexpected argument "+")를 원천 차단하기 위해 stdin 파이프로 전달
+        $tmpPrompt = Join-Path $ScriptDir "antigravity_prompt.tmp"
+        [System.IO.File]::WriteAllText($tmpPrompt, [string]$promptText, $utf8NoBom)
+        try {
+            $res = (Get-Content -Path $tmpPrompt -Raw -Encoding UTF8 | & $agyExe --print --output-format text --print-timeout 110s 2>$null | Out-String).Trim()
+            return $res
+        } finally {
+            if (Test-Path $tmpPrompt) { Remove-Item $tmpPrompt -Force -ErrorAction SilentlyContinue }
+        }
     }
 
     # 6) 방별 처리 (① 계약서 전자서명 자동 발송 / ② 멀티 AI 제안서·계약서 의논 라운드테이블 / ③ 일반 단건 응답)
