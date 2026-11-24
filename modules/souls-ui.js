@@ -16,8 +16,9 @@
     { id: 'secretary', label: '📝 대장 비서실' },
     { id: 'jipigo', label: '🫧 지피고 씹던껌' },
     { id: 'ollago', label: '🔥 올라고 (Qwen 2.5)' },
-    { id: 'claude', label: '🎩 클고 (EXAONE 3.5)' },
+    { id: 'claude', label: '❤️ 사랑해요 엘지 (EXAONE)' },
     { id: 'deepseek', label: '🔍 딥고 (DeepSeek-R1)' },
+    { id: 'ingsta', label: '🗽 잉스타 유학파 (기획·콘텐츠)' },
   ];
 
   var data = { shared: { company: '', memory: '' }, agents: {} };
@@ -29,7 +30,7 @@
       out.shared.company = String(raw.shared.company || '');
       out.shared.memory = String(raw.shared.memory || '');
     }
-    ['antigo', 'hongbo', 'cs', 'secretary', 'jipigo', 'ollago', 'claude', 'deepseek'].forEach(function (id) {
+    ['antigo', 'hongbo', 'cs', 'secretary', 'jipigo', 'ollago', 'claude', 'deepseek', 'ingsta'].forEach(function (id) {
       var src = raw && raw.agents && raw.agents[id];
       out.agents[id] = {
         soul: String((src && src.soul) || ''),

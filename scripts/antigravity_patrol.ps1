@@ -39,7 +39,7 @@ try {
     if (-not $ApiKey) { Write-Log "오류: API_KEY 미설정"; exit 1 }
 
     $Headers = @{ "Authorization" = "Bearer $ApiKey"; "User-Agent" = "ai-team-room-antigravity/1.0" }
-    $BossNames = @("부자사람대장", "일진대장", "CEO", "피클 부대장")
+    $BossNames = @("부자사람대장", "일진대장", "CEO", "피클 부대장", "잉스타 유학파")
 
     # 1) 방 목록 조회 + 안티그래비티 4개 인격 온라인 하트비트 전송
     try {

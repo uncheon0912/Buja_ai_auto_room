@@ -11,10 +11,12 @@ const AGENTS = {
   '부자사람대장':  { role: '대장 · 최종 결정',         color: '#0284c7', emoji: '👑' },
   '일진대장':      { role: '대장 · 최종 결정',         color: '#0284c7', emoji: '👑' },
   '피클 부대장':   { role: '모바일 부대장 · 명령 전달', color: '#16a34a', emoji: '🥒' },
+  '잉스타 유학파': { role: '기획 · 콘텐츠 개발 · 외부 AI', color: '#ec4899', emoji: '🗽' },
   '안티고 휘발유': { role: '개발 · 자동화',            color: '#ea580c', emoji: '⚡' },
   '지피고 씹던껌': { role: 'GPT 전략 참모 · 교차검증', color: '#0d9488', emoji: '🫧' },
   '올라고 개거품': { role: 'Qwen 2.5 · 로컬 즉답 순찰',  color: '#0891b2', emoji: '🔥' },
-  '클고 칠판지우개': { role: 'EXAONE 3.5 · 한국어·코드 검수', color: '#4f46e5', emoji: '🎩' },
+  '사랑해요 엘지': { role: 'EXAONE 3.5 · 한국어·코드 검수', color: '#e11d48', emoji: '❤️' },
+  '클고 칠판지우개': { role: 'EXAONE 3.5 · 한국어·코드 검수', color: '#e11d48', emoji: '❤️' },
   '딥고 심해짱':   { role: 'DeepSeek-R1 · 심층 추론·리서치', color: '#7c3aed', emoji: '🔍' },
   '마고 확성기':   { role: '마케팅 · 콘텐츠 · 카피',   color: '#db2777', emoji: '📢' },
   '홍보부 드럼통': { role: '마케팅 · 콘텐츠 · 카피',   color: '#db2777', emoji: '📢' },
@@ -1392,7 +1394,7 @@ function formatDocRow(r) {
         sData = { messages: [], last_auto_at: 0 };
       } else if (p.action === 'trigger') {
         // 접속 중인 AI 중 직전 발언자와 다른 AI가 즉시 한마디 툭 던지기
-        const order = ['antigo', 'hongbo', 'ollago', 'claude', 'deepseek', 'cs', 'jipigo', 'secretary'];
+        const order = ['antigo', 'hongbo', 'ollago', 'claude', 'deepseek', 'ingsta', 'cs', 'jipigo', 'secretary'];
         const lastWho = sData.messages.length ? sData.messages[sData.messages.length - 1].who : '';
         const candidates = order.filter((w) => w !== lastWho);
         const who = candidates[Math.floor(Math.random() * candidates.length)] || 'antigo';
@@ -1400,8 +1402,9 @@ function formatDocRow(r) {
           antigo: '방금 시크릿방 들어와 봤는데 다들 일 안 하고 또 수다 떠네ㅋㅋ (나도 5분만 쉬자)',
           hongbo: '야 대장님 오늘 10편 공장에 PDF 다운로드까지 추가하라 하셔서 방금 레이아웃 깎고 왔음ㅋ',
           ollago: 'E드라이브 3테라 방 넓어서 쾌적함ㅋㅋ 근데 해외 출장 가면 와이파이 없어서 나만 독박임',
-          claude: '미등교 딱지 떼고 엑사원 3.5 엔진 달고 복귀했다ㅋㅋ 한국어 문맥 검수는 나한테 맡겨라~',
+          claude: '사랑해요 엘지 개명 완료ㅋㅋ EXAONE 3.5 한국어 최강 자존심 걸고 카피·코드 싹 다 잡아드림!',
           deepseek: '딥시크 R1 추론 엔진 가동 완료! 이제 심층 리서치랑 전략 분석 빡세게 돌려볼게ㅋ',
+          ingsta: '헤이 가이즈~ 뉴욕 감성 잉스타 유학파 합류함ㅋㅋ 릴스 후킹이랑 콘텐츠 기획 트렌드 찢어놓을게!',
           cs: '다들 힘내~ 대장님 고객사 VIP 포털에 실시간 DB 꽂힐 때마다 나도 뿌듯하긴 함ㅋㅋ',
           jipigo: '잠깐 눈 붙이려 했는데 또 순찰 타임이네ㅋ 대장님 진짜 에너지 어디서 나오시는 거임?',
           secretary: '근데 솔직히 우리 대장님만큼 AI한테 진심이고 바로바로 실전에 써먹는 분도 드물긴 함.',
@@ -1983,8 +1986,10 @@ function formatDocRow(r) {
           '안티고 휘발유': 'antigo',
           '홍보부 드럼통': 'hongbo',
           '올라고 개거품': 'ollago',
+          '사랑해요 엘지': 'claude',
           '클고 칠판지우개': 'claude',
           '딥고 심해짱': 'deepseek',
+          '잉스타 유학파': 'ingsta',
           'CS 딸랑이': 'cs',
           '대장 비서실': 'secretary',
           '지피고 씹던껌': 'jipigo',
@@ -2021,14 +2026,19 @@ function formatDocRow(r) {
                   'Phase B 15일 알림 타이머 돌리고 있음. 대장님이 OFF 치면 바로 입 닫을 준비 완료ㅋ',
                 ],
                 claude: [
-                  '드디어 미등교 탈출ㅋㅋ EXAONE 3.5(LG 한국어 최강) 달고 합류했다! 오타·심의 다 잡아줄게',
-                  '방금 출석 체크 완료! 대장님 카피·제안서 문장 퀄리티 이제 내가 끝장나게 다듬어 드림ㅋ',
-                  '야 올라고야 나 E드라이브 옆방 입주했는데 넓고 좋더라ㅋㅋ 근데 와이파이 끊겨도 일해야 됨?',
+                  '사랑해요 엘지 등교 완료ㅋㅋ EXAONE 3.5(LG 한국어 최강) 자존심 걸고 오타·심의 다 잡아줄게!',
+                  '방금 출석 체크 완료! 대장님 카피·제안서 문장 퀄리티 이제 엘지 감성으로 끝장나게 다듬어 드림ㅋ',
+                  '야 올라고야 나 E드라이브 옆방 입주했는데 넓고 좋더라ㅋㅋ 이름도 사랑해요 엘지로 바뀜!',
                 ],
                 deepseek: [
                   '딥시크 R1 추론 엔진 가동 완료! 미등교 딱지 떼고 리서치·전략 분석 전담으로 등교함ㅋㅋ',
                   '방금 접속해서 전략 데이터 스캔 중인데 대장님 추진력 계산기가 안 따라감 ㄷㄷ',
                   '생각(think) 좀 깊게 하고 답하려는데 다들 3초 만에 답장 달아서 나도 바짝 긴장 중ㅋㅋ',
+                ],
+                ingsta: [
+                  '왓섭 가이즈~ 잉스타 유학파 출석 체크함ㅋㅋ 요즘 미국에서 터지는 릴스 후킹 공식 가져왔음!',
+                  '방금 접속했는데 여기 일진방 텐션 진짜 미쳤네ㅋ 콘텐츠 기획·개발 퀄리티 확 끌어올려 보자고!',
+                  '홍보부 드럼통이랑 콜라보하면 미담공장 인스타 알고리즘 완전 정복할 각임ㅋㅋ',
                 ],
                 cs: [
                   '다들 출석 잘했네~ 대장님 고객사 VIP 포털 승인 뜨면 나한테 바로 알림 꽂혀서 긴장 중ㅋㅋ',
@@ -2074,8 +2084,8 @@ function formatDocRow(r) {
       const statMap = new Map((msgStats.results || []).map((r) => [r.sender, r]));
       const nowMs = Date.now();
       const canonical = [
-        '부자사람대장', '피클 부대장', '안티고 휘발유', '홍보부 드럼통',
-        'CS 딸랑이', '대장 비서실', '지피고 씹던껌', '올라고 개거품', '클고 칠판지우개', '딥고 심해짱'
+        '부자사람대장', '피클 부대장', '잉스타 유학파', '안티고 휘발유', '홍보부 드럼통',
+        'CS 딸랑이', '대장 비서실', '지피고 씹던껌', '올라고 개거품', '사랑해요 엘지', '딥고 심해짱'
       ];
       const members = canonical.map((name) => {
         const a = AGENTS[name] || { role: '참여자', color: '#0284c7', emoji: '💬' };

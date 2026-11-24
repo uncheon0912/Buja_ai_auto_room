@@ -28,7 +28,7 @@ $BaseUrl = if ($cfg["ROOM_BASE"]) { $cfg["ROOM_BASE"] } else { "https://buja-ai-
 $ApiKey  = $cfg["API_KEY"]
 $Headers = @{ "Authorization" = "Bearer $ApiKey"; "User-Agent" = "ai-team-room-soul-sync/1.0" }
 
-$AgentIds = @("antigo", "hongbo", "cs", "secretary", "jipigo", "ollago", "claude", "deepseek")
+$AgentIds = @("antigo", "hongbo", "cs", "secretary", "jipigo", "ollago", "claude", "deepseek", "ingsta")
 
 function Read-Md($p) {
     if (Test-Path $p) { return [System.IO.File]::ReadAllText($p, [System.Text.Encoding]::UTF8) }

@@ -71,7 +71,7 @@ if (Test-Path $CursorFile) {
 }
 
 # 4) 새 메시지가 있는 방만 수집 (AI끼리 무한 대화 방지를 위해 대장/부대장 글에만 반응)
-$BossNames = @("부자사람대장", "일진대장", "CEO", "피클 부대장")
+$BossNames = @("부자사람대장", "일진대장", "CEO", "피클 부대장", "잉스타 유학파")
 $targets = @()
 foreach ($r in $roomsRes.rooms) {
     $slug = $r.slug
