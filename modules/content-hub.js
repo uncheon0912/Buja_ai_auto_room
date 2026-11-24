@@ -1243,6 +1243,7 @@
   });
 
   A.on('data-refreshed', function () { loadDeliverables(); });
+  A.on('deliverables-updated', function () { loadDeliverables(); });
   A.on('tab-changed', function (t) {
     if (t === 'content') {
       loadDeliverables();
