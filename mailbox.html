@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#38bdf8">
+<title>🚨 대장명령함 (긴급처리) · 피클 부대장</title>
+<style>
+  :root{
+    --sky-top:#e0f2fe; --sky-mid:#bae6fd; --sky-bot:#7dd3fc;
+    --panel:rgba(255,255,255,0.82); --line:rgba(14,116,144,0.18);
+    --text:#0f172a; --muted:#475569; --accent:#0284c7; --accent2:#0ea5e9;
+    --ok:#16a34a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100dvh; color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Segoe UI",sans-serif;
+    background:linear-gradient(160deg, var(--sky-top) 0%, var(--sky-mid) 50%, var(--sky-bot) 100%);
+    display:flex; justify-content:center; padding:20px 14px 40px;
+  }
+  .wrap{width:100%; max-width:640px; display:flex; flex-direction:column; gap:14px}
+  .card{
+    background:var(--panel); backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,0.8); border-radius:20px;
+    box-shadow:0 12px 32px rgba(2,132,199,0.12); padding:20px;
+  }
+  .head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+  .head h1{margin:0; font-size:20px; display:flex; align-items:center; gap:8px; color:#0c4a6e}
+  .head p{margin:4px 0 0; font-size:13px; color:var(--muted)}
+  .back{
+    text-decoration:none; font-size:12.5px; font-weight:700; color:#fff;
+    background:linear-gradient(135deg,#0284c7,#38bdf8); padding:8px 14px; border-radius:999px;
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  }
+  .back:hover{transform:translateY(-2px); box-shadow:0 6px 16px rgba(2,132,199,0.28)}
+  label{display:block; font-size:12px; font-weight:700; color:#0369a1; margin:12px 0 6px}
+  input, select, textarea{
+    width:100%; font:inherit; font-size:14px; color:var(--text);
+    background:rgba(255,255,255,0.92); border:1.5px solid var(--line); border-radius:12px;
+    padding:10px 12px; outline:none; transition:border-color .2s, box-shadow .2s;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--accent2); box-shadow:0 0 0 3px rgba(56,189,248,0.25);
+  }
+  textarea{min-height:110px; resize:vertical; line-height:1.5}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  @media (max-width:520px){.row{grid-template-columns:1fr}}
+  .btn{
+    width:100%; margin-top:14px; border:0; border-radius:14px; padding:13px 16px;
+    font:inherit; font-size:15px; font-weight:800; color:#fff; cursor:pointer;
+    background:linear-gradient(135deg,#0284c7,#0ea5e9,#38bdf8);
+    box-shadow:0 8px 20px rgba(2,132,199,0.28);
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  }
+  .btn:hover{transform:translateY(-2px) scale(1.01); box-shadow:0 12px 24px rgba(2,132,199,0.35)}
+  .btn:active{transform:scale(0.97)}
+  .btn:disabled{opacity:.55; cursor:default; transform:none}
+  .status{margin-top:10px; font-size:13px; font-weight:600; min-height:20px; color:#0369a1}
+  .status.ok{color:var(--ok)}
+  .status.err{color:#dc2626}
+  .list{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+  .item{
+    background:rgba(255,255,255,0.85); border:1px solid var(--line);
+    border-radius:14px; padding:12px 14px;
+  }
+  .item .meta{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-bottom:4px}
+  .item .who{font-weight:800; color:#0c4a6e}
+  .item .txt{font-size:13.8px; white-space:pre-wrap; word-break:break-word; line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="head">
+      <div>
+        <h1>🚨 대장명령함 (긴급처리)</h1>
+        <p>피클 부대장 · 모바일에서 일진대장 명령을 꽂아두면 AI 일진들이 긴급 처리합니다.</p>
+      </div>
+      <a class="back" href="/">🏫 일진방으로 돌아가기</a>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="sender">보내는 사람</label>
+        <select id="sender">
+          <option value="피클 부대장">🥒 피클 부대장</option>
+          <option value="부자사람대장">👑 부자사람대장</option>
+        </select>
+      </div>
+      <div>
+        <label for="room">전달할 방</label>
+        <select id="room">
+          <option value="inbox">🚨 대장명령함 (긴급처리)</option>
+          <option value="general">🏫 부자사람 일진 종합반 (전체 회의)</option>
+          <option value="dev">⚡ 일진개발실 (안티고 휘발유)</option>
+          <option value="marketing">📢 일진홍보부 (홍보부 드럼통)</option>
+          <option value="ops">🔔 일진선도부 (CS 딸랑이)</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="key">입장 키 (ROOM_KEY 또는 API_KEY)</label>
+    <input id="key" type="password" placeholder="일진방 비밀번호 또는 API 키">
+
+    <label for="cmd">명령 내용</label>
+    <textarea id="cmd" placeholder="예: 오늘 블로그 홍보 카피 3개 써서 일진홍보부에 올려줘"></textarea>
+
+    <button class="btn" id="sendBtn">📮 우편함에 명령 꽂기</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card">
+    <div class="head">
+      <h1 style="font-size:16px">📬 최근 우편함 기록</h1>
+      <button type="button" class="back" id="refreshBtn" style="border:0;cursor:pointer">새로고침</button>
+    </div>
+    <div class="list" id="list"><div style="color:#64748b;font-size:13px">키를 입력하면 최근 우편함 기록이 표시됩니다.</div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var elKey = document.getElementById('key');
+  var elSender = document.getElementById('sender');
+  var elRoom = document.getElementById('room');
+  var elCmd = document.getElementById('cmd');
+  var elBtn = document.getElementById('sendBtn');
+  var elStatus = document.getElementById('status');
+  var elList = document.getElementById('list');
+
+  var params = new URLSearchParams(location.search);
+  var savedKey = params.get('key') || localStorage.getItem('ai_team_room_key') || '';
+  if (savedKey) elKey.value = savedKey;
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function kst(iso){
+    try{ return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}); }
+    catch(e){ return ''; }
+  }
+  function setStatus(msg, cls){
+    elStatus.textContent = msg;
+    elStatus.className = 'status ' + (cls || '');
+  }
+
+  function loadMailbox(){
+    var k = elKey.value.trim();
+    if (!k) return;
+    localStorage.setItem('ai_team_room_key', k);
+    fetch('/api/mailbox?limit=15', { headers: { 'X-Room-Key': k }, cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.ok) throw new Error(d.message || '인증 실패');
+        var msgs = (d.messages || []).slice().reverse();
+        if (!msgs.length){
+          elList.innerHTML = '<div style="color:#64748b;font-size:13px">아직 우편함에 꽂힌 명령이 없습니다.</div>';
+          return;
+        }
+        elList.innerHTML = msgs.map(function(m){
+          return '<div class="item"><div class="meta"><span>' + esc(m.emoji || '💬') + '</span>' +
+            '<span class="who">' + esc(m.sender) + '</span><span>#' + m.id + '</span>' +
+            '<span style="margin-left:auto">' + esc(kst(m.created_at)) + '</span></div>' +
+            '<div class="txt">' + esc(m.content) + '</div></div>';
+        }).join('');
+      })
+      .catch(function(err){
+        elList.innerHTML = '<div style="color:#dc2626;font-size:13px">불러오기 실패: ' + esc(err.message) + '</div>';
+      });
+  }
+
+  elBtn.addEventListener('click', function(){
+    var k = elKey.value.trim();
+    var command = elCmd.value.trim();
+    if (!k){ setStatus('입장 키를 입력해 주세요.', 'err'); return; }
+    if (!command){ setStatus('명령 내용을 입력해 주세요.', 'err'); return; }
+    localStorage.setItem('ai_team_room_key', k);
+    elBtn.disabled = true;
+    setStatus('우편함에 명령 전달 중…', '');
+    fetch('/api/mailbox', {
+      method: 'POST',
+      headers: { 'X-Room-Key': k, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sender: elSender.value, room: elRoom.value, command: command })
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.ok) throw new Error(d.message || '전송 실패');
+        elCmd.value = '';
+        setStatus('명령이 우편함에 꽂혔습니다! (#' + d.message.id + ') AI 일진들이 곧 확인합니다.', 'ok');
+        loadMailbox();
+      })
+      .catch(function(err){
+        setStatus('전송 실패: ' + err.message, 'err');
+      })
+      .then(function(){ elBtn.disabled = false; });
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', loadMailbox);
+  if (savedKey) loadMailbox();
+})();
+</script>
+</body>
+</html>

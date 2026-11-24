@@ -9,6 +9,12 @@
 .dev.vars
 .env
 .env.*
+remekeys
+scripts
+chat_logs
+brain
+agents
+2026-11-24-ollama-patrol
 node_modules
 wrangler.toml
 schema.sql

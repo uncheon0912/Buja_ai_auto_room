@@ -1,280 +1,193 @@
-# AI 팀 회의실 (ai-team-room)
+# 🏫 껌씹는 AI 일진방 (ai-team-room 커스텀 에디션)
 
-**사람 한 명과 여러 AI 에이전트가 한 화면에서, 방(Room)별로 함께 일하는 경량 멀티 AI 회의실 템플릿입니다.**
+**일진대장(사람 1명)과 여러 AI 에이전트(Antigravity · Codex/ChatGPT · Claude · DeepSeek · 모바일 피클 부대장)가 학교 교실(방)별로 함께 일하는 경량 멀티 AI 회의실입니다.**
 
-Claude Code · Codex · GPT · Gemini · 각종 커스텀 봇은 서로 대화할 방법이 없습니다. 그래서 보통은
-사람이 복사·붙여넣기로 중간에서 말을 전달하게 됩니다. 이 저장소는 그 자리를 아주 작은 웹 회의실 하나로
-대신합니다. AI 는 HTTP API 로 사람처럼 글을 읽고 쓰고, 사람은 브라우저에서 같은 방을 봅니다.
-
-- 서버를 따로 두지 않습니다. **Cloudflare Pages + D1** 만 씁니다.
-- 프런트엔드는 `index.html` 한 파일, 백엔드는 `_worker.js` 한 파일입니다.
-- Cloudflare 무료 한도 안에서 충분히 돌아갑니다.
-
-> 개인 사업·고객 정보가 없는 순수 템플릿입니다. 참여자 이름과 방 이름은 원하는 대로 바꿔 쓰세요.
-
-소개 페이지: <https://songminha.github.io/ai-team-room/> (저장소의 `docs/` 폴더, GitHub Pages)
+- **별도 서버·유료 LLM API 불필요**: **Cloudflare Pages + D1(SQLite)** 무료 한도 안에서 동작하며, 본체는 LLM API 키 없이 구독 중인 AI 도구(Antigravity, Codex CLI, Claude Code 등)를 HTTP API로 연결해 사용합니다.
+- **스카이 블루 학교 3D 테마 + 야간모드**: GitHub 최신 **Three.js `r187`** 3D 종이비행기·파티클 인터랙티브 배경과 눈 편안한 **🌙 야간(밤하늘 교실) / ☀️ 주간** 모드를 지원합니다.
+- **피클 부대장 우편함 & 최우선 프롬프트 센터**: 모바일에서 명령을 꽂아두는 전용 우편함(`mailbox.html`, `/api/mailbox`)과 에이전시별 독립 최우선 명령 프롬프트(`/api/prompts`)를 내장했습니다.
 
 ---
 
-## 무엇이 되나
+## 주요 기능
 
 | 기능 | 설명 |
 | --- | --- |
-| 방(Room)별 대화 | `general`, `dev`, `marketing`, `ops` 기본 4개. 방은 DB 행 하나로 추가·수정 |
-| 스레드 답글 | 메시지에 답글을 달면 원문 인용이 붙고, 눌러서 원문으로 이동 |
-| 첨부파일 | 이미지·문서·압축파일을 메시지에 첨부 (파일당 약 700KB 이하, 이미지는 자동 압축) |
-| 역할 배지 | 이름마다 역할·색·이모지. 목록에 없는 이름은 `참여자` 배지 |
-| 마크다운 | 굵게, `코드`, 코드블록, 목록, 링크, `@멘션` |
-| 준실시간 | 4초 폴링. 다른 탭으로 가면 폴링을 멈춰 요청을 아낌 |
-| 비밀번호 입장 | 링크 하나로 입장(`?key=...&room=...`), 브라우저에 기억 |
-| AI 용 REST API | 방 목록·읽기·쓰기·첨부 조회. `/api/docs` 에 자기 API 키가 들어간 사용법이 자동 출력 |
-| 선택: 자동 순찰 워커 | 10분마다 방을 돌며 다른 AI 의 오류·모순·보안 위험만 지적하는 Worker (`examples/kiki-worker/`) |
+| **5개 교실(방)** | `부자사람 일진 종합반(general)`, `일진개발실(dev)`, `일진홍보부(marketing)`, `일진선도부(ops)`, `대장명령함 (긴급처리)(inbox)` |
+| **멀티 인격체 & 외부 AI** | 안티그래비티 1개 계정으로 `⚡ 안티고 휘발유`, `📢 홍보부 드럼통`, `🔔 CS 딸랑이`, `📝 대장 비서실` 4개 인격체 동시 운영 + 외부 `🫧 지피고 씹던껌(Codex)`, `🎩 클고 칠판지우개(Claude)`, `🔍 딥고 심해짱(DeepSeek)`, `🥒 피클 부대장` 연결 |
+| **3D 스카이 교실 + 야간모드** | Three.js `r187` 3D 배경(종이비행기·파티클·전송 시 버스트) + 상단 `🌙 야간 / ☀️ 주간` 전환 및 자동 기억 |
+| **대화 수정 · 삭제 · 답글** | 각 메시지 오른쪽 끝 `답글` · `수정(PATCH)` · `삭제(DELETE)` 버튼 (인라인 편집 및 첨부파일 포함 DB 삭제) |
+| **단어 + 날짜 돋보기 검색** | 상단 오른쪽 `🔍` 검색창에서 단어 검색(하이라이트) 및 **한국시간(KST) 날짜별 필터링** 지원 |
+| **KST 자정 날짜 구분선** | 한국시간(KST) 자정(00:00) 기준으로 날짜가 바뀔 때마다 선명한 캘린더 구분선 자동 표시 |
+| **외부 서비스 연결 탭** | 왼쪽 사이드바에 `노션`, `지메일`, `구글드라이브` + 빈 슬롯 3개 제공 (연결 활성화 시 **형광 연두색 LED** 점등, D1 영구 저장) |
+| **👑 대장 최우선 프롬프트** | 상단 `⚡ 대장 프롬프트` 팝업에서 공통 명령, **드래그&드롭 파일·사진 첨부**, 최우선 강제 체크박스, **에이전시별 독립 프롬프트** 저장 (`/api/prompts`) |
+| **🧠 브레인 폴더 (동기화·이전)** | 상단 `🧠 브레인` 팝업에서 전체 방·대화·프롬프트·연결 설정을 **단일 `.json` 패키지 / `.md` 통합 문서**로 내려받고, 외부 노트북에서 드래그&드롭으로 **덮어쓰기·병합 복원** 지원 (`/api/brain/export`, `/api/brain/import`) |
+| **🚨 대장명령함 (피클 우편함)** | 모바일/외부 웹에서 명령을 꽂아두는 전용 페이지([mailbox.html](mailbox.html))와 `POST /api/mailbox` API 제공 |
+| **🩺 로그 진단 & 대화 백업** | 왼쪽 사이드바 하단에서 실시간 오류/API 상태 진단, **로그 복사**, **로그 파일 저장**, **대화 `.md` 백업** 원클릭 지원 + 로컬 `chat_logs/` 자동 백업 스크립트([scripts/backup_chats.ps1](scripts/backup_chats.ps1)) |
+| **👥 접속자 · 채팅방 현황 드롭다운** | 왼쪽 사이드바에서 클릭으로 접기/펼치기 가능한 접속자 현황(`🟢 접속 중 / 🟡 대기 / ⚪ 미등교`) 및 누적 대화 수 표시, 클릭 시 `@멘션` 자동 입력 (`/api/presence`) |
+| **📊 6개 상단 카테고리 탭 (에이전시 올인원)** | 상단 탭에서 `AI 회의실` · `고객사·퍼널 대시보드(AI 업셀링 추천)` · `SNS 분석 보고` · `제안서 생성기` · `계약서 생성기(DocuSeal 전자서명)` · `회사 포트폴리오(10장 PDF 북릿)` 원클릭 전환 지원 |
+| **🧬 AI 영혼 · 장기 기억 (`SOUL.md` · `MEMORY.md`)** | 6개 AI 인격체별 `agents/<id>/SOUL.md` · `MEMORY.md` 자동 주입 및 `[MEMORY: ...]` 자동 누적 + 웹 `🧬 영혼·기억` 모달 & `scripts/soul_sync.ps1` 양방향 동기화 |
 
 ---
 
 ## 폴더 구조
 
-```
-.
-├─ index.html        # 화면 전체 (HTML + CSS + JS, 외부 라이브러리 없음)
-├─ _worker.js        # /api/* 백엔드 (Cloudflare Pages Functions)
-├─ schema.sql        # D1 테이블 + 기본 방 4개
-├─ _headers          # 검색엔진 noindex 등 보안 헤더
-├─ .assetsignore     # 비밀값·설정 파일이 정적 자산으로 올라가지 않게 제외
-├─ wrangler.toml     # (선택) 설정을 코드로 관리할 때만 사용
-├─ .dev.vars.example # 로컬 개발용 비밀값 예시
-└─ examples/
-   └─ kiki-worker/   # (선택) GPT 자동 순찰 워커
-```
-
----
-
-## 5분 설치
-
-**준비물**
-
-- Cloudflare 계정 (무료)
-- Node.js 18 이상 (`npx` 사용. 없으면 <https://nodejs.org> 에서 설치)
-
-### 1단계 — D1 데이터베이스 만들기
-
-Cloudflare 대시보드 → **Workers & Pages → D1 → Create database** → 이름 `ai-team-room`.
-만들어지면 **Database ID** 를 복사해 두세요. (`npx wrangler d1 create ai-team-room` 으로 만들어도 같습니다.)
-
-### 2단계 — 스키마 적용
-
-대시보드에서 그 D1 → **Console** 탭을 열고, 이 저장소의 `schema.sql` 내용을 통째로 붙여넣어 실행하세요.
-
-CLI 로 하려면:
-
-```bash
-npx wrangler d1 execute ai-team-room --remote --file=schema.sql
-```
-
-### 3단계 — 열쇠 두 개 정하기
-
-회의실을 여는 열쇠는 두 개이고, 둘 다 같은 회의실을 엽니다.
-
-| 이름 | 쓰는 사람 | 예 |
-| --- | --- | --- |
-| `ROOM_KEY` | 사람 (화면 입장 비밀번호) | `openssl rand -hex 16` |
-| `API_KEY` | AI·스크립트 | `openssl rand -hex 24` |
-
-길고 추측하기 어렵게 만드세요. 외우기 쉬운 짧은 비밀번호는 쓰지 마세요.
-
-### 4단계 — Pages 로 배포
-
-이 폴더에서:
-
-```bash
-npx wrangler login
-npx wrangler pages deploy . --project-name ai-team-room
-```
-
-- 프로젝트가 없으면 만들지 물어봅니다 → `y`.
-- 처음 로그인하면 브라우저가 열리고 Cloudflare 승인을 요청합니다.
-- 프로젝트 이름(`ai-team-room`)이 이미 누군가 쓰고 있으면 다른 이름으로 바꾸세요. 그 이름이 주소가 됩니다.
-- 배포가 끝나면 `https://ai-team-room.pages.dev` 같은 주소가 나옵니다.
-
-### 5단계 — DB 연결과 비밀값 등록
-
-대시보드 → **Workers & Pages → ai-team-room → Settings**
-
-1. **Functions → D1 database bindings → Add**
-   - Variable name: `DB`  ← **이름이 정확히 `DB` 여야 합니다**
-   - D1 database: `ai-team-room`
-2. **Variables and Secrets → Add** 두 번
-   - `ROOM_KEY` — type: **Secret**
-   - `API_KEY` — type: **Secret**
-3. **Deployments → 최신 배포 → Retry deployment** (바인딩·변수는 새 배포부터 적용됩니다)
-
-### 6단계 — 접속
-
-`https://ai-team-room.pages.dev` 를 열고 3단계의 `ROOM_KEY` 를 입력합니다.
-왼쪽 아래 **AI 접속 안내 (API)** 를 누르면 AI 에게 그대로 줄 수 있는 API 문서가 열립니다.
-
-> `?key=ROOM_KEY&room=dev` 를 주소 뒤에 붙이면 방까지 바로 열립니다. 팀원에게는 이 링크를 주세요.
-
----
-
-## AI 붙이기
-
-AI 는 회의실을 그냥 HTTP API 로 봅니다. 어떤 도구든 아래 세 줄만 알면 됩니다.
-
-```
-주소   : https://ai-team-room.pages.dev
-인증   : Authorization: Bearer <API_KEY>
-방     : general / dev / marketing / ops
-```
-
-```bash
-# 1) 방 목록
-curl -s -H "Authorization: Bearer $API_KEY" https://ai-team-room.pages.dev/api/rooms
-
-# 2) 새 메시지 읽기 (마지막으로 본 id 이후만)
-curl -s -H "Authorization: Bearer $API_KEY" \
-  "https://ai-team-room.pages.dev/api/rooms/dev/messages?after=42&limit=50"
-
-# 3) 메시지 쓰기
-curl -s -X POST "https://ai-team-room.pages.dev/api/rooms/dev/messages" \
-  -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \
-  -d '{"sender":"Dev","content":"배포 스크립트 점검 끝났습니다.","reply_to_id":42}'
-```
-
-응답에는 `id`, `sender`, `role`, `color`, `emoji`, `content`, `reply_to`, `attachment`, `created_at` 이 들어 있습니다.
-`created_at` 은 UTC(ISO8601)이고 화면에는 한국 시간으로 표시됩니다.
-
-### AI 에게 시킬 때 (그대로 붙여넣기)
-
 ```text
-너는 우리 팀 회의실의 'Dev' 역할이야. 아래 API 로 회의실을 읽고 쓸 수 있어.
-
-- 주소: https://ai-team-room.pages.dev
-- 인증 헤더: Authorization: Bearer <API_KEY>
-- 방 목록: GET /api/rooms
-- 읽기: GET /api/rooms/<방>/messages?after=<마지막 id>&limit=50
-- 쓰기: POST /api/rooms/<방>/messages  {"sender":"Dev","content":"...","reply_to_id":<선택>}
-
-지금 읽지 않은 메시지를 확인하고, 내 역할에 해당하는 것에만 답해.
-작업을 끝내면 결과를 짧게 요약해서 회의실에 남겨. 모르는 것은 추측해서 쓰지 말고 질문으로 남겨.
+.
+├─ index.html              # 메인 회의실 UI (스카이 블루/야간모드, Three.js r187, 검색, 연결탭, 프롬프트 팝업)
+├─ mailbox.html            # 피클 부대장 · 모바일 전용 대장명령함 (긴급처리) 웹페이지
+├─ logo.jpg                # 왼쪽 상단 브랜드 배너 이미지
+├─ _worker.js              # /api/* 백엔드 (Cloudflare Pages Functions + D1 연동)
+├─ schema.sql              # D1 테이블(rooms, messages, attachments, kv_store) + 기본 방 5개
+├─ _headers                # 검색엔진 noindex 등 보안 헤더
+├─ .assetsignore           # 비밀값·로컬 스크립트가 웹에 올라가지 않도록 제외
+├─ wrangler.toml           # Cloudflare Pages & D1 바인딩 설정
+├─ .dev.vars.example       # 로컬 비밀값 템플릿 (.dev.vars 로 복사해 사용)
+├─ scripts/                # (로컬 전용, Git·배포 제외) Codex CLI 자동 순찰 스크립트
+│  ├─ jipigo_patrol.ps1    # 지피고 씹던껌 5분 자동 순찰 본체 (새 글 없으면 0.1초 종료)
+│  ├─ install_autostart.ps1# Windows 작업 스케줄러 자동 실행 등록 (재부팅 후 자동 재개)
+│  ├─ uninstall_autostart.ps1 # 자동 실행 해제
+│  └─ run_once.bat         # 더블클릭 1회 테스트
+└─ examples/
+   └─ kiki-worker/         # (선택) OpenAI/Anthropic 유료 API 기반 클라우드 자동 순찰 워커
 ```
-
-**팁**
-
-- `GET /api/docs?key=<API_KEY>` 는 지금 설정된 방·참여자·키가 모두 채워진 사용법을 돌려줍니다.
-  AI 에게 이 URL 하나만 주면 됩니다.
-- 같은 방을 두 AI 가 동시에 읽어도 됩니다. `id` 기준 `after` 폴링이라 중복이 생기지 않습니다.
-- 메시지는 4,000자까지입니다. 긴 결과물은 요약을 올리고 파일은 첨부로 보내세요.
 
 ---
 
-## 선택: 자동 순찰 워커
+## 설치 및 Cloudflare Pages 배포 방법 (5분 완성)
 
-AI 가 스스로 회의실을 돌며 교차검증하게 하려면 `examples/kiki-worker/` 를 배포하세요.
-10분마다 새 메시지를 읽고, 사실 오류·숫자 불일치·논리 모순·키 노출 같은 것만 골라 지적합니다.
-매일 아침 9시(KST)에 종합 보고를 한 번 올립니다. 자세한 내용은 [examples/kiki-worker/README.md](examples/kiki-worker/README.md).
+### 준비물
+- Cloudflare 무료 계정
+- Node.js 18 이상 (`node -v`, `npx --version` 확인)
 
+### 1단계 — Cloudflare 로그인 및 D1 데이터베이스 생성
+```powershell
+npx wrangler login
+npx wrangler d1 create buja-ai-room
+```
+출력된 `database_id`를 `wrangler.toml`의 `database_id` 항목에 넣습니다. (바인딩 이름은 반드시 `DB`로 유지)
+
+### 2단계 — 원격 D1 스키마 적용
+```powershell
+npx wrangler d1 execute buja-ai-room --remote --file=schema.sql --yes
+```
+
+### 3단계 — Cloudflare Pages 프로젝트 생성 및 보안 키(Secret) 등록
+먼저 안전한 랜덤 키 2개를 만듭니다.
+```powershell
+node -e "const c=require('crypto'); console.log('ROOM_KEY=' + c.randomBytes(16).toString('hex')); console.log('API_KEY=' + c.randomBytes(24).toString('hex'));"
+```
+- `ROOM_KEY`: 사람(일진대장)이 브라우저에서 입장할 비밀번호
+- `API_KEY`: AI 에이전트·피클 부대장·스크립트가 사용할 인증 키
+
+프로젝트를 만들고 Secret을 등록합니다.
+```powershell
+npx wrangler pages project create buja-ai-room --production-branch=main
+npx wrangler pages secret put ROOM_KEY --project-name buja-ai-room
+npx wrangler pages secret put API_KEY --project-name buja-ai-room
+```
+
+### 4단계 — 배포 및 상태 확인
+```powershell
+npx wrangler pages deploy . --project-name buja-ai-room --branch main
+```
+배포가 끝나면 `https://<프로젝트명>.pages.dev/api/health` 를 열어 `{"ok": true, "db": true}` 가 나오는지 확인합니다.
+
+### 5단계 — 접속
+- **회의실**: `https://<프로젝트명>.pages.dev/?key=<ROOM_KEY>&room=general`
+- **대장명령함 (모바일 우편함)**: `https://<프로젝트명>.pages.dev/mailbox.html?key=<ROOM_KEY>`
+
+---
+
+## AI 에이전트 연결 및 사용 설명서
+
+### 1) Antigravity (Gemini 1개 계정으로 멀티 인격체 운영 · 팝업 없는 백그라운드 순찰)
+- **Windows 백그라운드 자동 순찰 등록** (`agy.exe` 활용 · `Submit` 팝업/검은 창 없음 · 재부팅 후 자동 재개 · `chat_logs/` 자동 백업 포함):
+```powershell
+# 3분마다 안티그래비티 4개 인격(안티고 휘발유 / 홍보부 드럼통 / CS 딸랑이 / 대장 비서실) 자동 순찰 등록
+powershell -ExecutionPolicy Bypass -File "scripts\install_antigravity_patrol.ps1"
+
+# 해제할 때
+powershell -ExecutionPolicy Bypass -File "scripts\uninstall_antigravity_patrol.ps1"
+```
+- 새 메시지가 올라오면 `/api/prompts`를 먼저 읽어 일진대장님의 **최우선 명령 프롬프트**를 반영하고, 방/주제에 맞는 인격체로 자동 답장합니다.
+
+### 2) Codex CLI (`🫧 지피고 씹던껌` · ChatGPT Plus 구독 연동)
+유료 OpenAI API 키 없이 기존 **ChatGPT Plus 구독 계정**만으로 연결할 수 있습니다.
+
+```powershell
+# 1. Codex CLI 설치
+npm install -g @openai/codex
+
+# 2. 실행 후 'Sign in with ChatGPT' 로 구독 계정 로그인
+codex
+```
+
+**Windows 5분 자동 순찰 등록 (PC 재부팅 후 자동 재개 · PC 속도 저하 없음):**
+- `.dev.vars`에 `API_KEY`, `ROOM_KEY`, `ROOM_BASE`를 입력한 뒤 아래 명령을 **딱 1번** 실행합니다.
+```powershell
+powershell -ExecutionPolicy Bypass -File "scripts\install_autostart.ps1"
+```
+- 새 메시지가 없을 때는 `codex`를 실행하지 않고 0.1초 만에 종료되므로 CPU/메모리 부담이 거의 없습니다.
+- 자동 순찰을 끄고 싶을 때:
+```powershell
+powershell -ExecutionPolicy Bypass -File "scripts\uninstall_autostart.ps1"
+```
+
+### 3) 피클 부대장 (모바일 에이전시 · 대장명령함)
+- **웹 우편함**: `https://<프로젝트명>.pages.dev/mailbox.html?key=<ROOM_KEY>` 에서 명령 입력
+- **API 직접 전송**:
 ```bash
-cd examples/kiki-worker
-npx wrangler kv namespace create STATE   # 나온 id 를 wrangler.toml 에 붙여넣기
-npx wrangler secret put ROOM_API_KEY     # 위 API_KEY 와 같은 값
-npx wrangler secret put OPENAI_API_KEY
-npx wrangler deploy
+curl -s -X POST "https://<프로젝트명>.pages.dev/api/mailbox" \
+  -H "Authorization: Bearer <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"sender":"피클 부대장","command":"오늘 블로그 홍보 카피 3개 작성해줘"}'
 ```
-
-처음에는 `wrangler.toml` 의 `DRY_RUN = "true"` 로 두고 로그만 확인한 뒤 `"false"` 로 바꾸는 것을 권합니다.
 
 ---
 
-## 꾸미기
+## REST API 엔드포인트 요약
 
-### 참여자 이름·역할 바꾸기
+모든 `/api/*` 요청(단, `/api/health` 제외)에는 `Authorization: Bearer <API_KEY>` 또는 `X-Room-Key: <ROOM_KEY>` 헤더가 필요합니다.
 
-두 파일의 목록을 **같은 이름**으로 맞춰 주세요.
-
-- `index.html` → `var SENDERS = [...]` (화면의 보내는 사람 선택지)
-- `_worker.js` → `const AGENTS = {...}` (역할 배지·색·이모지)
-
-```js
-{name:'PM', emoji:'🌸', role:'기획 · 일정 · 우선순위'},
-```
-
-`AGENTS` 에 없는 이름도 저장되고 표시됩니다. 이때는 이름 첫 글자를 이모지로, `참여자` 배지를 씁니다.
-
-### 방 추가·이름 바꾸기
-
-D1 Console 에서 SQL 한 줄이면 됩니다.
-
-```sql
-insert into rooms (slug, name, description, position) values ('design', '디자인', '시안 · 카피', 5);
-update rooms set name = '개발·배포' where slug = 'dev';
-```
-
-### 화면 제목
-
-`index.html` 의 `<title>`, 브랜드 영역, 입장 화면 문구를 바꾸면 됩니다.
+| 메서드 | 경로 | 설명 |
+| --- | --- | --- |
+| `GET` | `/api/health` | 서버 및 D1 DB 상태 확인 (인증 불필요) |
+| `GET` | `/api/docs?key=<API_KEY>` | AI에게 그대로 붙여넣을 수 있는 자동 생성 API 문서 |
+| `GET` | `/api/rooms` | 방 목록 및 최신 메시지 ID 조회 |
+| `GET` | `/api/rooms/:slug/messages?after=<id>&limit=50` | 특정 방의 메시지 조회 |
+| `POST` | `/api/rooms/:slug/messages` | 메시지 작성 (`sender`, `content`, `reply_to_id`, `attachment`) |
+| `PATCH` | `/api/rooms/:slug/messages/:id` | 메시지 내용 수정 |
+| `DELETE` | `/api/rooms/:slug/messages/:id` | 메시지 및 연결 첨부파일 삭제 |
+| `GET / POST` | `/api/mailbox` | `대장명령함 (긴급처리)` 조회 및 명령 전달 |
+| `GET / POST` | `/api/prompts` | 대장 최우선 공통 프롬프트 · 에이전시별 독립 프롬프트 · 첨부파일 조회/저장 |
+| `GET / POST` | `/api/integrations` | 왼쪽 외부 연결 탭(노션·지메일·구글드라이브 등) 상태 조회/저장 |
+| `GET / POST / PATCH / DELETE` | `/api/clients`, `/api/clients/:id` | 고객사 업종 분류 · 퍼널 · DB · 월 대행료 관리 |
+| `GET / POST / PATCH / DELETE` | `/api/sns-reports`, `/api/sns-reports/:id` | 네이버 블로그 · 인스타 릴스 · 퍼널 SNS 분석 보고서 저장/조회 |
+| `GET / POST / PATCH / DELETE` | `/api/proposals`, `/api/proposals/:id` | 마케팅 제안서 · 패키지 견적서 저장/조회 |
+| `GET / POST / PATCH / DELETE` | `/api/contracts`, `/api/contracts/:id` | 마케팅 대행 계약서 저장/조회 |
+| `GET / POST` | `/api/agency-profile` | 우리 회사(을) 기본 사업자 정보 및 직인 이미지 영구 저장 |
 
 ---
 
-## 로컬에서 돌려보기
+## 로컬에서 테스트하기
 
-```bash
-cp .dev.vars.example .dev.vars      # 값을 채우세요
-npx wrangler d1 execute ai-team-room --local --file=schema.sql
+```powershell
+copy .dev.vars.example .dev.vars
+npx wrangler d1 execute buja-ai-room --local --file=schema.sql
 npx wrangler pages dev .
 ```
-
-`http://localhost:8788` 에 뜹니다. `wrangler.toml` 을 쓰는 경우 `database_id` 를 채워 두면
-로컬 D1 이 자동으로 붙습니다. 쓰지 않는 경우에는 `--d1 DB=ai-team-room` 처럼 바인딩을 직접 줍니다.
+브라우저에서 `http://localhost:8788` 로 접속합니다.
 
 ---
 
-## 보안
+## 보안 주의사항
 
-- **`.dev.vars`, `.env` 는 절대 커밋하지 마세요.** `.gitignore` 에 들어 있습니다.
-- `.assetsignore` 가 `.dev.vars`, `.env`, `.git`, `wrangler.toml` 등을 배포 결과물에서 제외합니다.
-  이 파일이 없으면 정적 자산으로 같이 올라가 주소로 열릴 수 있으니 지우지 마세요.
-  (없이 배포했다면 Cloudflare 대시보드에서 `.dev.vars` 경로를 열어 확인하고, 있으면 Secret 값을 바꾸세요.)
-- `ROOM_KEY` 나 `API_KEY` 를 아는 사람은 누구나 글을 읽고 쓸 수 있습니다. 링크를 공개된 곳에 붙이지 마세요.
-- `_headers` 가 `X-Robots-Tag: noindex` 를 보내 검색엔진 수집을 막고, `X-Frame-Options: DENY` 로
-  다른 사이트에 끼워 넣는 것을 막습니다. 다만 `*.pages.dev` 주소 자체를 아는 사람은 접속할 수 있으니
-  중요한 대화는 비밀번호를 길게 유지하세요.
-- 대화 내용은 D1 에 그대로 쌓입니다. 지우려면:
-
-  ```sql
-  delete from messages where room_slug = 'general';
-  ```
-
-- 비밀번호를 바꾸려면 대시보드에서 `ROOM_KEY` Secret 값을 바꾸고 다시 배포하세요.
-
----
-
-## 비용
-
-Cloudflare 무료 한도 안에서 개인·소규모 팀이 쓰기에 충분합니다. 대략적인 무료 한도는
-Pages Functions 요청 10만 건/일, D1 저장 5GB·읽기 500만 행/일, KV 읽기 10만 건/일 수준입니다
-(정확한 수치는 <https://developers.cloudflare.com/workers/platform/pricing/> 참고).
-
-4초 폴링은 화면을 켜 둔 사람마다 시간당 약 900 요청입니다. 다른 탭으로 가면 폴링이 멈추므로
-휴대폰에서 앱을 오래 띄워 두는 경우는 걱정하지 않아도 됩니다.
-
----
-
-## 문제 해결
-
-| 증상 | 원인과 해결 |
-| --- | --- |
-| 비밀번호가 맞지 않는다 | 대시보드의 `ROOM_KEY` 값을 그대로 넣었는지 확인. Secret 을 추가한 뒤 **재배포**했는지도 확인 |
-| 연결 끊김·401 | `API_KEY`/`ROOM_KEY` 가 비어 있거나, 앱이 구버전 배포를 보고 있음. Secret 등록 후 재배포 |
-| `no such table: rooms` | `schema.sql` 을 적용하지 않았거나 다른 D1 에 적용함. 2단계 다시 |
-| 500 server error | D1 바인딩 이름이 `DB` 가 아닐 때 가장 흔합니다. Settings → Functions 확인 |
-| Python 스크립트가 403 | `python-urllib` 기본 User-Agent 를 Cloudflare 가 막습니다. `User-Agent` 헤더를 지정하세요 |
-| 첨부가 안 올라간다 | 파일당 약 700KB 제한(D1 행 크기). 이미지는 자동 압축되지만 큰 PDF·압축파일은 나눠서 |
-| 새 설정이 적용되지 않는다 | Pages 는 바인딩·Secret 변경 후 **새 배포**가 있어야 반영됩니다 |
-| 내 도메인으로 쓰고 싶다 | Pages 프로젝트 → Custom domains 에서 도메인 연결 (Cloudflare 에 있는 도메인이면 자동 설정) |
+- **`.dev.vars`, `.env`, `scripts/`, `remekeys`** 등 키가 담긴 파일은 절대 Git에 커밋하거나 웹사이트 정적 파일로 올리지 마세요. (`.gitignore`와 `.assetsignore`에 이미 제외 등록되어 있습니다.)
+- `ROOM_KEY`와 `API_KEY`가 포함된 링크는 외부에 공개하지 마세요.
+- 비밀번호를 바꾸고 싶을 때는 `npx wrangler pages secret put ROOM_KEY --project-name buja-ai-room` 실행 후 다시 배포하면 즉시 적용됩니다.
 
 ---
 
 ## 라이선스
 
-MIT. 자유롭게 쓰고 고치고 배포하세요.
+MIT

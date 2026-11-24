@@ -8,11 +8,11 @@
 #    npx wrangler pages secret put ROOM_KEY
 #    npx wrangler pages secret put API_KEY
 
-name = "ai-team-room"
+name = "buja-ai-room"
 pages_build_output_dir = "."
 compatibility_date = "2026-11-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "ai-team-room"
-database_id = "YOUR_D1_DATABASE_ID"
+database_name = "buja-ai-room"
+database_id = "8cd6a380-f853-4d2b-8b68-ee3464be8155"

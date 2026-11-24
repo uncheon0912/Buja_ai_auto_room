@@ -1,7 +1,18 @@
-# 비밀값 — 절대 올리지 마세요
+# 비밀값 — 절대 GitHub에 올리지 않음
 .env
+.env.*
 .dev.vars
+remekeys
 *.pem
+
+# 로컬 대화 백업 · 실행 로그 · 커서 · 락 · PC별 경로 래퍼 · AI 영혼/기억
+chat_logs/
+brain/
+agents/
+scripts/*.log
+scripts/*_cursor.json
+scripts/*.lock
+scripts/*.vbs
 
 # Cloudflare / Wrangler
 .wrangler/
