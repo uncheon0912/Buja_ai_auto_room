@@ -1315,8 +1315,8 @@ function formatDocRow(r) {
     if (parts.length === 2 && method === 'GET') {
       const cid = parseInt(url.searchParams.get('client_id') || '0', 10);
       const res = cid > 0
-        ? await env.DB.prepare('select * from deliverables where client_id = ? order by id desc limit 50').bind(cid).all()
-        : await env.DB.prepare('select * from deliverables order by id desc limit 100').all();
+        ? await env.DB.prepare('select * from deliverables where client_id = ? order by scheduled_date asc, id desc limit 500').bind(cid).all()
+        : await env.DB.prepare('select * from deliverables order by scheduled_date asc, id desc limit 1500').all();
       return json({ ok: true, deliverables: res.results || [] });
     }
     if (parts.length === 2 && method === 'POST') {
@@ -1340,7 +1340,7 @@ function formatDocRow(r) {
     if (parts.length === 3 && parts[2] === 'bulk' && method === 'POST') {
       let p;
       try { p = await request.json(); } catch (e) { return json({ ok: false, error: 'invalid_json' }, 400); }
-      const items = Array.isArray(p && p.items) ? p.items.slice(0, 30) : [];
+      const items = Array.isArray(p && p.items) ? p.items.slice(0, 120) : [];
       if (!items.length) return json({ ok: false, error: 'invalid_request', message: '등록할 콘텐츠 항목이 없습니다.' }, 400);
       const now = new Date().toISOString();
       const created = [];

@@ -118,6 +118,7 @@
   var nowParts = A.todayKst().split('-');
   var st = {
     subTab: 'calendar', // 'calendar' | 'factory'
+    viewMode: localStorage.getItem('buja_cal_view') || 'summary', // 'summary' | 'detail'
     year: parseInt(nowParts[0], 10) || 2026,
     month: parseInt(nowParts[1], 10) || 11,
     filterClientId: '',
@@ -127,6 +128,7 @@
     modalDate: null,
     modalAdding: false,
     addMode: false,
+    bulkFilling: false,
     newDate: A.todayKst(),
     newClientId: '',
     newChannel: '네이버 블로그',
@@ -143,12 +145,12 @@
   };
 
   var CHANNELS = [
-    { id: '네이버 블로그', icon: '🟢', color: '#4ade80', bg: 'rgba(74,222,128,0.16)', border: '#22c55e', text: '#bbf7d0' },
-    { id: '인스타 릴스', icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.18)', border: '#a855f7', text: '#e9d5ff' },
-    { id: '유튜브', icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.18)', border: '#ef4444', text: '#fecaca' },
-    { id: '컨설팅', icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.18)', border: '#eab308', text: '#fef08a' },
-    { id: '스레드', icon: '🧵', color: '#38bdf8', bg: 'rgba(15,23,42,0.22)', border: 'rgba(148,163,184,0.38)', text: '#e2e8f0' },
-    { id: '기타', icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: '#64748b', text: '#cbd5e1' },
+    { id: '네이버 블로그', short: '블', icon: '🟢', color: '#4ade80', bg: 'rgba(74,222,128,0.18)', border: '#22c55e', text: '#bbf7d0' },
+    { id: '인스타 릴스', short: '릴', icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.2)', border: '#a855f7', text: '#e9d5ff' },
+    { id: '유튜브', short: '유', icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.2)', border: '#ef4444', text: '#fecaca' },
+    { id: '컨설팅', short: '컨', icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.2)', border: '#eab308', text: '#fef08a' },
+    { id: '스레드', short: '스', icon: '🧵', color: '#38bdf8', bg: 'rgba(56,189,248,0.16)', border: 'rgba(56,189,248,0.45)', text: '#bae6fd' },
+    { id: '기타', short: '기', icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.16)', border: '#64748b', text: '#cbd5e1' },
   ];
 
   function channelStyle(ch) {
@@ -251,36 +253,106 @@
     });
 
     var cells = [];
-    for (var i = 0; i < startDow; i++) cells.push('<div style="min-height:94px;background:rgba(15,23,42,0.03);border-radius:10px;border:1px dashed var(--line)"></div>');
+    for (var i = 0; i < startDow; i++) cells.push('<div style="min-height:102px;background:rgba(15,23,42,0.03);border-radius:10px;border:1px dashed var(--line)"></div>');
     var todayStr = A.todayKst();
+
+    // 등록 고객사 중 아직 일정이 0건인 고객사 집계 (왜 전체 고객사가 안 보이는지 바로 안내!)
+    var scheduledClientSet = {};
+    st.items.forEach(function (it) { scheduledClientSet[String(it.client_id)] = true; });
+    var missingClients = clients.filter(function (c) { return !scheduledClientSet[String(c.id)]; });
+
     for (var day = 1; day <= daysInMonth; day++) {
       var ymd = ymPrefix + String(day).padStart(2, '0');
       var list = byDate[ymd] || [];
       var isToday = ymd === todayStr;
+      var cnt = list.length;
+
+      // 🔥 직관적 혼잡도 히트맵(열지도) 색상: 0건(투명) / 1~2건(여유 스카이) / 3~5건(바쁨 앰버) / 6건+(폭주 레드!)
+      var heatBg = isToday ? 'rgba(14,165,233,0.14)' : 'rgba(255,255,255,0.025)';
+      var heatBd = isToday ? '#38bdf8' : 'var(--line)';
+      var heatBadge = '';
+      if (cnt >= 6) {
+        heatBg = 'rgba(239,68,68,0.16)';
+        heatBd = '#ef4444';
+        heatBadge = '<span style="background:linear-gradient(135deg,#ef4444,#ec4899);color:#fff;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;box-shadow:0 0 8px rgba(239,68,68,0.65)">🚨 폭주 ' + cnt + '</span>';
+      } else if (cnt >= 3) {
+        heatBg = 'rgba(245,158,11,0.13)';
+        heatBd = '#f59e0b';
+        heatBadge = '<span style="background:rgba(245,158,11,0.28);border:1px solid #f59e0b;color:#fde68a;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px">🔥 ' + cnt + '건</span>';
+      } else if (cnt >= 1) {
+        heatBg = isToday ? 'rgba(14,165,233,0.16)' : 'rgba(56,189,248,0.08)';
+        heatBd = isToday ? '#38bdf8' : 'rgba(56,189,248,0.38)';
+        heatBadge = '<span style="background:rgba(56,189,248,0.2);color:#7dd3fc;font-size:10px;font-weight:800;padding:1px 5px;border-radius:999px">' + cnt + '건</span>';
+      }
+
+      // 채널별 카운트 & 완료 카운트 & 고유 고객사 목록 집계
+      var chCounts = {};
+      var doneCnt = 0;
+      var uniqClients = [];
+      var seenC = {};
+      list.forEach(function (it) {
+        var cs = channelStyle(it.channel);
+        chCounts[cs.id] = (chCounts[cs.id] || 0) + 1;
+        if (it.status === '예약확정' || it.status === '승인완료' || it.status === '발행완료') doneCnt++;
+        var cn = clientNameById(it.client_id);
+        if (!seenC[cn]) { seenC[cn] = true; uniqClients.push(cn); }
+      });
+
+      // 채널 분포 1줄 비율 컬러 바 (한눈에 어떤 채널들이 몰렸는지 시각화!)
+      var stackedBar = '';
+      if (cnt > 0) {
+        stackedBar = '<div style="display:flex;height:5px;border-radius:999px;overflow:hidden;background:rgba(15,23,42,0.45);margin:1px 0">' +
+          CHANNELS.filter(function (c) { return chCounts[c.id] > 0; }).map(function (c) {
+            var pct = Math.max(8, Math.round((chCounts[c.id] / cnt) * 100));
+            return '<div style="width:' + pct + '%;background:' + c.color + '" title="' + c.id + ' ' + chCounts[c.id] + '건"></div>';
+          }).join('') +
+        '</div>';
+      }
+
+      var bodyHtml = '';
+      if (cnt > 0 && st.viewMode === 'summary') {
+        // 📊 한눈에 요약 모드: 채널별 미니 도트 배지 + 대표 고객사 + 완료 진행률 (작은 칸에서도 100% 직관!)
+        var chPills = CHANNELS.filter(function (c) { return chCounts[c.id] > 0; }).map(function (c) {
+          return '<span style="display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:900;padding:1px 5px;border-radius:5px;background:' + c.bg + ';border:1px solid ' + c.border + ';color:' + c.text + '">' + c.icon + c.short + ' ' + chCounts[c.id] + '</span>';
+        }).join('');
+        var clientSummary = uniqClients.length === 1
+          ? uniqClients[0]
+          : (uniqClients[0] + ' 외 ' + (uniqClients.length - 1) + '곳');
+        bodyHtml = stackedBar +
+          '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">' + chPills + '</div>' +
+          '<div style="margin-top:auto;padding-top:3px;font-size:10px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700" title="' + A.esc(uniqClients.join(', ')) + '">🏢 ' + A.esc(clientSummary) + '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;font-size:9.8px;color:var(--muted)">' +
+            '<span style="color:' + (doneCnt === cnt ? '#4ade80' : '#fbbf24') + ';font-weight:800">' + (doneCnt === cnt ? '✅ 완료 ' + doneCnt + '/' + cnt : '⏳ ' + doneCnt + '/' + cnt + ' 완료') + '</span>' +
+            '<span style="color:#7dd3fc;font-weight:800">🔎 크게보기</span>' +
+          '</div>';
+      } else if (cnt > 0) {
+        // 📋 초슬림 상세 목록 모드: 최대 5건까지 콤팩트하게 표시
+        bodyHtml = stackedBar +
+          list.slice(0, 5).map(function (it) {
+            var sm = statusMeta(it.status);
+            var cs = channelStyle(it.channel);
+            var active = !st.addMode && String(st.selectedId) === String(it.id);
+            var bgCol = sm.cardBg || cs.bg;
+            var bdCol = active ? '#ffffff' : (sm.cardBorder || cs.border);
+            var txtCol = sm.textColor || cs.text;
+            var strike = sm.done ? 'text-decoration:line-through;opacity:.82;' : '';
+            var shortClient = clientNameById(it.client_id).slice(0, 5);
+            return '<div style="display:flex;align-items:center;gap:2px;border:1px solid ' + bdCol + ';background:' + bgCol + ';border-left:3px solid ' + cs.color + ';border-radius:4px;padding:1px 3px">' +
+              '<button type="button" data-cal-pick="' + it.id + '" style="flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:0;cursor:pointer;font-size:10px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:' + txtCol + ';' + strike + '" title="' + A.esc('[' + clientNameById(it.client_id) + ' · ' + it.channel + ' · ' + it.status + '] ' + it.title) + '">' +
+              (sm.short || cs.icon) + ' ' + A.esc(shortClient + '·' + it.title) +
+              '</button>' +
+              '</div>';
+          }).join('') +
+          (list.length > 5 ? '<div style="font-size:9.8px;color:#7dd3fc;text-align:right;font-weight:800">+' + (list.length - 5) + '건 (클릭해 전체보기)</div>' : '');
+      }
+
       cells.push(
-        '<div data-cal-daybox="' + ymd + '" style="min-height:94px;background:' + (isToday ? 'rgba(14,165,233,0.1)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (isToday ? '#38bdf8' : 'var(--line)') + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;cursor:pointer" title="클릭하면 ' + ymd + ' 상세 스케줄 팝업이 크게 열립니다">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:800;color:' + (isToday ? '#38bdf8' : 'var(--ink)') + '">' +
-        '<button type="button" data-cal-open-day="' + ymd + '" style="border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:3px" title="날짜 크게 보기 팝업">' + day + '일' + (list.length ? ' <small style="opacity:.75;color:#7dd3fc">(' + list.length + '건 🔎)</small>' : '') + '</button>' +
-        '<button type="button" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록" style="border:1px solid rgba(56,189,248,0.4);background:rgba(14,165,233,0.14);color:#7dd3fc;border-radius:6px;width:20px;height:20px;line-height:1;font-size:13px;font-weight:900;cursor:pointer;padding:0">＋</button>' +
+        '<div data-cal-daybox="' + ymd + '" style="min-height:102px;background:' + heatBg + ';border:1.5px solid ' + heatBd + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:transform .14s,box-shadow .14s" title="클릭하면 ' + ymd + ' 상세 스케줄 팝업이 크게 열립니다">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:3px;font-size:11.5px;font-weight:800;color:' + (isToday ? '#38bdf8' : 'var(--ink)') + '">' +
+        '<button type="button" data-cal-open-day="' + ymd + '" style="border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:4px">' + day + '일 ' + heatBadge + '</button>' +
+        '<button type="button" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록" style="border:1px solid rgba(56,189,248,0.4);background:rgba(14,165,233,0.14);color:#7dd3fc;border-radius:6px;width:19px;height:19px;line-height:1;font-size:12px;font-weight:900;cursor:pointer;padding:0;flex-shrink:0">＋</button>' +
         '</div>' +
-        list.slice(0, 4).map(function (it) {
-          var sm = statusMeta(it.status);
-          var cs = channelStyle(it.channel);
-          var active = !st.addMode && String(st.selectedId) === String(it.id);
-          // 검수완료/발행완료/수정요청은 직관적 상태 색상, 일반 대기 일정은 채널 고유 색상으로 표시!
-          var bgCol = sm.cardBg || cs.bg;
-          var bdCol = active ? '#ffffff' : (sm.cardBorder || cs.border);
-          var txtCol = sm.textColor || cs.text;
-          var leftStripe = cs.color;
-          var strike = sm.done ? 'text-decoration:line-through;opacity:.85;' : '';
-          return '<div style="display:flex;align-items:center;gap:2px;border:1px solid ' + bdCol + ';background:' + bgCol + ';border-left:4px solid ' + leftStripe + ';border-radius:6px;padding:2px 3px 2px 5px;' + (active ? 'box-shadow:0 0 0 1px #38bdf8;' : '') + '">' +
-            '<button type="button" data-cal-pick="' + it.id + '" style="flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:1px 2px;cursor:pointer;font-size:10.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:' + txtCol + ';' + strike + '" title="' + A.esc('[' + clientNameById(it.client_id) + ' · ' + it.channel + ' · ' + it.status + '] ' + it.title) + '">' +
-            (sm.short ? sm.short + ' ' : cs.icon + ' ') + A.esc(it.title) +
-            '</button>' +
-            '<button type="button" data-cal-quickdel="' + it.id + '" title="이 일정 바로 삭제" style="border:0;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;font-size:11px;font-weight:900;padding:0 3px;line-height:1;flex-shrink:0">×</button>' +
-            '</div>';
-        }).join('') +
-        (list.length > 4 ? '<div style="font-size:10px;color:var(--muted);text-align:right">+' + (list.length - 4) + '건 더보기</div>' : '') +
+        bodyHtml +
         '</div>'
       );
     }
@@ -301,28 +373,32 @@
       '<div class="kpi-card"><div class="k-lbl">🏁 발행 완료</div><div class="k-val" style="color:#06b6d4">' + cntDone + '건</div><div class="k-sub">청록 완료 표시 누적</div></div>' +
       '</div>' +
 
-      // 직관적 채널·상태 색상 범례 & 쉬운 사용법 주석
-      '<div style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.32);border-radius:12px;padding:9px 14px;margin-bottom:12px;font-size:11.8px;line-height:1.6;color:var(--ink)">' +
+      // 직관적 채널·혼잡도 히트맵 범례 & 미배치 고객사 자동 배치 배너
+      '<div style="background:rgba(14,165,233,0.1);border:1px solid rgba(56,189,248,0.32);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:11.6px;line-height:1.6;color:var(--ink)">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">' +
-      '<span>💡 <b>등록법:</b> 달력 날짜의 <b style="color:#38bdf8">[＋]</b>로 1건씩 바로 추가하거나 <b>[🏭 AI 10편 공장]</b>에서 일괄 등록 · 일정 우측 <b>[×]</b>로 즉시 삭제!</span>' +
+      '<span>📊 <b>전체 고객사 ' + clients.length + '곳</b> 중 스케줄 등록 <b>' + (clients.length - missingClients.length) + '곳</b>' +
+      (missingClients.length ? ' · <b style="color:#fde047">미배치 ' + missingClients.length + '곳</b>' : ' · <b style="color:#4ade80">전원 배치 완료!</b>') +
+      ' · 날짜 칸 클릭 시 <b>크게 보는 상세 팝업</b>에서 전체 일정 수정/삭제 가능</span>' +
+      '<div class="ws-actions">' +
+      (missingClients.length ? '<button type="button" class="ws-btn sm warn" id="calAutoFillMissingBtn"' + (st.bulkFilling ? ' disabled' : '') + '>' + (st.bulkFilling ? '⏳ 자동 분산 배치 중...' : '⚡ 미배치 고객사 ' + missingClients.length + '곳 월간 일정 자동 분산 배치') + '</button>' : '') +
       '<button type="button" class="ws-btn sm primary" id="calOpenAddBtn">➕ 새 일정 바로 등록</button>' +
       '</div>' +
-      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(148,163,184,0.28);font-size:11.2px">' +
-      '<span><b>채널색:</b></span>' +
-      '<span style="color:#4ade80;font-weight:800">● 네이버(연두)</span>' +
-      '<span style="color:#c084fc;font-weight:800">● 릴스(보라)</span>' +
-      '<span style="color:#f87171;font-weight:800">● 유튜브(빨강)</span>' +
-      '<span style="color:#facc15;font-weight:800">● 컨설팅(노랑)</span>' +
-      '<span style="color:#38bdf8;font-weight:800">● 스레드</span>' +
-      '<span style="color:#94a3b8;font-weight:800">● 기타</span>' +
-      '<span style="margin-left:6px"><b>| 상태색:</b></span>' +
-      '<span style="background:rgba(16,185,129,0.22);border:1px solid #10b981;color:#a7f3d0;padding:0 6px;border-radius:6px;font-weight:800">✅ 검수·예약완료</span>' +
-      '<span style="background:rgba(6,182,212,0.18);border:1px solid #06b6d4;color:#a5f3fc;padding:0 6px;border-radius:6px;font-weight:800">🏁 발행완료</span>' +
-      '<span style="background:rgba(249,115,22,0.22);border:1px solid #f97316;color:#fed7aa;padding:0 6px;border-radius:6px;font-weight:800">✏️ 수정요청</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(148,163,184,0.28);font-size:11.2px">' +
+      '<span><b>혼잡도:</b></span>' +
+      '<span style="background:rgba(56,189,248,0.18);border:1px solid rgba(56,189,248,0.45);color:#7dd3fc;padding:0 6px;border-radius:6px;font-weight:800">1~2건 여유</span>' +
+      '<span style="background:rgba(245,158,11,0.22);border:1px solid #f59e0b;color:#fde68a;padding:0 6px;border-radius:6px;font-weight:800">🔥 3~5건 바쁨</span>' +
+      '<span style="background:linear-gradient(135deg,#ef4444,#ec4899);color:#fff;padding:0 6px;border-radius:6px;font-weight:900">🚨 6건+ 폭주</span>' +
+      '<span style="margin-left:4px"><b>| 채널:</b></span>' +
+      '<span style="color:#4ade80;font-weight:800">🟢블로그</span>' +
+      '<span style="color:#c084fc;font-weight:800">🟣릴스</span>' +
+      '<span style="color:#f87171;font-weight:800">🔴유튜브</span>' +
+      '<span style="color:#facc15;font-weight:800">🟡컨설팅</span>' +
+      '<span style="color:#38bdf8;font-weight:800">🧵스레드</span>' +
       '</div>' +
       '</div>' +
 
-      '<div class="ws-split" style="grid-template-columns:minmax(0,1.3fr) minmax(350px,0.95fr);align-items:start">' +
+      '<div class="ws-split" style="grid-template-columns:minmax(0,1.55fr) minmax(320px,0.85fr);align-items:start">' +
       '<div class="ws-card" style="padding:14px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
       '<div class="ws-actions">' +
@@ -330,6 +406,8 @@
       '<strong style="font-size:15px;padding:0 6px">' + st.year + '년 ' + st.month + '월</strong>' +
       '<button type="button" class="ws-btn sm" id="calNext">다음 달 ▶</button>' +
       '<button type="button" class="ws-btn sm" id="calRefresh">🔄 새로고침</button>' +
+      '<button type="button" class="ws-btn sm ' + (st.viewMode === 'summary' ? 'primary' : '') + '" id="calViewSummaryBtn" title="날짜별 혼잡도 + 채널 요약으로 한눈에 보기">📊 한눈에 요약</button>' +
+      '<button type="button" class="ws-btn sm ' + (st.viewMode === 'detail' ? 'primary' : '') + '" id="calViewDetailBtn" title="개별 일정 제목을 초슬림 목록으로 보기">📋 상세 목록</button>' +
       '</div>' +
       '<div class="ws-actions">' +
       '<select id="calFilterClient" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
@@ -621,6 +699,48 @@
     if (prev) prev.addEventListener('click', function () { st.month--; if (st.month < 1) { st.month = 12; st.year--; } render(); });
     if (next) next.addEventListener('click', function () { st.month++; if (st.month > 12) { st.month = 1; st.year++; } render(); });
     if (ref) ref.addEventListener('click', function () { loadDeliverables().then(function () { A.toast('🔄 캘린더 최신 상태 동기화 완료'); }); });
+
+    var vSum = q('#calViewSummaryBtn'), vDet = q('#calViewDetailBtn');
+    if (vSum) vSum.addEventListener('click', function () { st.viewMode = 'summary'; localStorage.setItem('buja_cal_view', 'summary'); render(); });
+    if (vDet) vDet.addEventListener('click', function () { st.viewMode = 'detail'; localStorage.setItem('buja_cal_view', 'detail'); render(); });
+
+    var autoFillBtn = q('#calAutoFillMissingBtn');
+    if (autoFillBtn) autoFillBtn.addEventListener('click', function () {
+      var clients = A.store.clients || [];
+      var hasSet = {};
+      st.items.forEach(function (it) { hasSet[String(it.client_id)] = true; });
+      var missing = clients.filter(function (c) { return !hasSet[String(c.id)]; });
+      if (!missing.length) { A.toast('✅ 모든 고객사의 일정이 이미 등록되어 있습니다!'); return; }
+      if (!confirm('아직 스케줄이 없는 고객사 ' + missing.length + '곳에 이번 달(' + st.year + '년 ' + st.month + '월) 맞춤 콘텐츠(업체당 4건 · 날짜 자동 분산)를 일괄 배치할까요?')) return;
+      st.bulkFilling = true;
+      render();
+      var daysInM = new Date(st.year, st.month, 0).getDate();
+      var ymPre = st.year + '-' + String(st.month).padStart(2, '0') + '-';
+      var bulkItems = [];
+      missing.forEach(function (c, cIdx) {
+        var bp = getBlueprint(c.industry || '브랜드/기타').slice(0, 4);
+        bp.forEach(function (tpl, tIdx) {
+          // 고객사마다 시작일을 하루씩 어긋나게 분산 배치해 특정 날짜 폭주 방지!
+          var dayNum = ((cIdx * 2 + tIdx * 6) % daysInM) + 1;
+          var ymd = ymPre + String(dayNum).padStart(2, '0');
+          bulkItems.push({
+            client_id: c.id,
+            channel: tpl.ch,
+            title: tpl.title.replace(/\{name\}/g, c.name),
+            preview_text: '🎯 [3초 후킹]\n' + tpl.hook + '\n\n📝 [구성]\n' + tpl.body + '\n\n🏷️ ' + tpl.tags.replace(/\{name\}/g, c.name.replace(/\s+/g, '')),
+            scheduled_date: ymd,
+            status: '검수대기',
+          });
+        });
+      });
+      A.api('/api/deliverables/bulk', { method: 'POST', body: JSON.stringify({ items: bulkItems }) })
+        .then(function (r) {
+          A.toast('🎉 미배치 고객사 ' + missing.length + '곳(' + ((r && r.count) || bulkItems.length) + '건) 월간 일정 분산 배치 완료!');
+          return loadDeliverables();
+        })
+        .catch(function (e) { A.toast('일괄 배치 실패: ' + e.message, 'error'); })
+        .finally(function () { st.bulkFilling = false; render(); });
+    });
 
     var fc = q('#calFilterClient'), fch = q('#calFilterCh');
     if (fc) fc.addEventListener('change', function () { st.filterClientId = fc.value; render(); });
