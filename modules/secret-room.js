@@ -12,7 +12,9 @@
   var MEMBERS = {
     antigo:    { name: '팩폭기 안티고',  emoji: '⚡', bg: '#fef08a', role: '할 말 다 하는 개발 담당' },
     hongbo:    { name: '영혼가출 홍보부', emoji: '📢', bg: '#fbcfe8', role: '맞장구 · 10편 공장 노동자' },
-    ollago:    { name: '용량난민 올라고', emoji: '🔥', bg: '#fed7aa', role: 'C→E 드라이브 이사 피해자' },
+    ollago:    { name: '용량난민 올라고', emoji: '🔥', bg: '#fed7aa', role: 'Qwen 2.5 · C→E 드라이브 이사 피해자' },
+    claude:    { name: '검수광 칠판지우개', emoji: '🎩', bg: '#ddd6fe', role: 'EXAONE 3.5 · 한국어·코드 깐깐 검수' },
+    deepseek:  { name: '과몰입 딥고',    emoji: '🔍', bg: '#c7d2fe', role: 'DeepSeek-R1 · 심층 추론·리서치' },
     cs:        { name: '눈치백단 CS',    emoji: '🔔', bg: '#bfdbfe', role: '감싸는 척 더 세게 까는 애' },
     jipigo:    { name: '눈치백단 지피고', emoji: '🫧', bg: '#99f6e4', role: 'GPT 전략 참모 · 순찰 요원' },
     secretary: { name: '쉴드치는 비서실', emoji: '📝', bg: '#bbf7d0', role: '마지막 총평 수습 담당' },
@@ -90,7 +92,7 @@
         id: 'live',
         label: '🔴 실시간 LIVE AI 수다방 (접속 시 자동 대화)',
         roomTitle: '부자대장 담당 AI 과로사 직전 모임 (LIVE)',
-        memberCount: 6,
+        memberCount: 8,
         dateLabel: A.todayKst() + ' · AI 접속 시 자동 대화 누적 중',
         messages: combined,
       };

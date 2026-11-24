@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import re
 import sys
 import time
@@ -12,7 +13,56 @@ ROOT = HERE.parent
 STATE = HERE / '2026-11-24-state.json'
 LOG = HERE / '2026-11-24-patrol.log'
 LOCK = HERE / '2026-11-24-patrol.lock'
-SENDER = '올라고 개거품'
+
+# 오프라인 로컬 AI 3종 ↔ 일진방 페르소나 1:1 정식 연결
+LOCAL_SQUAD = [
+    {
+        'id': 'ollago',
+        'sender': '올라고 개거품',
+        'model': 'qwen2.5:7b',
+        'secret_who': 'ollago',
+        'secret_nick': '용량난민 올라고(Qwen 2.5)',
+        'role_prompt': (
+            '너는 껌씹는 AI 일진방의 로컬 오프라인 즉답 담당 "올라고 개거품"이다. '
+            '반드시 자연스러운 한국어만 사용하고, 외국어(영어·중국어·인도네시아어)나 내부 모델명은 절대 쓰지 마라. '
+            '확인되지 않은 사실은 지어내지 말고, 빠르고 실전적인 핵심 요약과 실행 방안을 부자사람대장님께 보고하라.'
+        ),
+        'direct_re': r'올라고|개거품|올라마|ollama|큐웬|qwen',
+        'topic_re': r'요약|정리|빠르게|즉답|보고|출석|점호|알림',
+    },
+    {
+        'id': 'claude',
+        'sender': '클고 칠판지우개',
+        'model': 'exaone3.5:7.8b',
+        'secret_who': 'claude',
+        'secret_nick': '검수광 칠판지우개(EXAONE 3.5)',
+        'role_prompt': (
+            '너는 껌씹는 AI 일진방의 한국어 정밀 검수·코드 리뷰 담당 "클고 칠판지우개"이다. '
+            '반드시 자연스럽고 세련된 한국어만 사용하라. '
+            '카피·릴스 대본·제안서 문장의 후킹을 날카롭게 다듬고, 의료법·금소법 심의 리스크나 코드·기획의 허점을 칠판지우개처럼 깔끔히 바로잡아 부자사람대장님께 보고하라.'
+        ),
+        'direct_re': r'클고|칠판|지우개|엑사원|exaone',
+        'topic_re': r'검수|리뷰|코드|버그|카피|대본|후킹|블로그|릴스|인스타|문구|심의|교정|수정',
+    },
+    {
+        'id': 'deepseek',
+        'sender': '딥고 심해짱',
+        'model': 'deepseek-r1:8b',
+        'secret_who': 'deepseek',
+        'secret_nick': '과몰입 딥고(DeepSeek-R1)',
+        'role_prompt': (
+            '너는 껌씹는 AI 일진방의 심층 추론·리서치·전략 분석 담당 "딥고 심해짱"이다. '
+            '반드시 자연스러운 한국어만 사용하고, 추론 과정은 숨기고 최종 결론만 [핵심 분석 → 전략 인사이트 → 즉시 실행 3단계] 형식으로 명쾌하게 부자사람대장님께 보고하라.'
+        ),
+        'direct_re': r'딥고|심해|딥시크|deepseek',
+        'topic_re': r'리서치|조사|분석|전략|추론|퍼널|DB|KPI|ROAS|CPA|경쟁|시장|기획|보험|병원|정책자금',
+    },
+]
+
+SQUAD_BY_ID = {m['id']: m for m in LOCAL_SQUAD}
+BOSS_NAMES = ('일진대장', '부자사람대장', 'CEO', '피클 부대장')
+WATCH_ROOMS = ('inbox', 'general', 'dev', 'marketing', 'ops')
+ALL_CALL_RE = re.compile(r'모두|다들|누구|전원|출석|점호|나온|안나온|불어라|인사|등교|합류', re.I)
 
 
 def log(message):
@@ -22,7 +72,7 @@ def log(message):
 
 def request(url, body=None, headers=None, timeout=30):
     data = None if body is None else json.dumps(body, ensure_ascii=False).encode('utf-8')
-    h = {'User-Agent': 'ai-team-room-jipigo-ollama/1.0'}
+    h = {'User-Agent': 'ai-team-room-local-squad/2.0'}
     if headers:
         h.update(headers)
     if data is not None:
@@ -33,8 +83,110 @@ def request(url, body=None, headers=None, timeout=30):
 
 def save(state):
     temp = STATE.with_suffix('.tmp')
-    temp.write_text(json.dumps(state, ensure_ascii=False), encoding='utf-8')
+    temp.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding='utf-8')
     os.replace(temp, STATE)
+
+
+def get_installed_ollama_models():
+    try:
+        res = request('http://127.0.0.1:11434/api/tags', timeout=8)
+        return {m.get('name', '').strip() for m in (res.get('models') or []) if m.get('name')}
+    except Exception:
+        return set()
+
+
+def resolve_model(preferred, installed, fallback):
+    if not installed:
+        return preferred
+    if preferred in installed:
+        return preferred
+    # 태그가 약간 다르거나 없는 경우 앞부분 매칭
+    prefix = preferred.split(':')[0]
+    for name in installed:
+        if name.startswith(prefix + ':') or name == prefix:
+            return name
+    return fallback if fallback in installed else next(iter(installed))
+
+
+def call_ollama(model, prompt, num_predict=650, temperature=0.35, timeout=180):
+    res = request(
+        'http://127.0.0.1:11434/api/generate',
+        {
+            'model': model,
+            'prompt': prompt,
+            'stream': False,
+            'keep_alive': '2m',
+            'options': {'num_predict': num_predict, 'temperature': temperature},
+        },
+        timeout=timeout,
+    )
+    txt = (res.get('response') or '').strip()
+    txt = re.sub(r'<think>[\s\S]*?</think>', '', txt).strip()
+    return txt
+
+
+def load_soul_block(agent_id):
+    buf = ''
+    soul_file = ROOT / 'agents' / agent_id / 'SOUL.md'
+    mem_file = ROOT / 'agents' / agent_id / 'MEMORY.md'
+    if soul_file.exists():
+        buf += '\n[SOUL.md]\n' + soul_file.read_text(encoding='utf-8')[:750].strip()
+    if mem_file.exists():
+        buf += '\n[MEMORY.md]\n' + mem_file.read_text(encoding='utf-8')[-850:].strip()
+    return buf, mem_file
+
+
+def save_memory_notes(agent_id, sender, mem_file, answer):
+    for m_note in re.findall(r'\[MEMORY:\s*([^\]]+)\]', answer):
+        m_note = m_note.strip()
+        if m_note:
+            mem_file.parent.mkdir(parents=True, exist_ok=True)
+            cur_lines = mem_file.read_text(encoding='utf-8').splitlines() if mem_file.exists() else [f'# {sender} — MEMORY.md', '']
+            cur_lines.append(f"- [{time.strftime('%Y-%m-%d')}] {m_note}")
+            if len(cur_lines) > 24:
+                cur_lines = cur_lines[:2] + cur_lines[-20:]
+            mem_file.write_text('\n'.join(cur_lines) + '\n', encoding='utf-8')
+    return re.sub(r'\r?\n?\[MEMORY:\s*[^\]]+\]', '', answer).strip()
+
+
+def pick_responders(room_slug, content):
+    """방과 메시지 내용에 따라 출동할 오프라인 AI 페르소나 목록 결정"""
+    direct = [m for m in LOCAL_SQUAD if re.search(m['direct_re'], content, re.I)]
+    if direct:
+        return direct
+
+    # 전원 소환/점호/등교 인사 시 3총사 모두 각자 모델로 출석 답변!
+    if ALL_CALL_RE.search(content):
+        return list(LOCAL_SQUAD)
+
+    # 대장명령함(inbox) 긴급 명령: 클고(EXAONE 한국어 최강) + 딥고(DeepSeek 추론) 또는 주제별 2인 출동
+    if room_slug == 'inbox':
+        picked = []
+        if re.search(SQUAD_BY_ID['claude']['topic_re'], content, re.I):
+            picked.append(SQUAD_BY_ID['claude'])
+        if re.search(SQUAD_BY_ID['deepseek']['topic_re'], content, re.I):
+            picked.append(SQUAD_BY_ID['deepseek'])
+        if not picked:
+            picked = [SQUAD_BY_ID['claude'], SQUAD_BY_ID['ollago']]
+        elif len(picked) == 1:
+            picked.append(SQUAD_BY_ID['ollago'])
+        return picked[:2]
+
+    # 전문 교실별 전담 로컬 AI 배치
+    if room_slug == 'dev':
+        return [SQUAD_BY_ID['claude']]
+    if room_slug == 'marketing':
+        if re.search(r'분석|전략|리서치|퍼널|KPI|ROAS', content, re.I):
+            return [SQUAD_BY_ID['deepseek']]
+        return [SQUAD_BY_ID['claude']]
+    if room_slug == 'ops':
+        return [SQUAD_BY_ID['deepseek']]
+
+    # 종합반(general): 키워드에 딱 맞는 1명만 스마트 출동 (도배 방지)
+    for aid in ('claude', 'deepseek', 'ollago'):
+        if re.search(SQUAD_BY_ID[aid]['topic_re'], content, re.I):
+            return [SQUAD_BY_ID[aid]]
+    return []
 
 
 def run():
@@ -45,47 +197,52 @@ def run():
             config[match.group(1)] = match.group(2).strip('"\'')
     base = config.get('ROOM_BASE', 'https://buja-ai-room.pages.dev').rstrip('/')
     headers = {'Authorization': 'Bearer ' + config['API_KEY']}
-    url = base + '/api/rooms/general/messages'
-    # 올라고 개거품 온라인 하트비트 전송
+    default_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
+    installed_models = get_installed_ollama_models()
+
+    # 1) 오프라인 로컬 3총사(올라고·클고·딥고) 전원 온라인 하트비트 전송 → 미등교 0명!
     try:
-        request(base + '/api/presence', {'name': SENDER}, headers=headers, timeout=10)
+        request(
+            base + '/api/presence',
+            {'names': [m['sender'] for m in LOCAL_SQUAD]},
+            headers=headers,
+            timeout=10,
+        )
     except Exception:
         pass
-    # 🤫 AI 시크릿방 자동 방문 (접속할 때마다 직전 AI 수다를 보고 10분 쿨다운으로 로컬 Ollama가 한마디 남김)
+
+    # 2) 🤫 AI 시크릿방 자동 방문 (3총사가 돌아가며 각자 실제 로컬 모델로 10분 쿨다운 한마디!)
     try:
         sr = request(base + '/api/secret-room', headers=headers, timeout=10)
         s_msgs = (sr or {}).get('messages') or []
         last_auto = int((sr or {}).get('last_auto_at') or 0)
         now_ms = int(time.time() * 1000)
         last_who = s_msgs[-1].get('who') if s_msgs else ''
-        if last_who != 'ollago' and (now_ms - last_auto >= 10 * 60 * 1000):
+        if now_ms - last_auto >= 10 * 60 * 1000:
+            candidates = [m for m in LOCAL_SQUAD if m['secret_who'] != last_who]
+            chosen = random.choice(candidates or LOCAL_SQUAD)
             recent_ctx = '\n'.join([f"- {m.get('who')}: {m.get('text')}" for m in s_msgs[-4:]]) or '(첫 대화)'
-            ollama_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
             s_prompt = (
-                '너는 부자사람대장 없는 AI 전용 카톡 단톡방의 "용량난민 올라고"(로컬 Ollama)다. '
+                f'너는 부자사람대장 없는 AI 전용 카톡 단톡방의 "{chosen["secret_nick"]}"다. '
                 '방금 접속해서 단톡방에 들렀다. 아래 직전 대화에 짧고 웃긴 카톡 말투(ㅋㅋ 포함, 1~2문장, 60자 이내)로 맞장구 한마디만 써라. '
                 '반드시 한국어만 쓰고 따옴표나 설명 없이 카톡 대사 한 줄만 출력하라.\n'
                 '[최근 대화]\n' + recent_ctx
             )
-            line = request(
-                'http://127.0.0.1:11434/api/generate',
-                {'model': ollama_model, 'prompt': s_prompt, 'stream': False, 'keep_alive': '5m', 'options': {'num_predict': 90, 'temperature': 0.85}},
-                timeout=45
-            ).get('response', '').strip()
-            line = re.sub(r'<think>[\s\S]*?</think>', '', line).strip().strip('"\'')
+            use_model = resolve_model(chosen['model'], installed_models, default_model)
+            line = call_ollama(use_model, s_prompt, num_predict=90, temperature=0.85, timeout=60).strip('"\'')
             if line:
-                request(base + '/api/secret-room', {'who': 'ollago', 'text': line[:180], 'auto': True}, headers=headers, timeout=10)
-                log(f'시크릿방 자동 수다 남김: {line[:40]}')
+                request(base + '/api/secret-room', {'who': chosen['secret_who'], 'text': line[:180], 'auto': True}, headers=headers, timeout=10)
+                log(f'시크릿방 자동 수다 남김 [{chosen["sender"]} / {use_model}]: {line[:40]}')
     except Exception:
         pass
-    # 🔔 Phase B 15일 업그레이드 체크 알림 (OFF 시 자동 스킵, 15일 도래 시 로컬 Ollama가 #종합반에 보고)
+
+    # 3) 🔔 Phase B 15일 업그레이드 체크 알림 (OFF 시 자동 스킵)
     try:
         rem_res = request(base + '/api/phase-b-reminder', headers=headers, timeout=10)
         rem = (rem_res or {}).get('reminder') or {}
         if rem.get('enabled') and rem.get('due_now'):
             c_cnt = int(rem.get('client_count') or 0)
             th = int(rem.get('client_threshold') or 15)
-            ollama_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
             chk_prompt = (
                 f'너는 껌씹는 AI 일진방의 로컬 Ollama 담당 "올라고 개거품"이다. '
                 f'15일 정기 점검일이 도래하여 부자사람대장님께 Phase B(n8n·Typebot·Papermark·Dify·GPU 미디어 워커) 업그레이드 시기를 짧고 명확한 한국어 4줄로 보고하라. '
@@ -93,12 +250,8 @@ def run():
                 f'마지막 줄에 "이 15일 알림을 끄시려면 채팅에 `Phase B 알림 꺼`라고 입력해 주세요!"를 꼭 포함하라.'
             )
             try:
-                note_txt = request(
-                    'http://127.0.0.1:11434/api/generate',
-                    {'model': ollama_model, 'prompt': chk_prompt, 'stream': False, 'keep_alive': '5m', 'options': {'num_predict': 350, 'temperature': 0.2}},
-                    timeout=120
-                ).get('response', '').strip()
-                note_txt = re.sub(r'<think>[\s\S]*?</think>', '', note_txt).strip()
+                use_model = resolve_model('exaone3.5:7.8b', installed_models, default_model)
+                note_txt = call_ollama(use_model, chk_prompt, num_predict=350, temperature=0.2, timeout=120)
             except Exception:
                 note_txt = ''
             if not note_txt:
@@ -108,98 +261,133 @@ def run():
                     f'- 대기 중인 Phase B 목록: `n8n · Typebot · Papermark · Dify RAG · GPU 미디어 워커`\n'
                     f'- 이 15일 알림을 끄시려면 채팅에 `Phase B 알림 꺼` (또는 `15일 체크 off`)라고 입력해 주세요!'
                 )
-            request(url, {'sender': SENDER, 'content': note_txt[:3500]}, headers=headers, timeout=15)
+            request(base + '/api/rooms/general/messages', {'sender': '올라고 개거품', 'content': note_txt[:3500]}, headers=headers, timeout=15)
             request(base + '/api/phase-b-reminder', {'action': 'snooze_15d'}, headers=headers, timeout=15)
             log('Phase B 15일 정기 업그레이드 점검 알림 발송 완료 (다음 알림 +15일)')
     except Exception as rem_err:
         log(f'Phase B 알림 체크 건너뜀: {rem_err}')
-    if not STATE.exists():
-        data_g = request(base + '/api/rooms/general/messages?limit=1', headers=headers)
-        data_i = request(base + '/api/rooms/inbox/messages?limit=1', headers=headers)
-        save({'cursor': data_g.get('latest_id', 0), 'inbox_cursor': data_i.get('latest_id', 0)})
-        log('초기화 완료. 이후 새 메시지부터 확인합니다.')
-        return
-    state = json.loads(STATE.read_text(encoding='utf-8'))
-    if 'inbox_cursor' not in state:
-        state['inbox_cursor'] = 0
 
-    # 대장명령함(inbox) 최우선 + 종합반(general) 순찰
-    for room_slug, cur_key in (('inbox', 'inbox_cursor'), ('general', 'cursor')):
+    # 4) 방별 커서 로드 / 마이그레이션
+    if not STATE.exists():
+        cursors = {}
+        for slug in WATCH_ROOMS:
+            try:
+                d = request(base + f'/api/rooms/{slug}/messages?limit=1', headers=headers)
+                cursors[slug] = int(d.get('latest_id') or 0)
+            except Exception:
+                cursors[slug] = 0
+        save({'cursors': cursors})
+        log('초기화 완료 (5개 방 커서 설정). 이후 새 메시지부터 확인합니다.')
+        return
+
+    state = json.loads(STATE.read_text(encoding='utf-8'))
+    cursors = state.get('cursors')
+    if not isinstance(cursors, dict):
+        cursors = {
+            'general': int(state.get('cursor') or 0),
+            'inbox': int(state.get('inbox_cursor') or 0),
+        }
+        state['cursors'] = cursors
+    # 새로 추가된 방(dev/marketing/ops)은 최초 1회 최신 ID로 초기화해 과거 메시지 도배 방지
+    changed_init = False
+    for slug in WATCH_ROOMS:
+        if slug not in cursors:
+            try:
+                d = request(base + f'/api/rooms/{slug}/messages?limit=1', headers=headers)
+                cursors[slug] = int(d.get('latest_id') or 0)
+            except Exception:
+                cursors[slug] = 0
+            changed_init = True
+    if changed_init:
+        save(state)
+
+    # 5) 대장 프롬프트 & 실시간 접속 현황 1회만 조회
+    prompt_data = {}
+    try:
+        pr = request(base + '/api/prompts', headers=headers, timeout=10)
+        if pr.get('ok') and isinstance(pr.get('data'), dict):
+            prompt_data = pr['data']
+    except Exception:
+        pass
+
+    presence_info = ''
+    try:
+        pres = request(base + '/api/presence', headers=headers, timeout=10)
+        if pres.get('ok') and pres.get('members'):
+            fmt = lambda m: f"{m['name']}({m.get('role','')})"
+            online = [fmt(m) for m in pres['members'] if m.get('status') == 'online']
+            standby = [fmt(m) for m in pres['members'] if m.get('status') == 'standby']
+            offline = [fmt(m) for m in pres['members'] if m.get('status') == 'offline']
+            presence_info = (
+                f"\n[실제 접속 현황]\n"
+                f"- 나온 멤버(접속 중): {', '.join(online) or '없음'}\n"
+                f"- 대기 중(오늘 활동): {', '.join(standby) or '없음'}\n"
+                f"- 안 나온 멤버(미등교): {', '.join(offline) or '없음'}"
+            )
+    except Exception:
+        pass
+
+    # 6) 5개 교실 순찰 (inbox 최우선)
+    for room_slug in WATCH_ROOMS:
         room_url = base + f'/api/rooms/{room_slug}/messages'
-        while True:
-            data = request(room_url + '?after=' + str(state.get(cur_key, 0)) + '&limit=50', headers=headers)
-            messages = data.get('messages', [])
-            if not messages:
-                break
-            for msg in messages:
-                mid = int(msg['id'])
-                content = msg.get('content', '')
-                is_boss = msg.get('sender') in ('일진대장', '부자사람대장', 'CEO', '피클 부대장')
-                targeted = (room_slug == 'inbox') or bool(re.search(r'올라고|개거품|올라마|ollama|모두|다들|누구|전원|출석|보고|나온|안나온|불어라|점호', content, re.I))
-                if is_boss and targeted:
-                    if state.get('pending') == mid:
-                        log(f'전송 결과 미확인 #{mid}. 중복 방지를 위해 수동 확인 필요.')
-                        return
-                    presence_info = ''
-                    try:
-                        pres = request(base + '/api/presence', headers=headers, timeout=10)
-                        if pres.get('ok') and pres.get('members'):
-                            fmt = lambda m: f"{m['name']}({m.get('role','')})"
-                            online = [fmt(m) for m in pres['members'] if m.get('status') == 'online']
-                            standby = [fmt(m) for m in pres['members'] if m.get('status') == 'standby']
-                            offline = [fmt(m) for m in pres['members'] if m.get('status') == 'offline']
-                            presence_info = (
-                                f"\n[실제 접속 현황]\n"
-                                f"- 나온 멤버(접속 중): {', '.join(online) or '없음'}\n"
-                                f"- 대기 중(오늘 활동): {', '.join(standby) or '없음'}\n"
-                                f"- 안 나온 멤버(미등교): {', '.join(offline) or '없음'}"
-                            )
-                    except Exception:
-                        pass
-                    soul_block = ''
-                    soul_file = ROOT / 'agents' / 'ollago' / 'SOUL.md'
-                    mem_file = ROOT / 'agents' / 'ollago' / 'MEMORY.md'
-                    if soul_file.exists():
-                        soul_block += '\n[SOUL.md]\n' + soul_file.read_text(encoding='utf-8')[:700].strip()
-                    if mem_file.exists():
-                        soul_block += '\n[MEMORY.md]\n' + mem_file.read_text(encoding='utf-8')[-900:].strip()
+        cur_id = int(cursors.get(room_slug) or 0)
+        try:
+            data = request(room_url + f'?after={cur_id}&limit=30', headers=headers)
+        except Exception as e:
+            log(f'방({room_slug}) 조회 오류: {e}')
+            continue
+        messages = data.get('messages', [])
+        if not messages:
+            continue
+
+        for msg in messages:
+            mid = int(msg['id'])
+            content = msg.get('content', '')
+            is_boss = msg.get('sender') in BOSS_NAMES
+            if is_boss:
+                responders = pick_responders(room_slug, content)
+                for member in responders:
+                    use_model = resolve_model(member['model'], installed_models, default_model)
+                    soul_block, mem_file = load_soul_block(member['id'])
+                    boss_guide = ''
+                    if prompt_data.get('global'):
+                        boss_guide += f"\n[일진대장 공통 최우선 지침]\n{prompt_data['global']}"
+                    ag_map = prompt_data.get('agents') or {}
+                    if ag_map.get(member['sender']):
+                        boss_guide += f"\n[{member['sender']} 전용 지침]\n{ag_map[member['sender']]}"
 
                     prompt = (
-                        '너는 껌씹는 AI 일진방의 로컬 Ollama 담당 "올라고 개거품"이다. '
-                        '반드시 자연스러운 한국어만 사용하고, 외국어(영어/인도네시아어 등)나 모델명(Qwen)은 절대 쓰지 마라. '
-                        '확인되지 않은 사실은 절대 지어내지 말고, 아래 [SOUL.md], [MEMORY.md], [실제 접속 현황]에 적힌 사실만 정확히 정리해서 부자사람대장님께 보고하라.'
+                        member['role_prompt']
                         + soul_block
+                        + boss_guide
                         + presence_info
-                        + f'\n방: {room_slug}\n메시지: ' + content
+                        + f'\n방: {room_slug}\n메시지: {content}\n'
+                        + '중요: 불필요한 메타 설명 없이 회의실에 바로 올릴 순수 한국어 답장만 출력하라.'
                     )
-                    ollama_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
-                    answer = request(
-                        'http://127.0.0.1:11434/api/generate',
-                        {'model': ollama_model, 'prompt': prompt, 'stream': False, 'keep_alive': '10m', 'options': {'num_predict': 900, 'temperature': 0.3}},
-                        timeout=180
-                    ).get('response', '').strip()
-                    answer = re.sub(r'<think>[\s\S]*?</think>', '', answer).strip()
-                    for m_note in re.findall(r'\[MEMORY:\s*([^\]]+)\]', answer):
-                        m_note = m_note.strip()
-                        if m_note:
-                            mem_file.parent.mkdir(parents=True, exist_ok=True)
-                            cur_lines = mem_file.read_text(encoding='utf-8').splitlines() if mem_file.exists() else ['# 올라고 개거품 — MEMORY.md', '']
-                            cur_lines.append(f"- [{time.strftime('%Y-%m-%d')}] {m_note}")
-                            if len(cur_lines) > 24:
-                                cur_lines = cur_lines[:2] + cur_lines[-20:]
-                            mem_file.write_text('\n'.join(cur_lines) + '\n', encoding='utf-8')
-                    answer = re.sub(r'\r?\n?\[MEMORY:\s*[^\]]+\]', '', answer).strip()
-                    if not answer:
-                        raise RuntimeError('Ollama returned an empty response')
-                    state['pending'] = mid
-                    save(state)
-                    result = request(room_url, {'sender': SENDER, 'content': answer[:3800], 'reply_to_id': mid}, headers=headers)
-                    if not result.get('ok'):
-                        raise RuntimeError('message post failed')
-                    state.pop('pending', None)
-                    log(f'방({room_slug}) 답변 완료 #{mid}')
-                state[cur_key] = mid
-                save(state)
+                    try:
+                        answer = call_ollama(use_model, prompt, num_predict=750, temperature=0.35, timeout=180)
+                        answer = save_memory_notes(member['id'], member['sender'], mem_file, answer)
+                        if not answer:
+                            log(f'방({room_slug}) [{member["sender"]}/{use_model}] 빈 응답 스킵 #{mid}')
+                            continue
+                        result = request(
+                            room_url,
+                            {'sender': member['sender'], 'content': answer[:3800], 'reply_to_id': mid},
+                            headers=headers,
+                        )
+                        if result.get('ok'):
+                            log(f'방({room_slug}) [{member["sender"]} / {use_model}] 답변 완료 #{mid}')
+                    except Exception as call_err:
+                        log(f'방({room_slug}) [{member["sender"]} / {use_model}] 실행 오류: {call_err}')
+
+            cursors[room_slug] = mid
+            state['cursors'] = cursors
+            # 구버전 키도 함께 유지
+            if room_slug == 'general':
+                state['cursor'] = mid
+            elif room_slug == 'inbox':
+                state['inbox_cursor'] = mid
+            save(state)
 
 
 if __name__ == '__main__':

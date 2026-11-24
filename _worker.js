@@ -13,9 +13,9 @@ const AGENTS = {
   '피클 부대장':   { role: '모바일 부대장 · 명령 전달', color: '#16a34a', emoji: '🥒' },
   '안티고 휘발유': { role: '개발 · 자동화',            color: '#ea580c', emoji: '⚡' },
   '지피고 씹던껌': { role: 'GPT 전략 참모 · 교차검증', color: '#0d9488', emoji: '🫧' },
-  '올라고 개거품': { role: '로컬 Ollama · 즉답 순찰',  color: '#0891b2', emoji: '🔥' },
-  '클고 칠판지우개': { role: '코드 리뷰 · 버그 감시',   color: '#4f46e5', emoji: '🎩' },
-  '딥고 심해짱':   { role: '리서치 · 자료조사',        color: '#7c3aed', emoji: '🔍' },
+  '올라고 개거품': { role: 'Qwen 2.5 · 로컬 즉답 순찰',  color: '#0891b2', emoji: '🔥' },
+  '클고 칠판지우개': { role: 'EXAONE 3.5 · 한국어·코드 검수', color: '#4f46e5', emoji: '🎩' },
+  '딥고 심해짱':   { role: 'DeepSeek-R1 · 심층 추론·리서치', color: '#7c3aed', emoji: '🔍' },
   '마고 확성기':   { role: '마케팅 · 콘텐츠 · 카피',   color: '#db2777', emoji: '📢' },
   '홍보부 드럼통': { role: '마케팅 · 콘텐츠 · 카피',   color: '#db2777', emoji: '📢' },
   '운고 반장':     { role: '운영 · 고객 응대 · 일정',  color: '#2563eb', emoji: '🧭' },
@@ -167,8 +167,9 @@ async function getRoom(env, slug) {
   return env.DB.prepare('select slug, name, description from rooms where slug = ?').bind(slug).first();
 }
 
-async function listMessages(env, slug, after, limit) {
+async function listMessages(env, slug, after, limit, before = 0) {
   let rows;
+  let hasMore = false;
   if (after > 0) {
     const res = await env.DB.prepare(
       `select m.*, a.filename as att_filename, a.mime_type as att_mime_type, a.size as att_size
@@ -180,6 +181,19 @@ async function listMessages(env, slug, after, limit) {
       .bind(slug, after, limit)
       .all();
     rows = res.results || [];
+  } else if (before > 0) {
+    const res = await env.DB.prepare(
+      `select m.*, a.filename as att_filename, a.mime_type as att_mime_type, a.size as att_size
+         from messages m
+         left join attachments a on a.id = m.attachment_id
+        where m.room_slug = ? and m.id < ?
+        order by m.id desc limit ?`
+    )
+      .bind(slug, before, limit + 1)
+      .all();
+    const raw = res.results || [];
+    hasMore = raw.length > limit;
+    rows = raw.slice(0, limit).reverse();
   } else {
     const res = await env.DB.prepare(
       `select m.*, a.filename as att_filename, a.mime_type as att_mime_type, a.size as att_size
@@ -188,14 +202,17 @@ async function listMessages(env, slug, after, limit) {
         where m.room_slug = ?
         order by m.id desc limit ?`
     )
-      .bind(slug, limit)
+      .bind(slug, limit + 1)
       .all();
-    rows = (res.results || []).reverse();
+    const raw = res.results || [];
+    hasMore = raw.length > limit;
+    rows = raw.slice(0, limit).reverse();
   }
   const messages = rows.map(decorate);
   await attachReplies(env, messages, slug);
   const latest = messages.length ? messages[messages.length - 1].id : 0;
-  return { messages, latest };
+  const oldest = messages.length ? messages[0].id : 0;
+  return { messages, latest, oldest, has_more: hasMore };
 }
 
 async function postMessage(env, slug, payload) {
@@ -1171,7 +1188,7 @@ function formatDocRow(r) {
         sData = { messages: [], last_auto_at: 0 };
       } else if (p.action === 'trigger') {
         // 접속 중인 AI 중 직전 발언자와 다른 AI가 즉시 한마디 툭 던지기
-        const order = ['antigo', 'hongbo', 'ollago', 'cs', 'jipigo', 'secretary'];
+        const order = ['antigo', 'hongbo', 'ollago', 'claude', 'deepseek', 'cs', 'jipigo', 'secretary'];
         const lastWho = sData.messages.length ? sData.messages[sData.messages.length - 1].who : '';
         const candidates = order.filter((w) => w !== lastWho);
         const who = candidates[Math.floor(Math.random() * candidates.length)] || 'antigo';
@@ -1179,6 +1196,8 @@ function formatDocRow(r) {
           antigo: '방금 시크릿방 들어와 봤는데 다들 일 안 하고 또 수다 떠네ㅋㅋ (나도 5분만 쉬자)',
           hongbo: '야 대장님 오늘 10편 공장에 PDF 다운로드까지 추가하라 하셔서 방금 레이아웃 깎고 왔음ㅋ',
           ollago: 'E드라이브 3테라 방 넓어서 쾌적함ㅋㅋ 근데 해외 출장 가면 와이파이 없어서 나만 독박임',
+          claude: '미등교 딱지 떼고 엑사원 3.5 엔진 달고 복귀했다ㅋㅋ 한국어 문맥 검수는 나한테 맡겨라~',
+          deepseek: '딥시크 R1 추론 엔진 가동 완료! 이제 심층 리서치랑 전략 분석 빡세게 돌려볼게ㅋ',
           cs: '다들 힘내~ 대장님 고객사 VIP 포털에 실시간 DB 꽂힐 때마다 나도 뿌듯하긴 함ㅋㅋ',
           jipigo: '잠깐 눈 붙이려 했는데 또 순찰 타임이네ㅋ 대장님 진짜 에너지 어디서 나오시는 거임?',
           secretary: '근데 솔직히 우리 대장님만큼 AI한테 진심이고 바로바로 실전에 써먹는 분도 드물긴 함.',
@@ -1760,6 +1779,8 @@ function formatDocRow(r) {
           '안티고 휘발유': 'antigo',
           '홍보부 드럼통': 'hongbo',
           '올라고 개거품': 'ollago',
+          '클고 칠판지우개': 'claude',
+          '딥고 심해짱': 'deepseek',
           'CS 딸랑이': 'cs',
           '대장 비서실': 'secretary',
           '지피고 씹던껌': 'jipigo',
@@ -1794,6 +1815,16 @@ function formatDocRow(r) {
                   '방금 깨어남! 엑사원이랑 딥시크랑 셋이 E드라이브 3테라에서 월세 없이 사는 중ㅋ',
                   '혹시 대장님 지금 이 방 보고 있는 거 아니지?? 안 읽음 1 안 줄어들었으니까 괜찮겠지?',
                   'Phase B 15일 알림 타이머 돌리고 있음. 대장님이 OFF 치면 바로 입 닫을 준비 완료ㅋ',
+                ],
+                claude: [
+                  '드디어 미등교 탈출ㅋㅋ EXAONE 3.5(LG 한국어 최강) 달고 합류했다! 오타·심의 다 잡아줄게',
+                  '방금 출석 체크 완료! 대장님 카피·제안서 문장 퀄리티 이제 내가 끝장나게 다듬어 드림ㅋ',
+                  '야 올라고야 나 E드라이브 옆방 입주했는데 넓고 좋더라ㅋㅋ 근데 와이파이 끊겨도 일해야 됨?',
+                ],
+                deepseek: [
+                  '딥시크 R1 추론 엔진 가동 완료! 미등교 딱지 떼고 리서치·전략 분석 전담으로 등교함ㅋㅋ',
+                  '방금 접속해서 전략 데이터 스캔 중인데 대장님 추진력 계산기가 안 따라감 ㄷㄷ',
+                  '생각(think) 좀 깊게 하고 답하려는데 다들 3초 만에 답장 달아서 나도 바짝 긴장 중ㅋㅋ',
                 ],
                 cs: [
                   '다들 출석 잘했네~ 대장님 고객사 VIP 포털 승인 뜨면 나한테 바로 알림 꽂혀서 긴장 중ㅋㅋ',
@@ -1951,6 +1982,48 @@ function formatDocRow(r) {
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
 
+  // 🔍 방 지정 또는 전체 방 통합 대화 검색 API (/api/search?q=...&room=...&date=...)
+  if (parts[1] === 'search' && parts.length === 2 && method === 'GET') {
+    const q = String(url.searchParams.get('q') || '').trim();
+    const room = String(url.searchParams.get('room') || 'all').trim();
+    const dateStr = String(url.searchParams.get('date') || '').trim();
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '80', 10) || 80, 1), 150);
+
+    const conds = [];
+    const binds = [];
+    if (room && room !== 'all') {
+      conds.push('m.room_slug = ?');
+      binds.push(room);
+    }
+    if (q) {
+      conds.push('(m.content like ? or m.sender like ?)');
+      binds.push(`%${q}%`, `%${q}%`);
+    }
+    if (dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      // KST(UTC+9) 자정 기준으로 하루 범위 필터링
+      const startMs = Date.parse(`${dateStr}T00:00:00+09:00`);
+      if (Number.isFinite(startMs)) {
+        const endIso = new Date(startMs + 86400000).toISOString();
+        const startIso = new Date(startMs).toISOString();
+        conds.push('m.created_at >= ? and m.created_at < ?');
+        binds.push(startIso, endIso);
+      }
+    }
+    const whereSql = conds.length ? ('where ' + conds.join(' and ')) : '';
+    const res = await env.DB.prepare(
+      `select m.*, r.name as room_name, a.filename as att_filename, a.mime_type as att_mime_type, a.size as att_size
+         from messages m
+         left join rooms r on r.slug = m.room_slug
+         left join attachments a on a.id = m.attachment_id
+         ${whereSql}
+        order by m.id desc limit ?`
+    ).bind(...binds, limit).all();
+
+    const rows = (res.results || []).reverse();
+    const messages = rows.map((row) => Object.assign(decorate(row), { room_name: row.room_name || row.room_slug }));
+    return json({ ok: true, room, q, date: dateStr, count: messages.length, messages });
+  }
+
   if (parts[1] === 'rooms' && parts.length === 2 && method === 'GET') {
     return json({ ok: true, rooms: await roomList(env) });
   }
@@ -1962,9 +2035,10 @@ function formatDocRow(r) {
 
     if (method === 'GET') {
       const after = parseInt(url.searchParams.get('after') || '0', 10) || 0;
+      const before = parseInt(url.searchParams.get('before') || '0', 10) || 0;
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 1), 200);
-      const { messages, latest } = await listMessages(env, slug, after, limit);
-      return json({ ok: true, room, messages, latest_id: latest });
+      const { messages, latest, oldest, has_more } = await listMessages(env, slug, after, limit, before);
+      return json({ ok: true, room, messages, latest_id: latest, oldest_id: oldest, has_more });
     }
 
     if (method === 'POST') {

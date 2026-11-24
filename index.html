@@ -335,6 +335,11 @@
   }
   .searchbox:focus-within{border-color:var(--accent2); box-shadow:0 0 0 3px rgba(56,189,248,0.25)}
   .searchbox .icon{font-size:13px; user-select:none}
+  .searchbox select{
+    border:0; border-right:1px solid var(--line); background:transparent; outline:none;
+    font:inherit; font-size:11.6px; font-weight:700; color:#0369a1;
+    padding-right:5px; max-width:138px; cursor:pointer;
+  }
   .searchbox input[type="search"]{
     border:0; background:transparent; outline:none; font:inherit; font-size:12.2px;
     color:var(--text); width:128px;
@@ -347,6 +352,42 @@
     border:0; background:transparent; color:#64748b; font-size:13px; padding:0 3px; line-height:1;
   }
   .searchbox .clr:hover{color:#dc2626}
+  body.dark .searchbox select{color:#7dd3fc; background:#1e293b}
+  body.dark .searchbox select option{background:#0f172a; color:#f1f5f9}
+  .load-older-wrap{display:flex; justify-content:center; padding:4px 0 10px}
+  .load-older-btn{
+    border:1.5px solid var(--line-strong); background:rgba(255,255,255,0.88);
+    color:#0369a1; border-radius:999px; padding:6px 16px; font-size:12px; font-weight:800;
+    box-shadow:0 4px 12px rgba(2,132,199,0.12); transition:transform .16s, background .16s;
+  }
+  .load-older-btn:hover{background:#fff; transform:translateY(-1px)}
+  .load-older-btn:disabled{opacity:.6; cursor:default}
+  body.dark .load-older-btn{background:rgba(30,41,59,0.92); color:#7dd3fc; border-color:rgba(56,189,248,0.35)}
+  .search-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+    padding:8px 14px; border-radius:12px; margin-bottom:8px;
+    background:rgba(14,165,233,0.14); border:1px solid rgba(56,189,248,0.35);
+    font-size:12.4px; font-weight:700; color:#0c4a6e;
+  }
+  body.dark .search-banner{color:#bae6fd; background:rgba(14,165,233,0.18)}
+  .search-room-pill{
+    font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px;
+    background:rgba(14,165,233,0.18); color:#0284c7; border:1px solid rgba(2,132,199,0.32);
+    cursor:pointer;
+  }
+  .search-room-pill:hover{background:#0284c7; color:#fff}
+  body.dark .search-room-pill{background:rgba(56,189,248,0.2); color:#7dd3fc}
+  .chat-pane{position:relative}
+  .jump-bottom-btn{
+    position:absolute; right:22px; bottom:108px; z-index:12;
+    border:1.5px solid rgba(56,189,248,0.55); border-radius:999px;
+    background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff;
+    padding:7px 14px; font-size:12px; font-weight:800;
+    box-shadow:0 8px 20px rgba(2,132,199,0.38);
+    transition:transform .16s, opacity .16s;
+  }
+  .jump-bottom-btn:hover{transform:translateY(-2px)}
+  .jump-bottom-btn[hidden]{display:none}
   .prompt-btn{
     font-size:11.5px; font-weight:800; color:#fff;
     background:linear-gradient(135deg,#f59e0b,#ea580c);
@@ -597,7 +638,7 @@
   /* ---------- messages ---------- */
   .messages{
     flex:1; overflow-y:auto; padding:18px 18px 10px;
-    display:flex; flex-direction:column; gap:6px; scroll-behavior:smooth;
+    display:flex; flex-direction:column; gap:6px; scroll-behavior:auto;
   }
   .daysep{
     display:flex; align-items:center; gap:12px; margin:20px 2px 14px;
@@ -873,8 +914,12 @@
         <p id="roomDesc">학교 옥상 집합 · 다 같이 떠드는 메인 아지트</p>
       </div>
       <div class="topright">
-        <div class="searchbox" title="대화 내용 및 날짜(KST) 검색">
+        <div class="searchbox" title="방 선택 + 대화 내용 및 날짜(KST) 통합 검색">
           <span class="icon">🔍</span>
+          <select id="searchRoom" aria-label="검색할 방 선택">
+            <option value="current">📍 현재 방</option>
+            <option value="all">🏫 전체 방</option>
+          </select>
           <input type="search" id="searchInput" placeholder="대화 검색…">
           <input type="date" id="searchDate" aria-label="날짜 검색">
           <button type="button" class="clr" id="searchClear" title="검색 초기화" hidden>×</button>
@@ -902,6 +947,7 @@
 
     <div class="chat-pane" id="chatPane">
       <div class="messages" id="messages"></div>
+      <button type="button" class="jump-bottom-btn" id="jumpBottomBtn" hidden>⬇️ 최신 메시지로</button>
 
       <div class="composer">
         <div class="replybar" id="replyBar" hidden>
@@ -1415,8 +1461,8 @@ window.pulsePortfolio3D = function(pageIdx) {
 <script src="/modules/portfolio.js?v=10"></script>
 <script src="/modules/video-editor.js?v=11"></script>
 <script src="/modules/content-hub.js?v=17"></script>
-<script src="/modules/secret-room.js?v=14"></script>
-<script src="/modules/souls-ui.js?v=10"></script>
+<script src="/modules/secret-room.js?v=18"></script>
+<script src="/modules/souls-ui.js?v=18"></script>
 <script>
 (function(){
   "use strict";
@@ -1425,9 +1471,9 @@ window.pulsePortfolio3D = function(pageIdx) {
     {name:'피클 부대장', emoji:'🤠', role:'모바일 부대장 · 명령 전달'},
     {name:'안티고 휘발유', emoji:'😤', role:'개발 · 자동화'},
     {name:'지피고 씹던껌', emoji:'😏', role:'GPT 전략 참모 · 교차검증'},
-    {name:'올라고 개거품', emoji:'🔥', role:'로컬 Ollama · 즉답 순찰'},
-    {name:'클고 칠판지우개', emoji:'🧐', role:'코드 리뷰 · 버그 감시'},
-    {name:'딥고 심해짱', emoji:'😈', role:'리서치 · 자료조사'},
+    {name:'올라고 개거품', emoji:'🔥', role:'Qwen 2.5 · 로컬 즉답 순찰'},
+    {name:'클고 칠판지우개', emoji:'🧐', role:'EXAONE 3.5 · 한국어·코드 검수'},
+    {name:'딥고 심해짱', emoji:'😈', role:'DeepSeek-R1 · 심층 추론·리서치'},
     {name:'홍보부 드럼통', emoji:'🤪', role:'마케팅 · 콘텐츠 · 카피'},
     {name:'CS 딸랑이', emoji:'🤓', role:'운영 · CS · 고객 응대'},
     {name:'대장 비서실', emoji:'🥸', role:'대장 비서 · 회의록 · 정리'}
@@ -1469,6 +1515,13 @@ window.pulsePortfolio3D = function(pageIdx) {
     rooms: [],
     messages: [],
     lastId: 0,
+    oldestId: 0,
+    hasMore: false,
+    loadingOlder: false,
+    searchText: '',
+    searchDate: '',
+    searchRoom: 'current',
+    searchResults: null,
     replyTo: null,
     timer: null,
     loading: false
@@ -1679,10 +1732,33 @@ window.pulsePortfolio3D = function(pageIdx) {
       });
     });
   }
+  function syncSearchRoomOptions(){
+    var sel = $('searchRoom');
+    if (!sel) return;
+    var prev = sel.value || state.searchRoom || 'current';
+    var ordered = state.rooms.slice().sort(function(a, b){
+      if (a.slug === 'inbox') return -1;
+      if (b.slug === 'inbox') return 1;
+      return (a.position || 0) - (b.position || 0);
+    });
+    var opts = '<option value="current">📍 현재 방</option><option value="all">🏫 전체 방</option>';
+    ordered.forEach(function(r){
+      var prefix = r.slug === 'inbox' ? '🚨 ' : '# ';
+      opts += '<option value="' + esc(r.slug) + '">' + prefix + esc(r.name) + '</option>';
+    });
+    sel.innerHTML = opts;
+    if (Array.prototype.some.call(sel.options, function(o){ return o.value === prev; })){
+      sel.value = prev;
+    } else {
+      sel.value = 'current';
+    }
+    state.searchRoom = sel.value;
+  }
   function loadRooms(){
     return api('/api/rooms').then(function(d){
       state.rooms = d.rooms || [];
       renderRooms();
+      syncSearchRoomOptions();
       var cur = state.rooms.filter(function(r){ return r.slug === state.room; })[0];
       if (cur){
         $('roomName').textContent = cur.name;
@@ -1697,14 +1773,23 @@ window.pulsePortfolio3D = function(pageIdx) {
     }
     state.room = slug;
     state.lastId = 0;
+    state.oldestId = 0;
+    state.hasMore = false;
+    state.loadingOlder = false;
     state.messages = [];
+    state.searchResults = null;
     state.replyTo = null; elReplyBar.hidden = true;
     localStorage.setItem('ai_team_room_room', slug);
     document.body.classList.remove('nav-open');
     elMessages.innerHTML = '';
+    var jb = $('jumpBottomBtn'); if (jb) jb.hidden = true;
     renderRooms();
     loadRooms().catch(function(){});
-    loadMessages(true);
+    if (isSearchActive()) {
+      runServerSearch();
+    } else {
+      loadMessages(true);
+    }
   }
   $('menuBtn').addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
   elMessages.addEventListener('click', function(){
@@ -1712,13 +1797,41 @@ window.pulsePortfolio3D = function(pageIdx) {
   });
 
   /* ---------- messages ---------- */
+  function isSearchActive(){
+    return !!(
+      (state.searchText && state.searchText.trim()) ||
+      (state.searchDate && state.searchDate.trim()) ||
+      (state.searchRoom && state.searchRoom !== 'current')
+    );
+  }
   function nearBottom(){
-    return elMessages.scrollHeight - elMessages.scrollTop - elMessages.clientHeight < 120;
+    return elMessages.scrollHeight - elMessages.scrollTop - elMessages.clientHeight < 140;
+  }
+  function updateJumpBottomBtn(){
+    var jb = $('jumpBottomBtn');
+    if (!jb) return;
+    var hidden = isSearchActive() || nearBottom() || (elMessages.scrollHeight <= elMessages.clientHeight + 80);
+    jb.hidden = hidden;
   }
   function scrollBottom(smooth){
-    elMessages.scrollTo({top: elMessages.scrollHeight, behavior: smooth ? 'smooth' : 'auto'});
+    if (smooth){
+      elMessages.scrollTo({top: elMessages.scrollHeight, behavior: 'smooth'});
+    } else {
+      // 방 입장·전환 시 애니메이션 없이 0ms 즉시 최신 메시지 최하단 표시!
+      elMessages.scrollTop = elMessages.scrollHeight;
+      requestAnimationFrame(function(){
+        elMessages.scrollTop = elMessages.scrollHeight;
+        updateJumpBottomBtn();
+      });
+    }
   }
-  function msgHtml(m, prevDay){
+  elMessages.addEventListener('scroll', updateJumpBottomBtn, { passive: true });
+  if ($('jumpBottomBtn')){
+    $('jumpBottomBtn').addEventListener('click', function(){
+      scrollBottom(false);
+    });
+  }
+  function msgHtml(m, prevDay, showRoomTag){
     var dayKey = kstDateKey(m.created_at);
     var dayLabel = kstDay(m.created_at);
     var out = '';
@@ -1726,10 +1839,13 @@ window.pulsePortfolio3D = function(pageIdx) {
       out += '<div class="daysep"><span>📅 ' + esc(dayLabel) + ' (KST 자정 기준)</span></div>';
     }
     var q = (state.searchText || '').trim();
+    var roomPill = showRoomTag && m.room
+      ? '<button type="button" class="search-room-pill" data-jump-room="' + esc(m.room) + '" title="이 방으로 이동">#' + esc(m.room_name || m.room) + ' 이동 →</button>'
+      : '';
     out += '<div class="msg" id="m' + m.id + '" data-id="' + m.id + '">' +
       '<div class="avatar"><img src="' + esc(avatarUrl(m.sender)) + '" alt="' + esc(m.sender) + '" loading="lazy"></div>' +
       '<div class="body">' +
-        '<div class="meta"><span class="who" style="color:' + esc(m.color || '#0284c7') + '">' + highlightHtml(esc(m.sender), q) + '</span>' +
+        '<div class="meta">' + roomPill + '<span class="who" style="color:' + esc(m.color || '#0284c7') + '">' + highlightHtml(esc(m.sender), q) + '</span>' +
           '<span class="badge">' + esc(m.role || '참여자') + '</span>' +
           '<span class="time">' + esc(kstTime(m.created_at)) + '</span></div>';
     if (m.reply_to){
@@ -1766,66 +1882,113 @@ window.pulsePortfolio3D = function(pageIdx) {
     out += '</div></div>';
     return out;
   }
-  function filteredMessages(){
-    var q = (state.searchText || '').trim().toLowerCase();
-    var d = (state.searchDate || '').trim();
-    if (!q && !d) return state.messages;
-    return state.messages.filter(function(m){
-      var okDate = !d || kstDateKey(m.created_at) === d;
-      if (!okDate) return false;
-      if (!q) return true;
-      var hay = (String(m.sender || '') + ' ' + String(m.content || '') + ' ' + kstDay(m.created_at) + ' ' + kstDateKey(m.created_at)).toLowerCase();
-      return hay.indexOf(q) !== -1;
-    });
-  }
   function renderAll(){
-    var list = filteredMessages();
+    var searching = isSearchActive();
+    var list = searching ? (state.searchResults || []) : state.messages;
     if (!list.length){
-      var hasFilter = !!(state.searchText || state.searchDate);
-      elMessages.innerHTML = hasFilter
-        ? '<div class="empty"><span class="big">🔍</span>검색 조건에 맞는 대화가 없습니다.<br>다른 단어 또는 날짜를 선택해 보세요.</div>'
+      elMessages.innerHTML = searching
+        ? '<div class="empty"><span class="big">🔍</span>검색 조건에 맞는 대화가 없습니다.<br>방 선택을 바꾸거나 다른 단어·날짜를 입력해 보세요.</div>'
         : '<div class="empty"><span class="big">🏫</span>아직 이 교실에 올라온 글이 없습니다.<br>부자사람대장님, 첫 한마디를 남겨보세요!</div>';
+      updateJumpBottomBtn();
       return;
     }
-    var html = '', prevDay = '';
+    var html = '';
+    if (searching){
+      var targetRoomLabel = state.searchRoom === 'all'
+        ? '전체 방'
+        : (state.searchRoom === 'current'
+            ? (state.rooms.filter(function(r){ return r.slug === state.room; })[0] || {name: state.room}).name
+            : (state.rooms.filter(function(r){ return r.slug === state.searchRoom; })[0] || {name: state.searchRoom}).name);
+      html += '<div class="search-banner">' +
+        '<span>🔍 <b>' + esc(targetRoomLabel) + '</b> 검색 결과 총 <b>' + list.length + '건</b>' +
+        (state.searchText ? ' · 키워드 "' + esc(state.searchText) + '"' : '') +
+        (state.searchDate ? ' · 날짜 ' + esc(state.searchDate) : '') + '</span>' +
+        '<button type="button" class="ws-btn sm" id="exitSearchBtn">✕ 검색 닫고 최신 대화 보기</button></div>';
+    } else if (state.hasMore){
+      html += '<div class="load-older-wrap"><button type="button" class="load-older-btn" id="loadOlderBtn">' +
+        (state.loadingOlder ? '⏳ 이전 대화 불러오는 중…' : '⬆️ 이전 대화 더 보기 (+25건)') + '</button></div>';
+    }
+    var prevDay = '';
+    var showRoomTag = searching && (state.searchRoom === 'all' || state.searchRoom !== state.room);
     list.forEach(function(m){
-      html += msgHtml(m, prevDay);
+      html += msgHtml(m, prevDay, showRoomTag);
       prevDay = kstDateKey(m.created_at);
     });
     elMessages.innerHTML = html;
     scrollBottom(false);
   }
+  function loadOlderMessages(){
+    if (state.loadingOlder || !state.hasMore || !state.oldestId) return;
+    state.loadingOlder = true;
+    var btn = $('loadOlderBtn');
+    if (btn){ btn.disabled = true; btn.textContent = '⏳ 이전 대화 불러오는 중…'; }
+    var prevHeight = elMessages.scrollHeight;
+    var prevTop = elMessages.scrollTop;
+    api('/api/rooms/' + encodeURIComponent(state.room) + '/messages?limit=25&before=' + state.oldestId)
+      .then(function(d){
+        var older = d.messages || [];
+        state.hasMore = !!d.has_more;
+        if (older.length){
+          state.messages = older.concat(state.messages);
+          state.oldestId = state.messages[0].id;
+        }
+        state.loadingOlder = false;
+        // 현재 보던 스크롤 위치 유지하며 위쪽에만 이전 메시지 반영
+        var html = '';
+        if (state.hasMore){
+          html += '<div class="load-older-wrap"><button type="button" class="load-older-btn" id="loadOlderBtn">⬆️ 이전 대화 더 보기 (+25건)</button></div>';
+        }
+        var prevDay = '';
+        state.messages.forEach(function(m){
+          html += msgHtml(m, prevDay, false);
+          prevDay = kstDateKey(m.created_at);
+        });
+        elMessages.innerHTML = html;
+        var newHeight = elMessages.scrollHeight;
+        elMessages.scrollTop = prevTop + (newHeight - prevHeight);
+        updateJumpBottomBtn();
+      })
+      .catch(function(){
+        state.loadingOlder = false;
+        if (btn){ btn.disabled = false; btn.textContent = '⬆️ 이전 대화 더 보기 (+25건)'; }
+      });
+  }
   function appendMessages(list){
     if (!list.length) return;
     state.messages = state.messages.concat(list);
-    if (state.searchText || state.searchDate){
-      renderAll();
+    if (isSearchActive()){
       return;
     }
     var stick = nearBottom();
     var prevDay = state.messages.length > list.length ? kstDateKey(state.messages[state.messages.length - list.length - 1].created_at) : '';
     var html = '';
     list.forEach(function(m){
-      html += msgHtml(m, prevDay);
+      html += msgHtml(m, prevDay, false);
       prevDay = kstDateKey(m.created_at);
     });
     var emptyEl = elMessages.querySelector('.empty');
     if (emptyEl) emptyEl.remove();
     elMessages.insertAdjacentHTML('beforeend', html);
-    if (stick) scrollBottom(true);
+    if (stick) scrollBottom(false);
+    updateJumpBottomBtn();
   }
   function loadMessages(initial){
     if (state.loading) return Promise.resolve();
     state.loading = true;
-    var q = '/api/rooms/' + encodeURIComponent(state.room) + '/messages?limit=60' + (state.lastId ? '&after=' + state.lastId : '');
+    // 방 첫 입장 시 최신 15건만 초고속 로드해서 스크롤 굴러감 없이 최신 메시지를 바로 보여줌
+    var reqLimit = (initial && !state.lastId) ? 15 : 50;
+    var q = '/api/rooms/' + encodeURIComponent(state.room) + '/messages?limit=' + reqLimit + (state.lastId ? '&after=' + state.lastId : '');
     return api(q).then(function(d){
       var list = d.messages || [];
       if (initial && !state.lastId){
         state.messages = list;
         state.lastId = list.length ? list[list.length - 1].id : 0;
+        state.oldestId = list.length ? list[0].id : 0;
+        state.hasMore = !!d.has_more;
         renderAll();
       } else if (list.length){
         state.lastId = list[list.length - 1].id;
+        if (!state.oldestId) state.oldestId = list[0].id;
         appendMessages(list);
       }
       if (state.lastId) localStorage.setItem(seenKey(state.room), String(state.lastId));
@@ -1843,6 +2006,21 @@ window.pulsePortfolio3D = function(pageIdx) {
     });
   }
   elMessages.addEventListener('click', function(e){
+    if (e.target.closest('#loadOlderBtn')){
+      loadOlderMessages();
+      return;
+    }
+    if (e.target.closest('#exitSearchBtn')){
+      resetSearch();
+      return;
+    }
+    var jumpRoom = e.target.closest('[data-jump-room]');
+    if (jumpRoom){
+      var targetSlug = jumpRoom.getAttribute('data-jump-room');
+      resetSearch(true);
+      switchRoom(targetSlug);
+      return;
+    }
     var replyBtn = e.target.closest('[data-reply]');
     if (replyBtn){
       var id = parseInt(replyBtn.getAttribute('data-reply'), 10);
@@ -2082,21 +2260,56 @@ window.pulsePortfolio3D = function(pageIdx) {
     localStorage.setItem('ai_team_room_sender', state.sender);
   });
 
-  /* ---------- 검색(단어 + 날짜) ---------- */
-  var elSearchInput = $('searchInput'), elSearchDate = $('searchDate'), elSearchClear = $('searchClear');
+  /* ---------- 검색(방 지정 + 단어 + 날짜 · DB 전체 검색) ---------- */
+  var elSearchRoom = $('searchRoom'), elSearchInput = $('searchInput'), elSearchDate = $('searchDate'), elSearchClear = $('searchClear');
+  var searchDebounce = null;
+  function resetSearch(silent){
+    if (elSearchRoom) elSearchRoom.value = 'current';
+    if (elSearchInput) elSearchInput.value = '';
+    if (elSearchDate) elSearchDate.value = '';
+    state.searchRoom = 'current';
+    state.searchText = '';
+    state.searchDate = '';
+    state.searchResults = null;
+    if (elSearchClear) elSearchClear.hidden = true;
+    if (!silent) renderAll();
+  }
+  function runServerSearch(){
+    if (!isSearchActive()){
+      state.searchResults = null;
+      renderAll();
+      return;
+    }
+    var targetRoom = state.searchRoom === 'current' ? state.room : state.searchRoom;
+    var qs = 'room=' + encodeURIComponent(targetRoom) + '&limit=80';
+    if (state.searchText.trim()) qs += '&q=' + encodeURIComponent(state.searchText.trim());
+    if (state.searchDate.trim()) qs += '&date=' + encodeURIComponent(state.searchDate.trim());
+    elMessages.innerHTML = '<div class="empty"><span class="big">🔍</span>선택한 방의 대화를 검색하고 있습니다…</div>';
+    api('/api/search?' + qs).then(function(d){
+      state.searchResults = (d && d.messages) || [];
+      renderAll();
+    }).catch(function(err){
+      elMessages.innerHTML = '<div class="empty"><span class="big">⚠️</span>검색 중 오류가 발생했습니다: ' + esc(err.message || '') + '</div>';
+    });
+  }
   function updateSearch(){
+    state.searchRoom = elSearchRoom ? elSearchRoom.value : 'current';
     state.searchText = elSearchInput ? elSearchInput.value : '';
     state.searchDate = elSearchDate ? elSearchDate.value : '';
-    if (elSearchClear) elSearchClear.hidden = !(state.searchText || state.searchDate);
-    renderAll();
+    if (elSearchClear) elSearchClear.hidden = !isSearchActive();
+    if (searchDebounce) clearTimeout(searchDebounce);
+    if (!isSearchActive()){
+      state.searchResults = null;
+      renderAll();
+      return;
+    }
+    searchDebounce = setTimeout(runServerSearch, 220);
   }
+  if (elSearchRoom) elSearchRoom.addEventListener('change', updateSearch);
   if (elSearchInput) elSearchInput.addEventListener('input', updateSearch);
   if (elSearchDate) elSearchDate.addEventListener('change', updateSearch);
   if (elSearchClear){
-    elSearchClear.addEventListener('click', function(){
-      elSearchInput.value = ''; elSearchDate.value = '';
-      updateSearch();
-    });
+    elSearchClear.addEventListener('click', function(){ resetSearch(false); });
   }
 
   /* ---------- 외부 서비스 연결 탭 (형광 LED 6개 슬롯) ---------- */
@@ -2341,12 +2554,12 @@ window.pulsePortfolio3D = function(pageIdx) {
   var PROMPT_AGENTS = [
     { name: '안티고 휘발유', emoji: '⚡', role: '개발 · 자동화' },
     { name: '지피고 씹던껌', emoji: '🫧', role: 'GPT 전략 참모' },
-    { name: '올라고 개거품', emoji: '🔥', role: '로컬 Ollama' },
+    { name: '올라고 개거품', emoji: '🔥', role: 'Qwen 2.5 · 로컬 즉답' },
     { name: '홍보부 드럼통', emoji: '📢', role: '마케팅 · 홍보' },
     { name: 'CS 딸랑이',     emoji: '🔔', role: '운영 · CS' },
     { name: '대장 비서실',   emoji: '📝', role: '비서 · 회의록' },
-    { name: '클고 칠판지우개', emoji: '🎩', role: '코드 리뷰' },
-    { name: '딥고 심해짱',   emoji: '🔍', role: '리서치' },
+    { name: '클고 칠판지우개', emoji: '🎩', role: 'EXAONE 3.5 · 한국어·코드 검수' },
+    { name: '딥고 심해짱',   emoji: '🔍', role: 'DeepSeek-R1 · 심층 추론·리서치' },
     { name: '피클 부대장',   emoji: '🥒', role: '모바일 명령' }
   ];
   var promptState = { global: '', priority: true, agents: {}, files: [] };
