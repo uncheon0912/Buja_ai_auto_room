@@ -868,8 +868,8 @@
     var headerBar =
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px 0">' +
         '<div class="ws-actions">' +
-          '<button type="button" class="ws-btn sm ' + (ed.subTab === 'edit' ? 'primary' : '') + '" data-ve-tab="edit">🎬 타임라인 웹 영상 편집기</button>' +
-          '<button type="button" class="ws-btn sm ' + (ed.subTab === 'studio' ? 'primary' : '') + '" data-ve-tab="studio">🎙️ AI 성우 · BGM · 릴스 대본 스튜디오</button>' +
+          '<button type="button" class="ws-btn sm neon-yellow-tab ' + (ed.subTab === 'edit' ? 'active' : '') + '" data-ve-tab="edit">🎬 타임라인 웹 영상 편집기</button>' +
+          '<button type="button" class="ws-btn sm neon-yellow-tab ' + (ed.subTab === 'studio' ? 'active' : '') + '" data-ve-tab="studio">🎙️ AI 성우 · BGM · 릴스 대본 스튜디오</button>' +
         '</div>' +
         '<div class="ws-actions">' +
           '<span class="tag-pill ' + (ed.bridgeOk ? 'ok' : 'warn') + '">' + (ed.bridgeOk ? '🟢 로컬 AI 스튜디오 연결됨 (FFmpeg·TTS·CrewAI)' : '⚪ 로컬 스튜디오 꺼짐 (E:\\ai-studio 실행)') + '</span>' +
