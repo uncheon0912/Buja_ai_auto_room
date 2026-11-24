@@ -117,7 +117,7 @@ try {
         if ($slug -eq "dev") { return "안티고 휘발유" }
         if ($slug -eq "marketing") { return "홍보부 드럼통" }
         if ($slug -eq "ops") { return "CS 딸랑이" }
-        if ($text -match "홍보부|드럼통|마케팅|블로그|릴스|스레드|SNS|광고|카피|브랜딩") { return "홍보부 드럼통" }
+        if ($text -match "홍보부|드럼통|마케팅|블로그|릴스|인스타|대본|숏폼|스레드|SNS|광고|카피|브랜딩|유튜브") { return "홍보부 드럼통" }
         if ($text -match "CS|딸랑이|고객|상담|문의|운영|일정|정산|클레임") { return "CS 딸랑이" }
         if ($text -match "비서|정리|요약|회의록|기록|출석|누구") { return "대장 비서실" }
         return "안티고 휘발유"
@@ -216,15 +216,30 @@ try {
     }
 
     function Call-Agy($promptText) {
-        # Windows 인자 파싱 오류(예: unexpected argument "+")를 원천 차단하기 위해 stdin 파이프로 전달
-        $tmpPrompt = Join-Path $ScriptDir "antigravity_prompt.tmp"
-        [System.IO.File]::WriteAllText($tmpPrompt, [string]$promptText, $utf8NoBom)
-        try {
-            $res = (Get-Content -Path $tmpPrompt -Raw -Encoding UTF8 | & $agyExe --print --output-format text --print-timeout 110s 2>$null | Out-String).Trim()
-            return $res
-        } finally {
-            if (Test-Path $tmpPrompt) { Remove-Item $tmpPrompt -Force -ErrorAction SilentlyContinue }
+        # Windows PowerShell 5.1 네이티브 인자 쪼개짐(unexpected argument "+" 등)을 원천 차단하기 위해
+        # 단일줄·따옴표 정제 후 .NET ProcessStartInfo(UTF-8)로 직접 실행
+        $safePrompt = ([string]$promptText -replace '\r?\n', ' | ') -replace '"', "'"
+        if ($safePrompt.Length -gt 14000) {
+            $safePrompt = $safePrompt.Substring(0, 14000)
         }
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $agyExe
+        $psi.Arguments = "--output-format text --print-timeout 110s -p `"$safePrompt`""
+        $psi.UseShellExecute = $false
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+        $psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+        $psi.CreateNoWindow = $true
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        $stdOut = $proc.StandardOutput.ReadToEnd()
+        $stdErr = $proc.StandardError.ReadToEnd()
+        $proc.WaitForExit()
+        if ($proc.ExitCode -ne 0 -and -not $stdOut.Trim()) {
+            Write-Log "agy.exe 오류(exit=$($proc.ExitCode)): $($stdErr.Trim())"
+            return ""
+        }
+        return $stdOut.Trim()
     }
 
     # 6) 방별 처리 (① 계약서 전자서명 자동 발송 / ② 멀티 AI 제안서·계약서 의논 라운드테이블 / ③ 일반 단건 응답)

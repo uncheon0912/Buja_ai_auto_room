@@ -13,6 +13,8 @@ scripts/*.log
 scripts/*_cursor.json
 scripts/*.lock
 scripts/*.vbs
+scripts/*_last_reply.txt
+scripts/*.tmp
 
 # Cloudflare / Wrangler
 .wrangler/
