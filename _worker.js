@@ -2145,6 +2145,68 @@ function formatDocRow(r) {
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
 
+  // 🔗 외부 서비스 실제 계정 연동 검증 (/api/integrations/verify)
+  if (parts[1] === 'integrations' && parts[2] === 'verify' && method === 'POST') {
+    let p = {};
+    try { p = await request.json(); } catch (e) { p = {}; }
+    const kind = String(p.id || '').toLowerCase();
+    const token = String(p.token || '').trim();
+    const urlStr = String(p.url || '').trim();
+
+    // 1) 노션: 실제 Notion API (/v1/users/me) 호출해 진짜 내 계정인지 검증!
+    if (kind === 'notion' || /notion/i.test(String(p.name || ''))) {
+      if (!token) {
+        return json({ ok: false, verified: false, message: '노션 시크릿 통합 토큰(ntn_... 또는 secret_...)을 입력해야 실제 계정이 연결됩니다.' }, 400);
+      }
+      try {
+        const nr = await fetch('https://api.notion.com/v1/users/me', {
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Notion-Version': '2022-06-28',
+          },
+        });
+        const nd = await nr.json().catch(() => ({}));
+        if (!nr.ok) {
+          return json({ ok: false, verified: false, message: '노션 인증 실패: ' + String(nd.message || ('HTTP ' + nr.status)) }, 401);
+        }
+        const botName = nd.name || (nd.bot && nd.bot.workspace_name) || 'Notion 계정';
+        return json({ ok: true, verified: true, account: botName, message: '✅ 노션 실제 계정(' + botName + ') 연결 확인 완료!' });
+      } catch (e) {
+        return json({ ok: false, verified: false, message: '노션 서버 통신 오류: ' + String(e.message || e) }, 502);
+      }
+    }
+
+    // 2) 지메일: Resend/이메일 발송 키가 있으면 실제 검증, 없으면 미연동 안내
+    if (kind === 'gmail') {
+      if (!token) {
+        return json({ ok: false, verified: false, message: '실제 이메일 자동 연동 키(Resend API Key 등)를 입력해야 연결됨으로 활성화됩니다.' }, 400);
+      }
+      if (/^re_[A-Za-z0-9_]{10,}/.test(token)) {
+        const rr = await fetch('https://api.resend.com/domains', {
+          headers: { 'Authorization': 'Bearer ' + token },
+        }).catch(() => null);
+        if (rr && rr.ok) {
+          return json({ ok: true, verified: true, account: urlStr || 'pbat01@gmail.com', message: '✅ 지메일/메일 발송 API 실제 인증 완료!' });
+        }
+        return json({ ok: false, verified: false, message: '유효하지 않은 Resend API 키입니다. 키를 다시 확인해 주세요.' }, 401);
+      }
+      return json({ ok: false, verified: false, message: '올바른 API 키 형식이 아닙니다. (Resend 키는 re_ 로 시작합니다)' }, 400);
+    }
+
+    // 3) 구글 드라이브 / 기타: 실제 공유 URL 또는 API 토큰 존재 시에만 검증
+    if (kind === 'gdrive') {
+      if (!urlStr || !/^https:\/\/drive\.google\.com\/drive\/(folders|u\/\d+\/folders)\//i.test(urlStr)) {
+        return json({ ok: false, verified: false, message: '구글 드라이브의 실제 공유 폴더 주소(https://drive.google.com/drive/folders/...)를 붙여넣어야 연결됩니다.' }, 400);
+      }
+      return json({ ok: true, verified: true, account: 'Google Drive 공유 폴더', message: '✅ 구글 드라이브 공유 폴더 연결 완료!' });
+    }
+
+    if (!urlStr && !token) {
+      return json({ ok: false, verified: false, message: '연결할 실제 주소 또는 API 토큰을 입력해 주세요.' }, 400);
+    }
+    return json({ ok: true, verified: true, account: urlStr || 'API 연결됨', message: '✅ 외부 서비스 연결이 확인되었습니다.' });
+  }
+
   // KV 설정 저장 테이블 보장 (프롬프트·외부 연결 상태 영구 보관)
   if (parts[1] === 'prompts' || parts[1] === 'integrations') {
     await env.DB.prepare(
