@@ -58,6 +58,16 @@
     ttsPitch: 1.0,
     ttsVoice: 'ko-KR-SunHiNeural',
     ttsEndpoint: localStorage.getItem('buja_tts_endpoint') || 'http://127.0.0.1:8787/api/tts',
+    ttsPreviewUrl: '',
+    ttsPreviewLabel: '',
+    ttsBusy: false,
+    cloneFile: null,
+    cloneFileName: '',
+    cloneFileUrl: '',
+    cloneRefText: '',
+    cloneRecording: false,
+    cloneBusy: false,
+    cloneStatusMsg: '',
     bridgeUrl: localStorage.getItem('buja_media_bridge') || 'http://127.0.0.1:8787',
     bridgeOk: false,
     bridgeInfo: null,
@@ -73,7 +83,26 @@
   var videoEl = null;
   var imgEl = null;
   var bgmEl = null;
+  var previewAudioEl = null;
+  var cloneRecorder = null;
+  var cloneChunks = [];
   var rafId = 0;
+
+  var VOICE_LIST = [
+    ['ko-KR-SunHiNeural', '👩 선희 (차분·신뢰 여성 아나운서 · 병원/보험 추천)', 1.05],
+    ['ko-KR-InJoonNeural', '👨 인준 (힘있는 남성 아나운서 · 정책자금 추천)', 0.82],
+    ['ko-KR-HyunsuMultilingualNeural', '🧑 현수 (트렌디 젊은 남성 · 릴스/자영업 추천)', 0.9],
+    ['ko-KR-JiMinNeural', '👧 지민 (밝고 친근한 여성)', 1.18],
+    ['ko-KR-BongJinNeural', '🧔 봉진 (중후한 전문 대표님 톤)', 0.75],
+    ['ko-KR-SeoHyeonNeural', '👱‍♀️ 서현 (또렷한 뉴스·정보 전달)', 1.1],
+  ];
+
+  function getVoiceMeta(voiceId) {
+    for (var i = 0; i < VOICE_LIST.length; i++) {
+      if (VOICE_LIST[i][0] === voiceId) return VOICE_LIST[i];
+    }
+    return VOICE_LIST[0];
+  }
 
   function canvasDims() {
     return ed.aspect === '9:16' ? { w: 540, h: 960 } : { w: 960, h: 540 };
@@ -380,20 +409,156 @@
     render();
   }
 
+  function stopTtsPreview() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (previewAudioEl) {
+      try { previewAudioEl.pause(); previewAudioEl.currentTime = 0; } catch (e) {}
+    }
+  }
+
   function speakKoreanPreview() {
-    if (!('speechSynthesis' in window)) { A.toast('이 브라우저는 음성 합성을 지원하지 않습니다.', 'error'); return; }
-    window.speechSynthesis.cancel();
+    stopTtsPreview();
     var cleanText = String(ed.stScript || '').replace(/\[[^\]]+\]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!cleanText) { A.toast('읽을 대본을 먼저 입력해 주세요.', 'error'); return; }
+    var vMeta = getVoiceMeta(ed.ttsVoice);
+    // 1순위: 로컬 AI 스튜디오(edge-tts)가 연결되어 있으면 선택한 6종 방송국급 성우 실제 목소리로 즉시 재생!
+    if (ed.bridgeOk) {
+      var base = String(ed.bridgeUrl || 'http://127.0.0.1:8787').replace(/\/$/, '');
+      var ratePct = Math.round((Number(ed.ttsRate || 1.05) - 1) * 100);
+      var rateStr = (ratePct >= 0 ? '+' : '') + ratePct + '%';
+      // 빠른 미리듣기는 앞 180자만 1초 만에 초고속 생성
+      var sampleText = cleanText.slice(0, 180);
+      ed.ttsBusy = true;
+      render();
+      A.toast('🎙️ [' + vMeta[1].split(' ')[1] + '] 방송국급 실제 성우 미리듣기 생성 중...');
+      fetch(base + '/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: sampleText, voice: ed.ttsVoice || 'ko-KR-SunHiNeural', rate: rateStr, engine: 'edge' }),
+      }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.blob();
+      }).then(function (blob) {
+        if (ed.ttsPreviewUrl) URL.revokeObjectURL(ed.ttsPreviewUrl);
+        ed.ttsPreviewUrl = URL.createObjectURL(blob);
+        ed.ttsPreviewLabel = vMeta[1];
+        ed.ttsBusy = false;
+        render();
+        previewAudioEl = new Audio(ed.ttsPreviewUrl);
+        previewAudioEl.play().catch(function () {});
+        A.toast('🔊 [' + vMeta[1].split(' ')[1] + '] 실제 성우 목소리 재생 중!');
+      }).catch(function () {
+        ed.ttsBusy = false;
+        render();
+        speakBrowserFallback(cleanText, vMeta);
+      });
+      return;
+    }
+    speakBrowserFallback(cleanText, vMeta);
+  }
+
+  function speakBrowserFallback(cleanText, vMeta) {
+    if (!('speechSynthesis' in window)) { A.toast('이 브라우저는 음성 합성을 지원하지 않습니다.', 'error'); return; }
     var u = new SpeechSynthesisUtterance(cleanText);
     u.lang = 'ko-KR';
     u.rate = Number(ed.ttsRate || 1.05);
-    u.pitch = Number(ed.ttsPitch || 1.0);
+    u.pitch = Number((vMeta && vMeta[2]) || 1.0);
     var voices = window.speechSynthesis.getVoices() || [];
-    var koVoice = voices.find(function (v) { return /ko/i.test(v.lang); });
-    if (koVoice) u.voice = koVoice;
+    var koVoices = voices.filter(function (v) { return /ko/i.test(v.lang); });
+    if (koVoices.length) {
+      var idx = VOICE_LIST.indexOf(vMeta);
+      u.voice = koVoices[Math.max(0, idx) % koVoices.length];
+    }
     window.speechSynthesis.speak(u);
-    A.toast('🎙️ 한국어 AI 성우 나레이션 미리듣기 재생 중...');
+    A.toast('🔊 브라우저 기본 음성으로 미리듣기 중 (로컬 스튜디오 실행 시 6종 실제 성우 목소리 지원)');
+  }
+
+  function toggleCloneMicRecord() {
+    if (ed.cloneRecording && cloneRecorder) {
+      try { cloneRecorder.stop(); } catch (e) {}
+      ed.cloneRecording = false;
+      render();
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      A.toast('이 브라우저는 마이크 녹음을 지원하지 않습니다. 음성 파일을 직접 열어주세요.', 'error');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      cloneChunks = [];
+      cloneRecorder = new MediaRecorder(stream);
+      cloneRecorder.ondataavailable = function (ev) { if (ev.data && ev.data.size > 0) cloneChunks.push(ev.data); };
+      cloneRecorder.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        var blob = new Blob(cloneChunks, { type: 'audio/webm' });
+        var f = new File([blob], '원장님_마이크녹음_' + A.todayKst() + '.webm', { type: 'audio/webm' });
+        if (ed.cloneFileUrl) URL.revokeObjectURL(ed.cloneFileUrl);
+        ed.cloneFile = f;
+        ed.cloneFileName = f.name + ' (' + Math.max(1, Math.round(f.size / 1024)) + 'KB)';
+        ed.cloneFileUrl = URL.createObjectURL(blob);
+        ed.cloneRecording = false;
+        ed.cloneStatusMsg = '✅ 원장님 목소리 녹음 완료! 아래 [🧬 원장님 보이스클로닝 생성] 버튼을 누르세요.';
+        render();
+      };
+      ed.cloneRecording = true;
+      ed.cloneStatusMsg = '🎙️ 녹음 중... 10~15초 정도 자연스럽게 말씀하신 뒤 [⏹️ 녹음 끝내기]를 누르세요!';
+      render();
+      cloneRecorder.start();
+    }).catch(function (err) {
+      A.toast('마이크 권한을 허용해 주세요: ' + err.message, 'error');
+    });
+  }
+
+  function runVoiceClone() {
+    var base = String(ed.bridgeUrl || 'http://127.0.0.1:8787').replace(/\/$/, '');
+    var cleanText = String(ed.stScript || '').replace(/\[[^\]]+\]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!cleanText) { A.toast('생성할 대본을 먼저 입력해 주세요.', 'error'); return; }
+    if (!ed.cloneFile) {
+      A.toast('⚠️ 먼저 [📂 컴퓨터에서 원장님 음성 파일 열기] 또는 [🎙️ 마이크 녹음]으로 원본 목소리 파일을 선택해 주세요!', 'error');
+      var fInp = document.getElementById('stCloneFileInp');
+      if (fInp) fInp.click();
+      return;
+    }
+    var fd = new FormData();
+    fd.append('reference_audio', ed.cloneFile, ed.cloneFile.name || 'voice_sample.wav');
+    fd.append('text', cleanText);
+    fd.append('reference_text', String(ed.cloneRefText || '').trim());
+    ed.cloneBusy = true;
+    ed.cloneStatusMsg = '⏳ 원장님 음성 파일 전송 및 Fish-Speech 클로닝 처리 중...';
+    render();
+    fetch(base + '/api/voice-clone', { method: 'POST', body: fd })
+      .then(function (r) {
+        var ct = r.headers.get('content-type') || '';
+        if (ct.indexOf('application/json') !== -1) {
+          return r.json().then(function (j) { return { isJson: true, ok: r.ok, data: j }; });
+        }
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.blob().then(function (b) { return { isJson: false, ok: true, blob: b }; });
+      })
+      .then(function (res) {
+        ed.cloneBusy = false;
+        if (!res.isJson && res.blob) {
+          if (ed.ttsPreviewUrl) URL.revokeObjectURL(ed.ttsPreviewUrl);
+          ed.ttsPreviewUrl = URL.createObjectURL(res.blob);
+          ed.ttsPreviewLabel = '🧬 원장님 보이스클로닝 결과';
+          attachAudioBlobToEditor(res.blob, '원장님_보이스클로닝_' + A.todayKst() + '.wav');
+          ed.cloneStatusMsg = '🎉 원장님 보이스클로닝 생성 완료! 영상 편집기 오디오 트랙에 자동 장착되었습니다.';
+          render();
+          previewAudioEl = new Audio(ed.ttsPreviewUrl);
+          previewAudioEl.play().catch(function () {});
+        } else {
+          var msg = (res.data && (res.data.message || res.data.detail)) || '원장님 음성 파일 저장 완료';
+          ed.cloneStatusMsg = msg;
+          A.toast(msg);
+          render();
+        }
+      })
+      .catch(function (err) {
+        ed.cloneBusy = false;
+        ed.cloneStatusMsg = '⚠️ 로컬 스튜디오(8787) 연결 실패: ' + err.message;
+        A.toast(ed.cloneStatusMsg, 'error');
+        render();
+      });
   }
 
   function checkLocalBridge() {
@@ -621,29 +786,47 @@
                 '<span class="tag-pill ok">즉시 미리듣기 + 로컬 GPU 연동</span>' +
               '</div>' +
               '<div class="ws-grid-2">' +
-                '<div class="ws-field"><label>한국어 방송국급 AI 성우 선택 (무료 무제한)</label><select id="stTtsVoice">' +
-                  [
-                    ['ko-KR-SunHiNeural', '👩 선희 (차분·신뢰 여성 아나운서 · 병원/보험 추천)'],
-                    ['ko-KR-InJoonNeural', '👨 인준 (힘있는 남성 아나운서 · 정책자금 추천)'],
-                    ['ko-KR-HyunsuMultilingualNeural', '🧑 현수 (트렌디 젊은 남성 · 릴스/자영업 추천)'],
-                    ['ko-KR-JiMinNeural', '👧 지민 (밝고 친근한 여성)'],
-                    ['ko-KR-BongJinNeural', '🧔 봉진 (중후한 전문 대표님 톤)'],
-                    ['ko-KR-SeoHyeonNeural', '👱‍♀️ 서현 (또렷한 뉴스·정보 전달)'],
-                  ].map(function (v) { return '<option value="' + v[0] + '"' + (ed.ttsVoice === v[0] ? ' selected' : '') + '>' + v[1] + '</option>'; }).join('') +
+                '<div class="ws-field"><label>한국어 방송국급 AI 성우 선택 (6종 무료 무제한)</label><select id="stTtsVoice">' +
+                  VOICE_LIST.map(function (v) { return '<option value="' + v[0] + '"' + (ed.ttsVoice === v[0] ? ' selected' : '') + '>' + v[1] + '</option>'; }).join('') +
                 '</select></div>' +
                 '<div class="ws-field"><label>말하기 속도: <b>' + Number(ed.ttsRate).toFixed(2) + 'x</b></label><input type="range" id="stTtsRate" min="0.7" max="1.5" step="0.05" value="' + ed.ttsRate + '"></div>' +
               '</div>' +
               '<div class="ws-actions" style="margin-top:8px">' +
                 '<button type="button" class="ws-btn sm ok" id="stLocalTtsBtn">🎙️ 방송국급 AI 성우 MP3 생성 → 편집기 자동 장착</button>' +
-                '<button type="button" class="ws-btn sm primary" id="stSpeakBtn">🔊 브라우저 빠른 미리듣기</button>' +
+                '<button type="button" class="ws-btn sm primary" id="stSpeakBtn"' + (ed.ttsBusy ? ' disabled' : '') + '>' + (ed.ttsBusy ? '⏳ 성우 로딩 중...' : '🔊 선택한 AI 성우 즉시 미리듣기') + '</button>' +
                 '<button type="button" class="ws-btn sm" id="stStopSpeakBtn">⏹️ 정지</button>' +
+              '</div>' +
+              (ed.ttsPreviewUrl ? (
+                '<div style="margin-top:8px;padding:9px 11px;border-radius:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.32)">' +
+                  '<div style="font-size:11.6px;font-weight:800;color:#7dd3fc;margin-bottom:5px">🎧 현재 미리듣기 음성: ' + A.esc(ed.ttsPreviewLabel) + '</div>' +
+                  '<audio controls src="' + ed.ttsPreviewUrl + '" style="width:100%;height:32px"></audio>' +
+                '</div>'
+              ) : '') +
+              '<div style="margin-top:12px;padding:11px 12px;border-radius:12px;background:rgba(168,85,247,0.1);border:1.5px dashed rgba(192,132,252,0.45)">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px">' +
+                  '<b style="font-size:12.6px;color:#e9d5ff">🧬 원장님 · 대표님 보이스 클로닝 (Fish-Speech)</b>' +
+                  '<span class="tag-pill">10~30초 음성 샘플 필요</span>' +
+                '</div>' +
+                '<input type="file" id="stCloneFileInp" accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm" hidden>' +
+                '<div class="ws-actions">' +
+                  '<button type="button" class="ws-btn sm primary" id="stCloneFileBtn">📂 컴퓨터에서 원장님 음성 파일 열기 (.mp3/.wav/.m4a)</button>' +
+                  '<button type="button" class="ws-btn sm ' + (ed.cloneRecording ? 'danger' : '') + '" id="stCloneMicBtn">' + (ed.cloneRecording ? '⏹️ 녹음 끝내기' : '🎙️ 마이크로 10초 바로 녹음') + '</button>' +
+                '</div>' +
+                (ed.cloneFileName ? (
+                  '<div style="margin-top:7px;padding:8px 10px;border-radius:9px;background:rgba(15,23,42,0.65);border:1px solid rgba(192,132,252,0.35)">' +
+                    '<div style="font-size:11.6px;font-weight:800;color:#86efac;margin-bottom:4px">✅ 장착된 원장님 샘플 음성: ' + A.esc(ed.cloneFileName) + '</div>' +
+                    (ed.cloneFileUrl ? '<audio controls src="' + ed.cloneFileUrl + '" style="width:100%;height:30px"></audio>' : '') +
+                  '</div>'
+                ) : '<div style="margin-top:6px;font-size:11.3px;color:var(--muted)">💡 컴퓨터에 저장된 원장님 목소리 녹음 파일(10~30초)을 열거나, 마이크로 바로 녹음해 주세요.</div>') +
+                '<div class="ws-field" style="margin-top:7px"><label>샘플 음성 속 실제 대사 (선택 · 입력하면 클로닝 발음이 더 정확해집니다)</label><input id="stCloneRefText" value="' + A.esc(ed.cloneRefText) + '" placeholder="예: 안녕하세요, 미담한의원 대표원장입니다."></div>' +
+                '<div class="ws-actions" style="margin-top:8px">' +
+                  '<button type="button" class="ws-btn sm ai" id="stFishTtsBtn"' + (ed.cloneBusy ? ' disabled' : '') + '>' + (ed.cloneBusy ? '⏳ 보이스 클로닝 생성 중...' : '🧬 Fish-Speech 원장님 보이스클로닝 생성') + '</button>' +
+                '</div>' +
+                (ed.cloneStatusMsg ? '<div style="margin-top:6px;font-size:11.5px;color:#fde047;line-height:1.5">' + A.esc(ed.cloneStatusMsg) + '</div>' : '') +
               '</div>' +
               '<div class="ws-field" style="margin-top:10px">' +
                 '<label>로컬 AI 미디어 스튜디오 주소 (E:\\ai-studio\\media_bridge.py)</label>' +
                 '<input id="stTtsEp" value="' + A.esc(ed.ttsEndpoint) + '" placeholder="http://127.0.0.1:8787/api/tts">' +
-              '</div>' +
-              '<div class="ws-actions" style="margin-top:6px">' +
-                '<button type="button" class="ws-btn sm" id="stFishTtsBtn">🧬 Fish-Speech 원장님 보이스클로닝 생성</button>' +
               '</div>' +
             '</div>' +
 
@@ -837,9 +1020,27 @@
 
       var spBtn = q('#stSpeakBtn'), stpBtn = q('#stStopSpeakBtn'), locTts = q('#stLocalTtsBtn'), fishTts = q('#stFishTtsBtn');
       if (spBtn) spBtn.addEventListener('click', speakKoreanPreview);
-      if (stpBtn) stpBtn.addEventListener('click', function () { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); });
+      if (stpBtn) stpBtn.addEventListener('click', stopTtsPreview);
       if (locTts) locTts.addEventListener('click', function () { callLocalTtsEngine('edge'); });
-      if (fishTts) fishTts.addEventListener('click', function () { callLocalTtsEngine('fish'); });
+      if (fishTts) fishTts.addEventListener('click', runVoiceClone);
+
+      var cFileBtn = q('#stCloneFileBtn'), cFileInp = q('#stCloneFileInp'), cMicBtn = q('#stCloneMicBtn'), cRefInp = q('#stCloneRefText');
+      if (cFileBtn && cFileInp) {
+        cFileBtn.addEventListener('click', function () { cFileInp.click(); });
+        cFileInp.addEventListener('change', function () {
+          var f = cFileInp.files && cFileInp.files[0];
+          if (!f) return;
+          if (ed.cloneFileUrl) URL.revokeObjectURL(ed.cloneFileUrl);
+          ed.cloneFile = f;
+          ed.cloneFileName = f.name + ' (' + Math.max(1, Math.round(f.size / 1024)) + 'KB)';
+          ed.cloneFileUrl = URL.createObjectURL(f);
+          ed.cloneStatusMsg = '✅ 원장님 샘플 파일 선택 완료! [🧬 Fish-Speech 원장님 보이스클로닝 생성]을 누르세요.';
+          render();
+          A.toast('📂 원장님 음성 샘플 파일(' + f.name + ')이 불러와졌습니다!');
+        });
+      }
+      if (cMicBtn) cMicBtn.addEventListener('click', toggleCloneMicRecord);
+      if (cRefInp) cRefInp.addEventListener('input', function () { ed.cloneRefText = cRefInp.value; });
 
       var mSel = q('#stBgmMood'), sNum = q('#stBgmSec'), gBgm = q('#stGenBgmBtn'), goEd = q('#stGoEditBtn');
       if (mSel) mSel.addEventListener('change', function () { ed.bgmMood = mSel.value; });
