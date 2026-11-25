@@ -11,6 +11,18 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir   = Split-Path -Parent $ScriptDir
 $EnvFile   = Join-Path $RootDir ".dev.vars"
 
+# 0) 자가 치유: Windows PowerShell 5.1 한글 파싱 오류 방지를 위해 모든 scripts\*.ps1 UTF-8 BOM 자동 보정
+$utf8BomSelf = New-Object System.Text.UTF8Encoding($true)
+Get-ChildItem -Path $ScriptDir -Filter "*.ps1" -ErrorAction SilentlyContinue | ForEach-Object {
+    try {
+        $rawBytes = [System.IO.File]::ReadAllBytes($_.FullName)
+        if ($rawBytes.Length -lt 3 -or $rawBytes[0] -ne 0xEF -or $rawBytes[1] -ne 0xBB -or $rawBytes[2] -ne 0xBF) {
+            $txt = [System.Text.Encoding]::UTF8.GetString($rawBytes)
+            [System.IO.File]::WriteAllText($_.FullName, $txt, $utf8BomSelf)
+        }
+    } catch {}
+}
+
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Cyan
 Write-Host "  🏫 껌씹는 AI 일진방 — 모든 AI 전체 깨우기 시작!" -ForegroundColor Yellow
