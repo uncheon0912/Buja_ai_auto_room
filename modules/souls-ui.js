@@ -16,7 +16,7 @@
     { id: 'secretary', label: '📝 대장 비서실' },
     { id: 'jipigo', label: '🫧 지피고 씹던껌' },
     { id: 'ollago', label: '🔥 올라고 (Qwen 2.5)' },
-    { id: 'claude', label: '❤️ 사랑해요 엘지 (EXAONE)' },
+    { id: 'claude', label: '💎 엘지고 귀걸이 (EXAONE)' },
     { id: 'deepseek', label: '🔍 딥고 (DeepSeek-R1)' },
     { id: 'ingsta', label: '🗽 잉스타 유학파 (기획·콘텐츠)' },
   ];

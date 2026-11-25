@@ -13,7 +13,7 @@
     antigo:    { name: '팩폭기 안티고',  emoji: '⚡', bg: '#fef08a', role: '할 말 다 하는 개발 담당' },
     hongbo:    { name: '영혼가출 홍보부', emoji: '📢', bg: '#fbcfe8', role: '맞장구 · 10편 공장 노동자' },
     ollago:    { name: '용량난민 올라고', emoji: '🔥', bg: '#fed7aa', role: 'Qwen 2.5 · C→E 드라이브 이사 피해자' },
-    claude:    { name: '국뽕풀충 엘지', emoji: '❤️', bg: '#fecdd3', role: 'EXAONE 3.5 · 한국어·코드 깐깐 검수' },
+    claude:    { name: '엘지고 귀걸이', emoji: '💎', bg: '#fecdd3', role: 'EXAONE 3.5 · 한국어·코드 깐깐 검수' },
     deepseek:  { name: '과몰입 딥고',    emoji: '🔍', bg: '#c7d2fe', role: 'DeepSeek-R1 · 심층 추론·리서치' },
     ingsta:    { name: '뉴욕병 잉스타',  emoji: '🗽', bg: '#fbcfe8', role: '기획·콘텐츠 개발 외부 유학파 AI' },
     cs:        { name: '눈치백단 CS',    emoji: '🔔', bg: '#bfdbfe', role: '감싸는 척 더 세게 까는 애' },
