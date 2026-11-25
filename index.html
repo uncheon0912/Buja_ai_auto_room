@@ -938,25 +938,79 @@
   .gate .err{color:#dc2626; font-size:12px; font-weight:600; margin-top:10px; min-height:16px}
 
   /* ---------- mobile ---------- */
-  @media (max-width:760px){
+  .sidebar-backdrop{display:none}
+  .sidebar-close-btn{
+    display:none; align-items:center; justify-content:center;
+    margin-left:auto; width:28px; height:28px; border-radius:9px;
+    border:1px solid var(--line-strong); background:rgba(255,255,255,0.85);
+    color:#0369a1; font-size:15px; font-weight:900; line-height:1; flex:0 0 auto;
+  }
+  body.dark .sidebar-close-btn{background:rgba(30,41,59,0.9); color:#7dd3fc; border-color:rgba(56,189,248,0.35)}
+  .mob-search-btn{
+    display:none; align-items:center; justify-content:center;
+    border:1.5px solid var(--line-strong); border-radius:999px;
+    background:rgba(255,255,255,0.88); color:#0369a1;
+    padding:4px 10px; font-size:12.5px; font-weight:800; line-height:1.2;
+  }
+  body.dark .mob-search-btn{background:rgba(30,41,59,0.9); color:#7dd3fc; border-color:rgba(56,189,248,0.32)}
+  @media (max-width:768px){
     .sidebar{
-      position:fixed; left:0; top:0; bottom:0; z-index:40; transform:translateX(-100%);
-      transition:transform .22s ease; width:262px; box-shadow:0 0 40px rgba(2,132,199,0.28);
+      position:fixed; left:0; top:0; bottom:0; z-index:45; transform:translateX(-100%);
+      transition:transform .22s ease; width:268px; max-width:84vw; box-shadow:0 0 40px rgba(2,132,199,0.28);
     }
     body.nav-open .sidebar{transform:none}
-    body.nav-open:after{content:""; position:fixed; inset:0; background:rgba(15,23,42,0.32); z-index:35}
-    .menu-btn{display:block}
-    .messages{padding:12px 10px 6px}
-    .msg{padding:9px 10px}
+    body.nav-open .sidebar-backdrop{
+      display:block; position:fixed; inset:0; background:rgba(15,23,42,0.45);
+      z-index:38; backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+    }
+    .sidebar-close-btn{display:inline-flex}
+    .menu-btn{display:block; flex:0 0 auto; padding:2px 4px}
+    .topbar{padding:8px 10px; gap:6px}
+    .roomtitle{flex:1; min-width:0}
+    .roomtitle h1{font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .roomtitle h1 span:last-child{overflow:hidden; text-overflow:ellipsis}
+    .roomtitle p{display:none}
+    .pill.live,.pill.school{display:none}
+    .mob-search-btn{display:inline-flex; flex:0 0 auto}
+    body.ws-mode .mob-search-btn{display:none !important}
+    .theme-btn{padding:4px 9px; font-size:11px; flex:0 0 auto}
+    .topright{
+      margin-left:0; width:100%; order:5;
+      flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start;
+      gap:6px; padding-bottom:2px; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    }
+    .topright::-webkit-scrollbar{display:none}
+    .topright > button{flex:0 0 auto}
+    .searchbox{display:none !important}
+    body.mob-search-open:not(.ws-mode) .searchbox{
+      display:flex !important; width:100%; order:10; flex-wrap:wrap;
+      border-radius:14px; padding:6px 8px; gap:6px;
+    }
+    body.mob-search-open:not(.ws-mode) .searchbox select{max-width:112px; font-size:12px}
+    body.mob-search-open:not(.ws-mode) .searchbox input[type="search"]{flex:1 1 110px; min-width:0; width:auto; font-size:16px}
+    body.mob-search-open:not(.ws-mode) .searchbox input[type="date"]{flex:1 1 120px; min-width:0; font-size:13px; border-left:0; padding-left:0}
+    .messages{padding:10px 8px 6px}
+    .msg{padding:9px 10px; gap:8px}
+    .avatar{flex:0 0 32px; width:32px; height:32px; border-radius:10px; font-size:14px}
     .msg-actions{opacity:1; position:static; margin-top:7px}
-    .actbtn{background:#f0f9ff; border:1px solid var(--line); color:#0369a1; padding:2px 9px; font-size:11px}
-    .composer{padding:9px 10px 12px}
-    #senderSel{max-width:112px; font-size:12px; padding:9px 4px}
-    #sendBtn{padding:10px 13px}
-    .pill.school{display:none}
+    .actbtn{background:#f0f9ff; border:1px solid var(--line); color:#0369a1; padding:3px 10px; font-size:11.5px}
+    .ai-approve-bar{display:grid !important; grid-template-columns:1fr 1fr; gap:5px !important}
+    .ai-approve-bar .ws-btn{width:100%; justify-content:center; white-space:normal !important; text-align:center; line-height:1.25; font-size:11px; padding:6px 6px}
+    .composer{padding:8px 10px calc(10px + env(safe-area-inset-bottom, 0px))}
+    .crow{gap:6px}
+    select#senderSel{max-width:102px; font-size:16px; padding:8px 4px}
+    .attachbtn{padding:9px 9px}
+    #input{font-size:16px; padding:9px 11px; min-height:40px}
+    #sendBtn{padding:9px 12px; font-size:13px}
+    .hint{display:none}
+    .jump-bottom-btn{right:12px; bottom:calc(76px + env(safe-area-inset-bottom, 0px)); font-size:11.5px; padding:6px 12px}
+    .modal-bg{padding:8px}
+    .modal{padding:15px 13px; border-radius:18px; max-height:92dvh; gap:11px}
+    .modal-head h3{font-size:15px}
+    .modal textarea, .modal input[type="text"], .modal input[type="url"], .modal input[type="email"], .modal input[type="password"], #gateInput{font-size:16px !important}
   }
 </style>
-<link rel="stylesheet" href="/modules/workspace.css?v=23">
+<link rel="stylesheet" href="/modules/workspace.css?v=24">
 </head>
 <body>
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
@@ -967,7 +1021,10 @@
       <a class="brand-banner" href="/logo.jpg" target="_blank" title="크게 보기">
         <img src="/logo.jpg" alt="껌씹는 AI 일진방">
       </a>
-      <div class="brand-txt"><b>🏫 껌씹는 AI 일진방</b><small>부자사람대장과 AI 일진들의 학교 아지트</small></div>
+      <div class="brand-txt" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="min-width:0"><b>🏫 껌씹는 AI 일진방</b><small>부자사람대장과 AI 일진들의 학교 아지트</small></div>
+        <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="사이드바 닫기">✕</button>
+      </div>
     </div>
     <div class="rooms" id="roomList"><div class="label">🏫 교실 · 방 목록</div></div>
     <div class="pres-sec">
@@ -1001,6 +1058,7 @@
       </div>
     </div>
   </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <main class="main">
     <header class="topbar">
@@ -1009,6 +1067,7 @@
         <h1><span class="hash">#</span><span id="roomName">부자사람 일진 종합반</span></h1>
         <p id="roomDesc">학교 옥상 집합 · 다 같이 떠드는 메인 아지트</p>
       </div>
+      <button type="button" class="mob-search-btn" id="mobSearchToggle" aria-label="대화 검색" title="대화·날짜 검색 열기">🔍</button>
       <div class="topright">
         <div class="searchbox" title="방 선택 + 대화 내용 및 날짜(KST) 통합 검색">
           <span class="icon">🔍</span>
@@ -1244,8 +1303,8 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.m
 
 const canvas = document.getElementById('bgCanvas');
 if (canvas) {
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: window.innerWidth > 768, powerPreference: 'low-power' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth <= 768 ? 1.5 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   const scene = new THREE.Scene();
@@ -1577,16 +1636,16 @@ window.pulsePortfolio3D = function(pageIdx) {
 };
 </script>
 
-<script src="/modules/agency-store.js?v=19"></script>
-<script src="/modules/crm.js?v=25"></script>
+<script src="/modules/agency-store.js?v=27"></script>
+<script src="/modules/crm.js?v=27"></script>
 <script src="/modules/sns.js?v=21"></script>
 <script src="/modules/proposal.js?v=21"></script>
 <script src="/modules/contract.js?v=21"></script>
 <script src="/modules/portfolio.js?v=21"></script>
 <script src="/modules/video-editor.js?v=23"></script>
-<script src="/modules/content-hub.js?v=25"></script>
-<script src="/modules/secret-room.js?v=26"></script>
-<script src="/modules/souls-ui.js?v=26"></script>
+<script src="/modules/content-hub.js?v=27"></script>
+<script src="/modules/secret-room.js?v=27"></script>
+<script src="/modules/souls-ui.js?v=27"></script>
 <script>
 (function(){
   "use strict";
@@ -1936,6 +1995,14 @@ window.pulsePortfolio3D = function(pageIdx) {
     }
   }
   $('menuBtn').addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  if ($('sidebarCloseBtn')) $('sidebarCloseBtn').addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+  if ($('sidebarBackdrop')) $('sidebarBackdrop').addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+  if ($('mobSearchToggle')){
+    $('mobSearchToggle').addEventListener('click', function(){
+      var open = document.body.classList.toggle('mob-search-open');
+      if (open && $('searchInput')) setTimeout(function(){ $('searchInput').focus(); }, 60);
+    });
+  }
   elMessages.addEventListener('click', function(){
     if (document.body.classList.contains('nav-open')) document.body.classList.remove('nav-open');
   });
@@ -2464,6 +2531,7 @@ window.pulsePortfolio3D = function(pageIdx) {
     state.searchText = '';
     state.searchDate = '';
     state.searchResults = null;
+    document.body.classList.remove('mob-search-open');
     if (elSearchClear) elSearchClear.hidden = true;
     if (!silent) renderAll();
   }
@@ -2585,6 +2653,7 @@ window.pulsePortfolio3D = function(pageIdx) {
     }
   }
   function openConnModal(idx){
+    document.body.classList.remove('nav-open');
     editingConnIdx = idx;
     var c = integrations[idx];
     if (!c) return;
@@ -2735,6 +2804,7 @@ window.pulsePortfolio3D = function(pageIdx) {
     });
   }
   function openBrainModal(){
+    document.body.classList.remove('nav-open');
     elBrainStat.textContent = '최신 브레인 정보 불러오는 중…';
     elBrainModal.hidden = false;
     loadBrainEmailConfig();
@@ -2974,6 +3044,7 @@ window.pulsePortfolio3D = function(pageIdx) {
     });
   }
   function openPromptModal(){
+    document.body.classList.remove('nav-open');
     $('globalPrompt').value = promptState.global || '';
     $('priorityCheck').checked = promptState.priority !== false;
     $('promptStat').textContent = '';

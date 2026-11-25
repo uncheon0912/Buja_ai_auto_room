@@ -5,7 +5,7 @@
  * - @media print A4 고화질 PDF/인쇄 최적화
  * ============================================================ */
 
-/* ---------- 상단 5개 카테고리 탭 바 ---------- */
+/* ---------- 상단 카테고리 탭 바 ---------- */
 .cat-tabs{
   display:flex; align-items:center; gap:7px;
   padding:8px 16px;
@@ -13,6 +13,7 @@
   backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   border-bottom:1.5px solid rgba(255,255,255,0.78);
   overflow-x:auto; scrollbar-width:none; flex:0 0 auto;
+  -webkit-overflow-scrolling:touch; scroll-behavior:smooth;
 }
 .cat-tabs::-webkit-scrollbar{display:none}
 .cat-tab{
@@ -58,8 +59,18 @@ body.dark .cat-tab.active .tbadge{background:rgba(255,255,255,0.22); color:#fff}
 /* 채팅 이외 탭 활성화 시 넓은 작업공간 확보 */
 body.ws-mode .sidebar{width:236px; flex:0 0 236px}
 @media (max-width:1180px){
-  body.ws-mode .sidebar{display:none}
-  body.ws-mode.nav-open .sidebar{display:flex; position:fixed; left:0; top:0; bottom:0; z-index:40; transform:none}
+  body.ws-mode .sidebar{
+    position:fixed; left:0; top:0; bottom:0; z-index:45;
+    width:268px; max-width:84vw; flex:none;
+    transform:translateX(-105%); transition:transform .22s ease;
+    display:flex;
+  }
+  body.ws-mode.nav-open .sidebar{transform:none}
+  body.ws-mode.nav-open .sidebar-backdrop{
+    display:block; position:fixed; inset:0; background:rgba(15,23,42,0.45);
+    z-index:38; backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+  }
+  body.ws-mode .sidebar-close-btn{display:inline-flex}
   body.ws-mode .menu-btn{display:block}
 }
 
@@ -259,9 +270,11 @@ body:not(.dark) .ws-btn.neon-yellow-tab.active{
 }
 
 /* 폼 요소 */
-.ws-grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.ws-grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
-@media (max-width:720px){.ws-grid-2,.ws-grid-3{grid-template-columns:1fr}}
+.ws-grid-2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+.ws-grid-3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.ws-grid-4{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px}
+@media (max-width:980px){.ws-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.ws-grid-2,.ws-grid-3,.ws-grid-4{grid-template-columns:1fr}}
 .ws-field{display:flex; flex-direction:column; gap:4px}
 .ws-field label{font-size:11.6px; font-weight:800; color:#0369a1}
 .ws-field input, .ws-field select, .ws-field textarea{
@@ -385,10 +398,6 @@ body:not(.dark) .ws-btn.neon-yellow-tab.active{
   font-size:11px; font-weight:800; color:var(--muted); padding:0 2px;
 }
 .line-head span:nth-child(2), .line-head span:nth-child(3), .line-head span:nth-child(5){text-align:center}
-@media (max-width:680px){
-  .line-head{display:none}
-  .line-row{grid-template-columns:1fr 64px 96px; gap:5px}
-}
 .line-row input{
   min-width:0; width:100%; box-sizing:border-box;
   font:inherit; font-size:12.2px; padding:6px 7px;
@@ -864,6 +873,154 @@ body.dark .deck-thumb.active{background:linear-gradient(135deg,#0369a1,#0284c7);
 body.dark .deck-thumb.active b{color:#fff}
 
 .deck-print-all{display:none}
+
+/* ---------- 캘린더 · 공장 · 시크릿방 · 모바일 분할 전환바 기본 레이아웃 ---------- */
+.cal-split{grid-template-columns:minmax(0,1.55fr) minmax(320px,0.85fr); align-items:start; overflow:visible}
+.cal-side-panel{padding:14px; position:sticky; top:10px}
+.cal-dow-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin-bottom:6px; text-align:center; font-size:11.5px; font-weight:800; color:var(--muted)}
+.cal-month-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px}
+.cal-empty-cell{min-height:102px; background:rgba(15,23,42,0.03); border-radius:10px; border:1px dashed var(--line)}
+.cal-day-cell{min-height:102px; border-radius:10px; padding:6px; display:flex; flex-direction:column; gap:3px; cursor:pointer; transition:transform .14s,box-shadow .14s; min-width:0; overflow:hidden}
+.cal-add-mini{border:1px solid rgba(56,189,248,0.4); background:rgba(14,165,233,0.14); color:#7dd3fc; border-radius:6px; width:19px; height:19px; line-height:1; font-size:12px; font-weight:900; cursor:pointer; padding:0; flex-shrink:0}
+.fac-draft-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr)); gap:10px}
+.secret-layout{max-width:1080px; margin:0 auto; display:grid; grid-template-columns:minmax(280px,1fr) auto; gap:22px; align-items:start}
+.secret-phone-wrap{display:flex; justify-content:center}
+.soul-tabs-bar{display:flex; gap:6px; flex-wrap:wrap}
+
+/* 모바일 분할 에디터 ↔ 미리보기 빠른 전환바 (데스크톱 숨김) */
+.mob-split-switch{
+  display:none; align-items:center; gap:6px; flex-wrap:nowrap;
+  padding:8px 10px; position:sticky; top:0; z-index:18;
+  background:rgba(255,255,255,0.9); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-strong);
+}
+body.dark .mob-split-switch{background:rgba(15,23,42,0.92); border-bottom-color:rgba(56,189,248,0.24)}
+.mob-split-btn{
+  flex:1; border:1px solid var(--line-strong); background:rgba(255,255,255,0.8); color:#0c4a6e;
+  border-radius:10px; padding:7px 8px; font-size:12px; font-weight:800; text-align:center; white-space:nowrap;
+}
+body.dark .mob-split-btn{background:rgba(30,41,59,0.85); color:#bae6fd; border-color:rgba(56,189,248,0.28)}
+.mob-split-btn.active{
+  background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff; border-color:transparent;
+  box-shadow:0 4px 12px rgba(2,132,199,0.3);
+}
+
+/* ---------- 화면 전용 반응형 최적화 (@media print 인쇄 레이아웃 절대 보존) ---------- */
+@media screen and (max-width:1024px){
+  .cal-split{display:flex; flex-direction:column; gap:12px; overflow:visible}
+  .cal-side-panel{position:static !important; width:100%}
+}
+@media screen and (max-width:980px){
+  .ws-split, .ws-split.port-split{
+    display:flex; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .split-editor, .split-preview{
+    overflow:visible; flex:0 0 auto; width:100%; border-right:0; padding:12px 10px 24px;
+  }
+  .ws-split:not(.cal-split) > .mob-split-switch{display:flex}
+  .ws-split[data-mob-view="editor"] > .split-preview{display:none !important}
+  .ws-split[data-mob-view="preview"] > .split-editor{display:none !important}
+  .preview-toolbar{padding:8px 10px}
+}
+@media screen and (max-width:900px){
+  .secret-layout{grid-template-columns:1fr; gap:14px}
+}
+@media screen and (max-width:768px){
+  .cat-tabs{padding:7px 10px; gap:6px}
+  .cat-tab{padding:6px 11px; font-size:12px}
+  .a4-sheet{
+    min-height:auto; padding:18px 13px 24px; font-size:12px; border-radius:10px;
+  }
+  .a4-sheet .doc-banner{padding:14px 15px; margin-bottom:14px}
+  .a4-sheet .doc-banner h1{font-size:17px}
+  .a4-sheet h1{font-size:19px}
+  .a4-sheet table{
+    display:block; width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; font-size:11.6px;
+  }
+  .a4-sheet th, .a4-sheet td{padding:6px 7px; white-space:nowrap}
+  .a4-sheet .sign-grid{grid-template-columns:1fr; gap:10px; margin-top:16px}
+  .a4-sheet .sum-box .big{font-size:15.5px}
+  .bar-lbl{width:88px; flex:0 0 88px; font-size:11px}
+  .bar-val{width:44px; font-size:11px}
+  .gantt-head, .gantt-row{grid-template-columns:86px 1fr}
+  .gantt-head-lbl{padding:6px 6px; font-size:10px}
+  .gantt-col{font-size:9.5px; padding:5px 2px}
+  .gantt-meta{padding:7px 6px}
+  .gantt-step-tag{font-size:10.5px}
+  /* 3D 포트폴리오 슬라이드 화면 반응형 */
+  .deck-slide{
+    aspect-ratio:auto !important; min-height:0 !important; height:auto !important;
+    padding:18px 15px 16px; border-radius:12px;
+  }
+  .dk-hero-title, .deck-slide.layout-cover .dk-title{font-size:23px !important; line-height:1.22}
+  .dk-title{font-size:19px !important}
+  .dk-hero-sub, .dk-sub{font-size:12px}
+  .dk-giant-num{font-size:38px; margin-bottom:-10px}
+  .dk-main{flex-direction:column; align-items:stretch; gap:12px; padding:10px 0 6px}
+  .dk-imgbox{max-height:190px; width:100%}
+  .dk-split-2, .dk-bento, .dk-pricing, .dk-contact-card, .dk-bullets.grid2{
+    grid-template-columns:1fr; gap:9px;
+  }
+  .dk-price-card.featured{transform:none}
+  .dk-timeline{grid-template-columns:1fr 1fr; gap:8px}
+  .dk-kpi-big-grid, .dk-metrics{grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px}
+  .dk-kpi-num{font-size:22px}
+  .dk-mval{font-size:13px}
+  .deck-thumbs{
+    display:flex; overflow-x:auto; flex-wrap:nowrap; gap:6px;
+    padding-bottom:4px; -webkit-overflow-scrolling:touch;
+  }
+  .deck-thumb{flex:0 0 96px}
+  /* Phase B 15일 알림 배지 모바일 입력창 겹침 방지 */
+  #phaseBReminderPill{
+    left:10px !important; right:auto !important;
+    bottom:calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+    font-size:10.5px !important; padding:4px 9px !important; opacity:.9;
+  }
+  body.ws-mode #phaseBReminderPill{
+    bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .ws-toast{
+    left:12px; right:12px; bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+    text-align:center; font-size:12.5px; padding:10px 12px;
+  }
+}
+@media screen and (max-width:680px){
+  .line-head{display:none}
+  .line-row{
+    grid-template-columns:62px 1fr 1fr 30px; gap:6px;
+    padding:8px; border-radius:10px;
+    background:rgba(14,165,233,0.06); border:1px solid var(--line);
+  }
+  .line-row input[data-pk="name"], .line-row input[data-ck="name"]{grid-column:1 / -1}
+  /* 모바일 7열 월간 캘린더 컴팩트 카드 + 탭 시 크게 보기 팝업 */
+  .cal-dow-grid, .cal-month-grid{gap:3px}
+  .cal-empty-cell{min-height:58px !important; border-radius:7px !important}
+  .cal-day-cell{min-height:60px !important; padding:4px 3px !important; border-radius:7px !important}
+  .cal-day-cell button{font-size:10.5px !important}
+  .cal-add-mini, .cal-desktop-only{display:none !important}
+  #calDayModalBg{padding:8px !important}
+  .soul-tabs-bar{
+    flex-wrap:nowrap !important; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;
+  }
+  .soul-tabs-bar .filter-pill{flex:0 0 auto; white-space:nowrap}
+}
+@media screen and (max-width:640px){
+  .ws-scroll{padding:10px 10px 30px; gap:11px}
+  .ws-head, .ws-card{padding:12px 12px; border-radius:14px}
+  .ws-head h2{font-size:15.5px}
+  .ws-btn:not(.cat-tab){white-space:normal; text-align:center; line-height:1.3; max-width:100%}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+  .kpi-card{padding:11px 12px}
+  .kpi-card .k-val{font-size:18px}
+  .filter-bar{gap:6px; padding:9px 10px}
+  #crmStageFilter, #crmSearch{flex:1 1 135px; margin-left:0 !important; width:auto !important; font-size:16px}
+  .ws-field input, .ws-field select, .ws-field textarea, .line-row input{font-size:16px !important}
+  .client-card{padding:12px}
+}
+@media screen and (max-width:440px){
+  .dk-timeline, .dk-kpi-big-grid, .dk-metrics{grid-template-columns:1fr}
+}
 
 @media print{
   @page{ size: A4 portrait; margin: 10mm; }

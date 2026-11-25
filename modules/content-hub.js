@@ -253,7 +253,7 @@
     });
 
     var cells = [];
-    for (var i = 0; i < startDow; i++) cells.push('<div style="min-height:102px;background:rgba(15,23,42,0.03);border-radius:10px;border:1px dashed var(--line)"></div>');
+    for (var i = 0; i < startDow; i++) cells.push('<div class="cal-empty-cell"></div>');
     var todayStr = A.todayKst();
 
     // 등록 고객사 중 아직 일정이 0건인 고객사 집계 (왜 전체 고객사가 안 보이는지 바로 안내!)
@@ -306,7 +306,7 @@
             var pct = Math.max(8, Math.round((chCounts[c.id] / cnt) * 100));
             return '<div style="width:' + pct + '%;background:' + c.color + '" title="' + c.id + ' ' + chCounts[c.id] + '건"></div>';
           }).join('') +
-        '</div>';
+          '</div>';
       }
 
       var bodyHtml = '';
@@ -319,15 +319,16 @@
           ? uniqClients[0]
           : (uniqClients[0] + ' 외 ' + (uniqClients.length - 1) + '곳');
         bodyHtml = stackedBar +
-          '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">' + chPills + '</div>' +
-          '<div style="margin-top:auto;padding-top:3px;font-size:10px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700" title="' + A.esc(uniqClients.join(', ')) + '">🏢 ' + A.esc(clientSummary) + '</div>' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;font-size:9.8px;color:var(--muted)">' +
-            '<span style="color:' + (doneCnt === cnt ? '#4ade80' : '#fbbf24') + ';font-weight:800">' + (doneCnt === cnt ? '✅ 완료 ' + doneCnt + '/' + cnt : '⏳ ' + doneCnt + '/' + cnt + ' 완료') + '</span>' +
-            '<span style="color:#7dd3fc;font-weight:800">🔎 크게보기</span>' +
+          '<div class="cal-desktop-only" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">' + chPills + '</div>' +
+          '<div class="cal-desktop-only" style="margin-top:auto;padding-top:3px;font-size:10px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700" title="' + A.esc(uniqClients.join(', ')) + '">🏢 ' + A.esc(clientSummary) + '</div>' +
+          '<div class="cal-desktop-only" style="display:flex;justify-content:space-between;align-items:center;font-size:9.8px;color:var(--muted)">' +
+          '<span style="color:' + (doneCnt === cnt ? '#4ade80' : '#fbbf24') + ';font-weight:800">' + (doneCnt === cnt ? '✅ 완료 ' + doneCnt + '/' + cnt : '⏳ ' + doneCnt + '/' + cnt + ' 완료') + '</span>' +
+          '<span style="color:#7dd3fc;font-weight:800">🔎 크게보기</span>' +
           '</div>';
       } else if (cnt > 0) {
         // 📋 초슬림 상세 목록 모드: 최대 5건까지 콤팩트하게 표시
         bodyHtml = stackedBar +
+          '<div class="cal-desktop-only" style="display:flex;flex-direction:column;gap:2px">' +
           list.slice(0, 5).map(function (it) {
             var sm = statusMeta(it.status);
             var cs = channelStyle(it.channel);
@@ -343,14 +344,15 @@
               '</button>' +
               '</div>';
           }).join('') +
-          (list.length > 5 ? '<div style="font-size:9.8px;color:#7dd3fc;text-align:right;font-weight:800">+' + (list.length - 5) + '건 (클릭해 전체보기)</div>' : '');
+          (list.length > 5 ? '<div style="font-size:9.8px;color:#7dd3fc;text-align:right;font-weight:800">+' + (list.length - 5) + '건 (클릭해 전체보기)</div>' : '') +
+          '</div>';
       }
 
       cells.push(
-        '<div data-cal-daybox="' + ymd + '" style="min-height:102px;background:' + heatBg + ';border:1.5px solid ' + heatBd + ';border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:transform .14s,box-shadow .14s" title="클릭하면 ' + ymd + ' 상세 스케줄 팝업이 크게 열립니다">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;gap:3px;font-size:11.5px;font-weight:800;color:' + (isToday ? '#38bdf8' : 'var(--ink)') + '">' +
-        '<button type="button" data-cal-open-day="' + ymd + '" style="border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:4px">' + day + '일 ' + heatBadge + '</button>' +
-        '<button type="button" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록" style="border:1px solid rgba(56,189,248,0.4);background:rgba(14,165,233,0.14);color:#7dd3fc;border-radius:6px;width:19px;height:19px;line-height:1;font-size:12px;font-weight:900;cursor:pointer;padding:0;flex-shrink:0">＋</button>' +
+        '<div class="cal-day-cell" data-cal-daybox="' + ymd + '" style="background:' + heatBg + ';border:1.5px solid ' + heatBd + '" title="클릭하면 ' + ymd + ' 상세 스케줄 팝업이 크게 열립니다">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:2px;flex-wrap:wrap;font-size:11.5px;font-weight:800;color:' + (isToday ? '#38bdf8' : 'var(--ink)') + '">' +
+        '<button type="button" data-cal-open-day="' + ymd + '" style="border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:3px;flex-wrap:wrap">' + day + '일 ' + heatBadge + '</button>' +
+        '<button type="button" class="cal-add-mini" data-cal-add-date="' + ymd + '" title="' + ymd + '에 새 콘텐츠 바로 등록">＋</button>' +
         '</div>' +
         bodyHtml +
         '</div>'
@@ -365,8 +367,8 @@
     var selectedFilterClient = st.filterClientId ? clients.find(function (c) { return String(c.id) === String(st.filterClientId); }) : null;
 
     return '' +
-      // 직관적인 1줄 4카드 요약 KPI
-      '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px">' +
+      // 직관적인 4카드 요약 KPI (반응형 2열/4열)
+      '<div class="kpi-grid" style="margin-bottom:10px">' +
       '<div class="kpi-card"><div class="k-lbl">전체 등록 콘텐츠</div><div class="k-val">' + filtered.length + '건</div><div class="k-sub">VIP 포털 실시간 연동</div></div>' +
       '<div class="kpi-card"><div class="k-lbl">✅ 검수완료 · 예약확정</div><div class="k-val" style="color:#10b981">' + cntBooked + '건</div><div class="k-sub">민트색 완료 강조 표시</div></div>' +
       '<div class="kpi-card"><div class="k-lbl">⏳ 검수 대기 / ✏️ 수정요청</div><div class="k-val" style="color:#fbbf24">' + cntWait + ' / ' + cntFix + '</div><div class="k-sub">포털 피드백 실시간 반영</div></div>' +
@@ -398,7 +400,7 @@
       '</div>' +
       '</div>' +
 
-      '<div class="ws-split" style="grid-template-columns:minmax(0,1.55fr) minmax(320px,0.85fr);align-items:start">' +
+      '<div class="ws-split cal-split">' +
       '<div class="ws-card" style="padding:14px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
       '<div class="ws-actions">' +
@@ -421,14 +423,14 @@
       '</select>' +
       '</div>' +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;text-align:center;font-size:11.5px;font-weight:800;color:var(--muted)">' +
+      '<div class="cal-dow-grid">' +
       '<span style="color:#ef4444">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#38bdf8">토</span>' +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">' + cells.join('') + '</div>' +
+      '<div class="cal-month-grid">' + cells.join('') + '</div>' +
       '</div>' +
 
-      // 오른쪽: sticky 고정으로 달력 아래 날짜를 클릭해도 스크롤 이동 없이 제자리에서 바로 확인!
-      '<div class="ws-card" style="padding:14px;position:sticky;top:10px">' +
+      // 오른쪽: 데스크톱 sticky 고정 / 모바일 하단 풀폭 전환
+      '<div class="ws-card cal-side-panel">' +
       (st.addMode ? (
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">' +
         '<h3 style="margin:0;font-size:14.5px;color:#38bdf8">➕ 새 콘텐츠 일정 바로 등록</h3>' +
@@ -541,7 +543,7 @@
       '</div>' +
 
       (st.drafts.length ? (
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px">' +
+        '<div class="fac-draft-grid">' +
         st.drafts.map(function (d, i) {
           var isReel = d.channel.indexOf('릴스') !== -1;
           return '<div class="ws-card" style="padding:12px;border-left:4px solid ' + (isReel ? '#ec4899' : '#0284c7') + '">' +
@@ -576,8 +578,8 @@
     });
     if (!st.newClientId && clients.length) st.newClientId = String(clients[0].id);
 
-    return '<div id="calDayModalBg" style="position:fixed;inset:0;z-index:9990;background:rgba(2,6,23,0.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px">' +
-      '<div style="width:100%;max-width:860px;max-height:88dvh;display:flex;flex-direction:column;background:#0f172a;color:#f8fafc;border:1.5px solid rgba(56,189,248,0.48);border-radius:20px;box-shadow:0 28px 70px rgba(0,0,0,0.65);overflow:hidden">' +
+    return '<div id="calDayModalBg" style="position:fixed;inset:0;z-index:9990;background:rgba(2,6,23,0.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:12px">' +
+      '<div style="width:100%;max-width:860px;max-height:92dvh;display:flex;flex-direction:column;background:#0f172a;color:#f8fafc;border:1.5px solid rgba(56,189,248,0.48);border-radius:20px;box-shadow:0 28px 70px rgba(0,0,0,0.65);overflow:hidden">' +
       // 팝업 상단바
       '<div style="padding:14px 18px;background:rgba(14,165,233,0.14);border-bottom:1px solid rgba(56,189,248,0.28);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
       '<div style="display:flex;align-items:center;gap:10px">' +

@@ -254,8 +254,8 @@
     var ep = getActiveEp();
 
     root.innerHTML =
-      '<div style="height:100%;overflow-y:auto;padding:16px;background:radial-gradient(circle at 20% 0%,rgba(56,189,248,0.12),transparent 45%),radial-gradient(circle at 85% 90%,rgba(236,72,153,0.1),transparent 45%)">' +
-        '<div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(280px,1fr) auto;gap:22px;align-items:start">' +
+      '<div style="height:100%;overflow-y:auto;padding:12px;background:radial-gradient(circle at 20% 0%,rgba(56,189,248,0.12),transparent 45%),radial-gradient(circle at 85% 90%,rgba(236,72,153,0.1),transparent 45%)">' +
+        '<div class="secret-layout">' +
           // 왼쪽: 대장 전용 투명 염탐 컨트롤 패널
           '<div style="display:flex;flex-direction:column;gap:12px">' +
             '<div class="ws-card" style="padding:16px;border:1px solid rgba(250,204,21,0.45);background:linear-gradient(135deg,rgba(15,23,42,0.92),rgba(30,41,59,0.92));color:#f8fafc">' +
@@ -302,7 +302,7 @@
           '</div>' +
 
           // 오른쪽: 휴대폰 세로 비율 카카오톡 단톡방 화면
-          '<div style="display:flex;justify-content:center">' +
+          '<div class="secret-phone-wrap">' +
             buildKakaoPhoneHtml(ep, false) +
           '</div>' +
         '</div>' +

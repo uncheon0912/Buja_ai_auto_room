@@ -55,7 +55,7 @@
         '<h3>🧬 AI 인격체 영혼(SOUL.md) · 장기 기억(MEMORY.md) 관리</h3>' +
         '<button type="button" class="modal-x" id="soulClose">×</button>' +
       '</div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<div class="soul-tabs-bar">' +
         TABS.map(function (t) {
           return '<button type="button" class="filter-pill' + (curTab === t.id ? ' active' : '') + '" data-stab="' + t.id + '">' + t.label + '</button>';
         }).join('') +

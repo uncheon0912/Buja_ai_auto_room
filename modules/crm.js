@@ -265,7 +265,7 @@
       '</div>' +
 
       // 오른쪽: 고객사 편집 + AI 업셀링 & 제안 파트
-      '<div style="display:flex;flex-direction:column;gap:14px">' +
+      '<div id="crmRightCol" style="display:flex;flex-direction:column;gap:14px">' +
       '<div class="ws-card">' +
       '<h3><span>' + (sel ? '✏️ 고객사 정보 수정 (#' + sel.id + ')' : '➕ 새 고객사 등록') + '</span>' +
       '<span style="display:flex;gap:6px;align-items:center">' +
@@ -513,6 +513,12 @@
         state.aiReplies = [];
         render();
         loadRepliesForSelected();
+        if (window.innerWidth <= 1080) {
+          requestAnimationFrame(function () {
+            var rc = document.getElementById('crmRightCol');
+            if (rc && rc.scrollIntoView) rc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
       });
     });
 

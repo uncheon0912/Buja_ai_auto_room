@@ -210,9 +210,14 @@
     store.activeTab = tabId;
     localStorage.setItem('buja_active_tab', tabId);
 
+    document.body.classList.remove('nav-open');
     document.body.classList.toggle('ws-mode', tabId !== 'chat');
     Array.prototype.forEach.call(document.querySelectorAll('.cat-tab'), function (btn) {
-      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+      var isAct = btn.getAttribute('data-tab') === tabId;
+      btn.classList.toggle('active', isAct);
+      if (isAct && btn.scrollIntoView) {
+        try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) {}
+      }
     });
     var chatPane = document.getElementById('chatPane');
     if (chatPane) chatPane.hidden = tabId !== 'chat';
@@ -221,11 +226,47 @@
       if (el) el.hidden = tabId !== id;
     });
 
-    // 상단 검색창은 AI 회의실 탭에서만 표시
+    // 상단 검색창과 모바일 검색 버튼은 AI 회의실 탭에서만 표시
     var sb = document.querySelector('.searchbox');
     if (sb) sb.style.display = tabId === 'chat' ? '' : 'none';
+    var msb = document.getElementById('mobSearchToggle');
+    if (msb) msb.style.display = tabId === 'chat' ? '' : 'none';
 
     emit('tab-changed', tabId);
+  }
+
+  // 모바일 분할 뷰 전환바(.mob-split-switch) 자동 주입 & 상태 유지 (SNS·제안서·계약서·포트폴리오·영상편집기)
+  var mobSplitViews = {};
+  function syncMobSplitSwitches() {
+    Array.prototype.forEach.call(document.querySelectorAll('.ws-pane .ws-split:not(.cal-split)'), function (sp) {
+      var pane = sp.closest('.ws-pane');
+      var key = pane ? pane.id : 'default';
+      var mode = mobSplitViews[key] || 'both';
+      sp.setAttribute('data-mob-view', mode);
+      var bar = sp.querySelector(':scope > .mob-split-switch');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.className = 'mob-split-switch';
+        bar.innerHTML =
+          '<button type="button" class="mob-split-btn" data-msv="both">↕️ 전체 보기</button>' +
+          '<button type="button" class="mob-split-btn" data-msv="editor">✏️ 입력·편집</button>' +
+          '<button type="button" class="mob-split-btn" data-msv="preview">👁️ 미리보기·출력</button>';
+        bar.addEventListener('click', function (ev) {
+          var btn = ev.target.closest('[data-msv]');
+          if (!btn) return;
+          var next = btn.getAttribute('data-msv') || 'both';
+          mobSplitViews[key] = next;
+          sp.setAttribute('data-mob-view', next);
+          Array.prototype.forEach.call(bar.querySelectorAll('[data-msv]'), function (b) {
+            b.classList.toggle('active', b.getAttribute('data-msv') === next);
+          });
+        });
+        sp.insertBefore(bar, sp.firstChild);
+      }
+      Array.prototype.forEach.call(bar.querySelectorAll('[data-msv]'), function (b) {
+        b.classList.toggle('active', b.getAttribute('data-msv') === mode);
+      });
+    });
   }
 
   // 업종·이용서비스·DB 현황 기반 즉시 1초 업셀링 제안 계산
@@ -940,6 +981,14 @@
     switchTab(store.activeTab);
     refreshAll();
     setTimeout(checkPhaseBReminder, 1200);
+    // 워크스페이스 DOM 갱신 시 모바일 분할 전환바 자동 유지
+    try {
+      var obs = new MutationObserver(function () { syncMobSplitSwitches(); });
+      Array.prototype.forEach.call(document.querySelectorAll('.ws-pane'), function (p) {
+        obs.observe(p, { childList: true });
+      });
+      syncMobSplitSwitches();
+    } catch (e) {}
   }
 
   window.AgencyApp = {
