@@ -342,6 +342,7 @@
               '<button type="button" data-cal-pick="' + it.id + '" style="flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:0;cursor:pointer;font-size:10px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:' + txtCol + ';' + strike + '" title="' + A.esc('[' + clientNameById(it.client_id) + ' · ' + it.channel + ' · ' + it.status + '] ' + it.title) + '">' +
               (sm.short || cs.icon) + ' ' + A.esc(shortClient + '·' + it.title) +
               '</button>' +
+              '<button type="button" data-cal-quickdel="' + it.id + '" title="이 일정 바로 삭제" style="border:0;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;font-size:11px;font-weight:900;padding:0 2px;line-height:1;flex-shrink:0">×</button>' +
               '</div>';
           }).join('') +
           (list.length > 5 ? '<div style="font-size:9.8px;color:#7dd3fc;text-align:right;font-weight:800">+' + (list.length - 5) + '건 (클릭해 전체보기)</div>' : '') +
@@ -748,10 +749,20 @@
     if (fc) fc.addEventListener('change', function () { st.filterClientId = fc.value; render(); });
     if (fch) fch.addEventListener('change', function () { st.filterChannel = fch.value; render(); });
 
-    // 날짜 숫자 또는 날짜 칸 빈 곳 클릭 시 상세 확대 팝업 열기
+    // 날짜 숫자 또는 날짜 칸 빈 곳 클릭 시 상세 확대 팝업 열기 (+ 우측 패널 선택 일정 동기화)
     function openDayModal(ymd, withAdd) {
       st.modalDate = ymd;
       st.modalAdding = !!withAdd;
+      var firstHit = (st.items || []).find(function (it) {
+        if (String(it.scheduled_date || '').slice(0, 10) !== ymd) return false;
+        if (st.filterClientId && String(it.client_id) !== String(st.filterClientId)) return false;
+        if (st.filterChannel && it.channel !== st.filterChannel) return false;
+        return true;
+      });
+      if (firstHit) {
+        st.addMode = false;
+        st.selectedId = firstHit.id;
+      }
       render();
     }
     Array.prototype.forEach.call(root.querySelectorAll('[data-cal-open-day]'), function (b) {
