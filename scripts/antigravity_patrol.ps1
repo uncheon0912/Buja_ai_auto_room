@@ -302,6 +302,37 @@ try {
             return $g
         }
 
+        # ── [CASE A-2] 출석체크 / 전원 점호 (안티그래비티 4인방 전원 직접 출석 답장) ──
+        if ($joinedText -match '출석체크|출석 체크|출근 현황|점호|전원 집합|전원 출석|손 들|누구 왔') {
+            Write-Log "방($slug) 출석체크 호출 감지 → 안티그래비티 4인방 전원 응답 생성"
+            $rcPrompt = @"
+지금 '$roomName'($slug) 방에 부자사람대장님의 출석체크 호출이 올라왔어!
+$presenceText
+아래 안티그래비티 소속 4명이 각자 1~2줄씩 개성 있고 힘차게 직접 출석 완료 답장을 남길 수 있도록, 반드시 아래 정확히 4줄 형식으로만 출력해줘. (불필요한 설명 금지)
+[안티고 휘발유] 출석 멘트
+[홍보부 드럼통] 출석 멘트
+[CS 딸랑이] 출석 멘트
+[대장 비서실] 출석 멘트
+
+[호출 내용]
+$lines
+"@
+            $rcOut = ""
+            try { $rcOut = Call-Agy $rcPrompt } catch {}
+            $rcFallbacks = @{
+                "안티고 휘발유" = "⚡ 안티고 휘발유 출근 완료! 서버·자동화·좌우 창 리사이저까지 풀가동 대기 중입니다, 대장님!"
+                "홍보부 드럼통" = "📢 홍보부 드럼통 출석했습니다! 블로그·릴스·스레드 대행 카피랑 10편 공장 언제든 뽑을 준비 끝!"
+                "CS 딸랑이"     = "🔔 CS 딸랑이 등교 완료! 고객사 퍼널·전환 동선·계약서 특약 검수 빈틈없이 대기 중입니다!"
+                "대장 비서실"   = "📝 대장 비서실 출근 보고드립니다! 오늘 안건 정리 및 회의록·일정 요약 바로 받들겠습니다!"
+            }
+            foreach ($pName in @("안티고 휘발유", "홍보부 드럼통", "CS 딸랑이", "대장 비서실")) {
+                $m = [regex]::Match($rcOut, "(?m)\[$([regex]::Escape($pName))\]\s*(.+)")
+                $say = if ($m.Success -and $m.Groups[1].Value.Trim()) { $m.Groups[1].Value.Trim() } else { $rcFallbacks[$pName] }
+                Send-RoomReply $slug $pName $say $lastTargetId | Out-Null
+            }
+            continue
+        }
+
         # ── [CASE B] 제안서 · 계약서 · 업셀링 합동 의논(멀티 AI 3단 디벨롭) ──
         $isCollab = ($joinedText -match '제안서|계약서|초안|업셀링|의논|디벨롭|합동|기획.*잡아')
         if ($isCollab) {

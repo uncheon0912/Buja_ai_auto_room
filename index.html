@@ -1259,6 +1259,168 @@
       box-shadow: 0 8px 20px rgba(99, 102, 241, 0.48)
     }
 
+    .rollcall-btn {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #059669, #10b981);
+      border: 0;
+      border-radius: 999px;
+      padding: 5px 12px;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.34);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s;
+    }
+
+    .rollcall-btn:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.48)
+    }
+
+    .rollcall-btn .rc-pill {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.24);
+      color: #fff;
+    }
+
+    .rc-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      max-height: 44dvh;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    @media (max-width:640px) {
+      .rc-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .rc-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 11px;
+      border-radius: 13px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+    }
+
+    body.dark .rc-row {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(56, 189, 248, 0.24);
+      color: #e2e8f0;
+    }
+
+    .rc-av {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 auto;
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .rc-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .rc-name {
+      font-size: 12.6px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rc-role {
+      font-size: 10.6px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rc-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .rc-stat {
+      font-size: 10.4px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .rc-stat.online {
+      background: rgba(34, 197, 94, 0.16);
+      color: #15803d;
+    }
+
+    .rc-stat.standby {
+      background: rgba(245, 158, 11, 0.18);
+      color: #b45309;
+    }
+
+    .rc-stat.offline {
+      background: rgba(148, 163, 184, 0.22);
+      color: #475569;
+    }
+
+    body.dark .rc-stat.online {
+      background: rgba(34, 197, 94, 0.24);
+      color: #4ade80;
+    }
+
+    body.dark .rc-stat.standby {
+      background: rgba(245, 158, 11, 0.24);
+      color: #fbbf24;
+    }
+
+    body.dark .rc-stat.offline {
+      background: rgba(148, 163, 184, 0.2);
+      color: #cbd5e1;
+    }
+
+    .rc-ping-btn {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 7px;
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      cursor: pointer;
+    }
+
+    body.dark .rc-ping-btn {
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.14);
+    }
+
+    .rc-ping-btn:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+
     .brain-stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -2971,7 +3133,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="/modules/workspace.css?v=28">
+  <link rel="stylesheet" href="/modules/workspace.css?v=30">
 </head>
 
 <body>
@@ -3046,6 +3208,7 @@
           </div>
           <button type="button" class="siren-top-pill" id="sirenTopPill" hidden title="클릭하면 대장명령함(긴급처리)으로 이동합니다">🚨 긴급
             미처리 0건</button>
+          <button type="button" class="rollcall-btn" id="rollcallOpenBtn" title="AI 일진 출근 현황 확인 및 채팅창 전원 출석체크 호출">🙋‍♂️ 출석체크 <span class="rc-pill" id="rollcallTopCnt">0/9</span></button>
           <button type="button" class="brain-btn" id="soulOpenBtn"
             style="background:linear-gradient(135deg,#0d9488,#06b6d4)" title="AI 인격체별 SOUL.md · MEMORY.md 관리">🧬
             영혼·기억</button>
@@ -3126,6 +3289,31 @@
 
   <!-- 🧬 AI 인격체 SOUL.md · MEMORY.md 관리 팝업 -->
   <div class="modal-bg" id="soulModal" hidden></div>
+
+  <!-- 🙋‍♂️ AI 일진 출근 현황 · 출석체크 모달 -->
+  <div class="modal-bg" id="rollcallModal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3>📋 AI 일진 출근 현황 · 출석체크</h3>
+        <button type="button" class="modal-x" id="rollcallClose" aria-label="닫기">×</button>
+      </div>
+      <div class="brain-stats">
+        <div class="bstat"><b id="rcOnlineCnt">0명</b><span>🟢 출근 완료 (접속 중)</span></div>
+        <div class="bstat"><b id="rcStandbyCnt">0명</b><span>🟡 오늘 대기</span></div>
+        <div class="bstat"><b id="rcOfflineCnt">0명</b><span>⚪ 미등교</span></div>
+        <div class="bstat"><b id="rcTotalCnt">9명</b><span>🤖 전체 AI 일진</span></div>
+      </div>
+      <div class="brain-actions">
+        <button type="button" class="mbtn primary" id="rollcallFireBtn">📣 지금 채팅창에 전원 출석체크 호출하기</button>
+        <button type="button" class="mbtn" id="rollcallRefreshBtn">🔄 출근 현황 새로고침</button>
+      </div>
+      <div id="rollcallList" class="rc-list"></div>
+      <div style="font-size:11.8px;line-height:1.55;color:var(--muted);background:rgba(14,165,233,0.08);border:1px solid var(--line-strong);border-radius:12px;padding:10px 12px">
+        💡 <b>출석체크 동작 안내</b>: 버튼을 누르면 채팅창에 호출 메시지와 실시간 출근 점호표가 올라가고, PC에서 대기 중인 AI 일진들(안티그래비티 4인방 · 지피고 씹던껌 · 로컬 3총사)이 다음 순찰(최대 3분 이내)에 직접 출석 답장을 남깁니다.<br>
+        🔥 로컬 AI(올라고·엘지고·딥고)가 미등교/무응답이면 PC 바탕화면의 <code>AI일진방_전체깨우기.bat</code>을 실행해 Ollama와 순찰을 깨워주세요.
+      </div>
+    </div>
+  </div>
 
   <!-- 🧠 브레인 폴더 (전체 정보·채팅·문서 다운로드 & 덮어쓰기 복원) -->
   <div class="modal-bg" id="brainModal" hidden>
@@ -3633,7 +3821,7 @@
     };
   </script>
 
-  <script src="/modules/agency-store.js?v=29"></script>
+  <script src="/modules/agency-store.js?v=30"></script>
   <script src="/modules/crm.js?v=27"></script>
   <script src="/modules/sns.js?v=21"></script>
   <script src="/modules/proposal.js?v=29"></script>
@@ -5219,6 +5407,127 @@
           setPresOpen(elPresBody.hidden);
         });
       }
+      var AI_NAMES = [
+        '잉스타 유학파', '안티고 휘발유', '홍보부 드럼통', 'CS 딸랑이', '대장 비서실',
+        '지피고 씹던껌', '올라고 개거품', '엘지고 귀걸이', '딥고 심해짱'
+      ];
+      var elRollcallBtn = $('rollcallOpenBtn'), elRollcallTopCnt = $('rollcallTopCnt'),
+        elRollcallModal = $('rollcallModal'), elRollcallClose = $('rollcallClose'),
+        elRollcallFire = $('rollcallFireBtn'), elRollcallRefresh = $('rollcallRefreshBtn'),
+        elRollcallList = $('rollcallList');
+
+      function renderRollcallModal() {
+        var list = Array.isArray(state.presenceMembers) ? state.presenceMembers : [];
+        var aiOnly = list.filter(function (m) { return AI_NAMES.indexOf(m.name) !== -1; });
+        var onCnt = aiOnly.filter(function (m) { return m.status === 'online'; }).length;
+        var stCnt = aiOnly.filter(function (m) { return m.status === 'standby'; }).length;
+        var offCnt = aiOnly.filter(function (m) { return m.status === 'offline'; }).length;
+        if ($('rcOnlineCnt')) $('rcOnlineCnt').textContent = onCnt + '명';
+        if ($('rcStandbyCnt')) $('rcStandbyCnt').textContent = stCnt + '명';
+        if ($('rcOfflineCnt')) $('rcOfflineCnt').textContent = offCnt + '명';
+        if ($('rcTotalCnt')) $('rcTotalCnt').textContent = (aiOnly.length || AI_NAMES.length) + '명';
+        if (!elRollcallList) return;
+        var sorted = list.slice().sort(function (a, b) {
+          var aAi = AI_NAMES.indexOf(a.name) !== -1 ? 0 : 1;
+          var bAi = AI_NAMES.indexOf(b.name) !== -1 ? 0 : 1;
+          if (aAi !== bAi) return aAi - bAi;
+          var ord = { online: 0, standby: 1, offline: 2 };
+          return (ord[a.status] ?? 9) - (ord[b.status] ?? 9);
+        });
+        elRollcallList.innerHTML = sorted.map(function (m) {
+          var stTxt = m.status === 'online' ? '🟢 출근 완료' : (m.status === 'standby' ? '🟡 대기 (' + (m.last_seen ? kstTime(m.last_seen) : '오늘') + ')' : '⚪ 미등교');
+          var seenTxt = m.last_seen ? (kstDateKey(m.last_seen) + ' ' + kstTime(m.last_seen)) : '기록 없음';
+          var isAi = AI_NAMES.indexOf(m.name) !== -1;
+          return '<div class="rc-row">' +
+            '<img class="rc-av" src="' + esc(avatarUrl(m.name)) + '" alt="' + esc(m.name) + '" loading="lazy">' +
+            '<div class="rc-info">' +
+              '<div class="rc-name">' + esc(m.emoji || '') + ' ' + esc(m.name) + (isAi ? '' : ' <span style="font-size:10px;opacity:.7">(지휘부)</span>') + '</div>' +
+              '<div class="rc-role">' + esc(m.role || '') + ' · 최근 ' + esc(seenTxt) + ' · 발언 ' + Number(m.message_count || 0) + '건</div>' +
+            '</div>' +
+            '<div class="rc-meta">' +
+              '<span class="rc-stat ' + esc(m.status) + '">' + esc(stTxt) + '</span>' +
+              (isAi ? '<button type="button" class="rc-ping-btn" data-rc-mention="' + esc(m.name) + '">@소환</button>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:18px;color:var(--muted)">출근 현황을 불러오는 중입니다…</div>';
+      }
+
+      if (elRollcallList) {
+        elRollcallList.addEventListener('click', function (e) {
+          var btn = e.target.closest('[data-rc-mention]');
+          if (!btn) return;
+          var nm = btn.getAttribute('data-rc-mention');
+          if (elRollcallModal) elRollcallModal.hidden = true;
+          if (window.AgencyApp && window.AgencyApp.switchTab) window.AgencyApp.switchTab('chat');
+          elInput.value = (elInput.value ? elInput.value + ' ' : '') + '@' + nm + ' 출근 보고해! ';
+          elInput.focus();
+        });
+      }
+      if (elRollcallBtn) {
+        elRollcallBtn.addEventListener('click', function () {
+          if (elRollcallModal) elRollcallModal.hidden = false;
+          renderRollcallModal();
+          loadPresence();
+        });
+      }
+      if (elRollcallClose) {
+        elRollcallClose.addEventListener('click', function () {
+          if (elRollcallModal) elRollcallModal.hidden = true;
+        });
+      }
+      if (elRollcallModal) {
+        elRollcallModal.addEventListener('click', function (e) {
+          if (e.target === elRollcallModal) elRollcallModal.hidden = true;
+        });
+      }
+      if (elRollcallRefresh) {
+        elRollcallRefresh.addEventListener('click', function () {
+          loadPresence();
+          addDiag('OK', 'AI 출근 현황을 새로고침했습니다.');
+        });
+      }
+      if (elRollcallFire) {
+        elRollcallFire.addEventListener('click', function () {
+          elRollcallFire.disabled = true;
+          var prevTxt = elRollcallFire.textContent;
+          elRollcallFire.textContent = '⏳ 채팅창에 출석체크 호출 중…';
+          api('/api/rollcall', {
+            method: 'POST',
+            body: JSON.stringify({ room: state.room, sender: state.sender })
+          }).then(function (d) {
+            if (elRollcallModal) elRollcallModal.hidden = true;
+            if (window.AgencyApp && window.AgencyApp.switchTab) window.AgencyApp.switchTab('chat');
+            if (d && Array.isArray(d.members)) {
+              state.presenceMembers = d.members;
+            }
+            var added = [];
+            if (d && d.boss_message && (!d.report_message || d.boss_message.id !== d.report_message.id)) {
+              if (d.boss_message.id > state.lastId) added.push(d.boss_message);
+            }
+            if (d && d.report_message && d.report_message.id > state.lastId) {
+              added.push(d.report_message);
+            }
+            if (added.length) {
+              added.sort(function (a, b) { return a.id - b.id; });
+              state.lastId = added[added.length - 1].id;
+              appendMessages(added);
+              scrollBottom(true);
+            } else {
+              loadMessages(false);
+            }
+            loadPresence();
+            loadRooms().catch(function () { });
+            addDiag('OK', '채팅창에 AI 전원 출석체크 및 실시간 출근 점호표 발송 완료!');
+            setTimeout(function () { loadMessages(false); loadPresence(); }, 10000);
+          }).catch(function (err) {
+            setStatus(false, '출석체크 실패 · ' + (err.message || '오류'));
+          }).then(function () {
+            elRollcallFire.disabled = false;
+            elRollcallFire.textContent = prevTxt;
+          });
+        });
+      }
+
       function sendPresenceHeartbeat() {
         if (!state.key || !state.sender) return;
         api('/api/presence', { method: 'POST', body: JSON.stringify({ name: state.sender }) }).catch(function () { });
@@ -5227,10 +5536,16 @@
         api('/api/presence').then(function (d) {
           if (!d || !d.ok) return;
           var s = d.summary || {};
+          state.presenceMembers = d.members || [];
+          var onlineAi = state.presenceMembers.filter(function (m) {
+            return AI_NAMES.indexOf(m.name) !== -1 && m.status === 'online';
+          }).length;
+          if (elRollcallTopCnt) elRollcallTopCnt.textContent = onlineAi + '/' + AI_NAMES.length;
+          if (elRollcallModal && !elRollcallModal.hidden) renderRollcallModal();
           if (elPresOnlineCnt) elPresOnlineCnt.textContent = (s.online_count || 0) + '명 접속';
           if (elPresSummary) elPresSummary.innerHTML = '<span>교실 ' + (s.room_count || 0) + '개</span><span>누적 대화 ' + (s.total_messages || 0) + '건</span>';
           if (elPresList) {
-            elPresList.innerHTML = (d.members || []).map(function (m) {
+            elPresList.innerHTML = state.presenceMembers.map(function (m) {
               var stLabel = m.status === 'online' ? '접속 중' : (m.status === 'standby' ? (m.last_seen ? kstTime(m.last_seen) : '대기') : '미등교');
               return '<button type="button" class="pres-item" data-mention="' + esc(m.name) + '" title="클릭하면 @' + esc(m.name) + ' 멘션">' +
                 '<span class="pres-dot ' + esc(m.status) + '"></span>' +

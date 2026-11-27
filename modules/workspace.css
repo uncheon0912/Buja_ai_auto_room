@@ -363,19 +363,72 @@ body:not(.dark) .ws-btn.neon-yellow-tab.active{
 /* ---------- 좌우 분할 에디터 (SNS 분석 · 제안서 · 계약서 공통) ---------- */
 .ws-split{
   flex:1; min-height:0;
-  display:grid; grid-template-columns:minmax(360px, 47%) 1fr;
+  display:grid; grid-template-columns:var(--split-left, minmax(360px, 47%)) 10px minmax(280px, 1fr);
   gap:0; overflow:hidden;
 }
 @media (max-width:980px){
   .ws-split{grid-template-columns:1fr; overflow-y:auto}
 }
 .split-editor{
+  min-width:0;
   overflow-y:auto; padding:16px 18px 28px;
   display:flex; flex-direction:column; gap:13px;
   background:rgba(255,255,255,0.66); backdrop-filter:blur(12px);
   border-right:1.5px solid rgba(255,255,255,0.82);
 }
+.ws-split-resizer{
+  position:relative; width:10px; min-height:100%; cursor:col-resize;
+  user-select:none; touch-action:none; z-index:6;
+  background:rgba(2,132,199,0.08);
+  border-left:1px solid rgba(2,132,199,0.16);
+  border-right:1px solid rgba(2,132,199,0.16);
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, border-color .15s ease;
+}
+.ws-split-resizer::before{
+  content:""; width:4px; height:52px; border-radius:999px;
+  background:rgba(2,132,199,0.45);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.45);
+  transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.ws-split-resizer::after{
+  content:"⋮"; position:absolute; font-size:12px; font-weight:900;
+  color:rgba(12,74,110,0.65); pointer-events:none;
+}
+.ws-split-resizer:hover, .ws-split-resizer.dragging{
+  background:rgba(14,165,233,0.24);
+  border-color:rgba(56,189,248,0.65);
+}
+.ws-split-resizer:hover::before, .ws-split-resizer.dragging::before{
+  background:#0ea5e9; transform:scaleY(1.22);
+  box-shadow:0 0 12px rgba(56,189,248,0.72);
+}
+body.dark .ws-split-resizer{
+  background:rgba(15,23,42,0.72);
+  border-left-color:rgba(56,189,248,0.2);
+  border-right-color:rgba(56,189,248,0.2);
+}
+body.dark .ws-split-resizer::before{
+  background:rgba(125,211,252,0.42);
+  box-shadow:none;
+}
+body.dark .ws-split-resizer::after{
+  color:rgba(186,230,253,0.72);
+}
+body.dark .ws-split-resizer:hover, body.dark .ws-split-resizer.dragging{
+  background:rgba(14,165,233,0.3);
+  border-color:rgba(56,189,248,0.75);
+}
+body.dark .ws-split-resizer:hover::before, body.dark .ws-split-resizer.dragging::before{
+  background:#38bdf8;
+  box-shadow:0 0 14px rgba(56,189,248,0.85);
+}
+body.ws-resizing, body.ws-resizing *{
+  cursor:col-resize !important;
+  user-select:none !important;
+}
 .split-preview{
+  min-width:0;
   overflow-y:auto; padding:18px 20px 36px;
   display:flex; flex-direction:column; align-items:center; gap:12px;
   background:rgba(15,23,42,0.06);
@@ -611,7 +664,7 @@ body.dark .saved-chip.active{background:#0284c7; color:#fff}
 
 /* ---------- A4 PDF / 프린트 전용 스타일 ---------- */
 /* ---------- 🎨 10장 럭셔리 회사 포트폴리오 피치덱 · PDF 뷰어 ---------- */
-.port-split{grid-template-columns:minmax(340px, 41%) 1fr}
+.port-split{grid-template-columns:var(--split-left, minmax(340px, 41%)) 10px minmax(280px, 1fr)}
 .port-preview{align-items:center}
 .deck-stage{
   width:100%; max-width:920px; display:flex; flex-direction:column; gap:18px; align-items:center;
@@ -914,6 +967,7 @@ body.dark .mob-split-btn{background:rgba(30,41,59,0.85); color:#bae6fd; border-c
   .ws-split, .ws-split.port-split{
     display:flex; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
+  .ws-split-resizer{display:none !important}
   .split-editor, .split-preview{
     overflow:visible; flex:0 0 auto; width:100%; border-right:0; padding:12px 10px 24px;
   }
@@ -1025,7 +1079,7 @@ body.dark .mob-split-btn{background:rgba(30,41,59,0.85); color:#bae6fd; border-c
 @media print{
   @page{ size: A4 portrait; margin: 10mm; }
   html, body{ height:auto !important; overflow:visible !important; background:#fff !important; }
-  #bgCanvas, .sidebar, .topbar, .cat-tabs, .split-editor, .preview-toolbar,
+  #bgCanvas, .sidebar, .topbar, .cat-tabs, .split-editor, .ws-split-resizer, .preview-toolbar,
   .gate, .modal-bg, .ws-toast, .chat-pane, .ws-pane:not(.print-pane),
   .deck-thumbs, body.printing-deck .deck-stage{
     display:none !important;

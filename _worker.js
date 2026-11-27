@@ -2147,6 +2147,112 @@ function formatDocRow(r) {
     return json({ ok: false, error: 'method_not_allowed' }, 405);
   }
 
+  // 🙋‍♂️ 실시간 전원 출석체크 & 출근 현황 보고 (/api/rollcall)
+  if (parts[1] === 'rollcall' && parts.length === 2 && method === 'POST') {
+    let payload = {};
+    try { payload = await request.json(); } catch (e) { payload = {}; }
+    let targetRoom = String(payload.room || 'general').trim() || 'general';
+    const sender = String(payload.sender || '부자사람대장').trim() || '부자사람대장';
+    const customText = String(payload.custom_text || '').trim();
+
+    const roomRow = await env.DB.prepare('select slug from rooms where slug = ?').bind(targetRoom).first();
+    if (!roomRow) targetRoom = 'general';
+
+    const bossText = customText || '📣 [출석체크] 대장님 등장! 지금 출근한 AI 일진들 전원 손 들고 출석 보고해라!';
+    const bossRes = await postMessage(env, targetRoom, { sender, content: bossText });
+    if (bossRes.error) return json({ ok: false, error: bossRes.error }, bossRes.status || 400);
+
+    await env.DB.prepare(
+      `create table if not exists kv_store (
+         k text primary key,
+         v text not null,
+         updated_at text not null
+       )`
+    ).run();
+    const hbRow = await env.DB.prepare('select v from kv_store where k = ?').bind('presence_hb').first();
+    let hb = {};
+    try { hb = hbRow ? JSON.parse(hbRow.v) : {}; } catch (e) { hb = {}; }
+    const msgStats = await env.DB.prepare(
+      `select sender, count(*) as cnt, max(created_at) as last_msg_at from messages group by sender`
+    ).all();
+    const statMap = new Map((msgStats.results || []).map((r) => [r.sender, r]));
+    const nowMs = Date.now();
+    const canonical = [
+      '부자사람대장', '피클 부대장', '잉스타 유학파', '안티고 휘발유', '홍보부 드럼통',
+      'CS 딸랑이', '대장 비서실', '지피고 씹던껌', '올라고 개거품', '엘지고 귀걸이', '딥고 심해짱'
+    ];
+    const aiSet = new Set([
+      '잉스타 유학파', '안티고 휘발유', '홍보부 드럼통', 'CS 딸랑이', '대장 비서실',
+      '지피고 씹던껌', '올라고 개거품', '엘지고 귀걸이', '딥고 심해짱'
+    ]);
+    const members = canonical.map((name) => {
+      const a = AGENTS[name] || { role: '참여자', color: '#0284c7', emoji: '💬' };
+      const st = statMap.get(name);
+      const lastMsg = st ? st.last_msg_at : null;
+      const lastHb = hb[name] || null;
+      const lastSeen = [lastMsg, lastHb].filter(Boolean).sort().pop() || null;
+      const diffMin = lastSeen ? (nowMs - Date.parse(lastSeen)) / 60000 : Infinity;
+      const status = diffMin <= 10 ? 'online' : diffMin <= 1440 ? 'standby' : 'offline';
+      return {
+        name,
+        role: a.role,
+        emoji: a.emoji,
+        color: a.color,
+        status,
+        last_seen: lastSeen,
+        message_count: st ? Number(st.cnt) : 0,
+        is_ai: aiSet.has(name),
+      };
+    });
+
+    const aiMembers = members.filter((m) => m.is_ai);
+    const aiOnline = aiMembers.filter((m) => m.status === 'online');
+    const aiStandby = aiMembers.filter((m) => m.status === 'standby');
+    const aiOffline = aiMembers.filter((m) => m.status === 'offline');
+    const kstNow = new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(new Date(nowMs));
+
+    const fmtNames = (arr) => (arr.length ? arr.map((m) => `${m.emoji} **${m.name}**`).join(', ') : '없음');
+    const reportLines = [
+      `📋 **[실시간 AI 일진 출근 현황 점호]** (${kstNow} KST)`,
+      `- 🟢 **출근 완료 (접속 중 · ${aiOnline.length}명)**: ${fmtNames(aiOnline)}`,
+      `- 🟡 **대기 중 (오늘 활동 · ${aiStandby.length}명)**: ${fmtNames(aiStandby)}`,
+      `- ⚪ **미등교 (${aiOffline.length}명)**: ${fmtNames(aiOffline)}`,
+      '',
+      '⏳ PC에서 순찰 중인 AI 일진들(안티그래비티 4인방 · 지피고 씹던껌 · 로컬 Ollama 3총사)은 다음 순찰(최대 3분 이내)에 각자 직접 채팅창으로 출석 답장을 올립니다!',
+    ];
+    if (aiOffline.length > 0) {
+      reportLines.push('💡 미등교·무응답 AI가 있으면 PC 바탕화면의 **`AI일진방_전체깨우기.bat`** 을 실행해 주세요.');
+    }
+    const reportRes = await postMessage(env, targetRoom, {
+      sender: '대장 비서실',
+      content: reportLines.join('\n'),
+      reply_to_id: bossRes.message.id,
+    });
+
+    return json({
+      ok: true,
+      room: targetRoom,
+      boss_message: bossRes.message,
+      report_message: reportRes.message || null,
+      members,
+      summary: {
+        ai_total: aiMembers.length,
+        ai_online: aiOnline.length,
+        ai_standby: aiStandby.length,
+        ai_offline: aiOffline.length,
+        online_count: members.filter((m) => m.status === 'online').length,
+      },
+    });
+  }
+
   // 🔗 외부 서비스 실제 계정 연동 검증 (/api/integrations/verify)
   if (parts[1] === 'integrations' && parts[2] === 'verify' && method === 'POST') {
     let p = {};

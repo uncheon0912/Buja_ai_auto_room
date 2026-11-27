@@ -274,6 +274,70 @@
     });
   }
 
+  // 데스크톱 좌우 분할 창(.ws-split) 마우스 드래그 구분선(.ws-split-resizer) 주입 & 비율 저장
+  function syncSplitResizers() {
+    Array.prototype.forEach.call(document.querySelectorAll('.ws-pane .ws-split:not(.cal-split)'), function (sp) {
+      var editor = sp.querySelector(':scope > .split-editor');
+      var preview = sp.querySelector(':scope > .split-preview');
+      if (!editor || !preview) return;
+      var pane = sp.closest('.ws-pane');
+      var storeKey = 'buja_split_ratio_' + (pane ? pane.id : 'default');
+      var saved = parseFloat(localStorage.getItem(storeKey) || '');
+      if (isFinite(saved) && saved >= 20 && saved <= 80) {
+        sp.style.setProperty('--split-left', saved + '%');
+      }
+      var handle = sp.querySelector(':scope > .ws-split-resizer');
+      if (handle) {
+        if (handle.nextElementSibling !== preview) sp.insertBefore(handle, preview);
+        return;
+      }
+      handle = document.createElement('div');
+      handle.className = 'ws-split-resizer';
+      handle.setAttribute('role', 'separator');
+      handle.setAttribute('aria-orientation', 'vertical');
+      handle.setAttribute('aria-label', '좌우 창 크기 조절 구분선');
+      handle.title = '마우스로 좌우 드래그하여 창 크기 조절 · 더블클릭 시 기본 비율 복원';
+
+      handle.addEventListener('pointerdown', function (e) {
+        if (window.innerWidth <= 980) return;
+        e.preventDefault();
+        document.body.classList.add('ws-resizing');
+        handle.classList.add('dragging');
+
+        var onMove = function (ev) {
+          var rect = sp.getBoundingClientRect();
+          if (!rect || rect.width < 520) return;
+          var minLeft = Math.max(240, rect.width * 0.2);
+          var maxLeft = Math.min(rect.width - 260, rect.width * 0.8);
+          if (maxLeft <= minLeft) return;
+          var raw = ev.clientX - rect.left;
+          var clamped = Math.max(minLeft, Math.min(maxLeft, raw));
+          var pct = Math.round(((clamped / rect.width) * 100) * 100) / 100;
+          sp.style.setProperty('--split-left', pct + '%');
+          try { localStorage.setItem(storeKey, String(pct)); } catch (err) {}
+        };
+        var onUp = function () {
+          document.body.classList.remove('ws-resizing');
+          handle.classList.remove('dragging');
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          window.removeEventListener('pointercancel', onUp);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+      });
+
+      handle.addEventListener('dblclick', function () {
+        try { localStorage.removeItem(storeKey); } catch (err) {}
+        sp.style.removeProperty('--split-left');
+        toast('좌우 창 너비를 기본 비율로 복원했습니다.');
+      });
+
+      sp.insertBefore(handle, preview);
+    });
+  }
+
   // 업종·이용서비스·DB 현황 기반 즉시 1초 업셀링 제안 계산
   function buildUpsellRecommendations(client, latestSns) {
     if (!client) return [];
@@ -992,13 +1056,14 @@
     switchTab(store.activeTab);
     refreshAll();
     setTimeout(checkPhaseBReminder, 1200);
-    // 워크스페이스 DOM 갱신 시 모바일 분할 전환바 자동 유지
+    // 워크스페이스 DOM 갱신 시 모바일 분할 전환바 & 좌우 드래그 리사이저 자동 유지
     try {
-      var obs = new MutationObserver(function () { syncMobSplitSwitches(); });
+      var obs = new MutationObserver(function () { syncMobSplitSwitches(); syncSplitResizers(); });
       Array.prototype.forEach.call(document.querySelectorAll('.ws-pane'), function (p) {
         obs.observe(p, { childList: true });
       });
       syncMobSplitSwitches();
+      syncSplitResizers();
     } catch (e) {}
   }
 

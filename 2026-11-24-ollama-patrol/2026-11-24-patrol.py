@@ -2,6 +2,8 @@ import json
 import os
 import random
 import re
+import shutil
+import subprocess
 import sys
 import time
 import urllib.error
@@ -98,6 +100,33 @@ def get_installed_ollama_models():
         return set()
 
 
+def ensure_ollama_running():
+    """로컬 Ollama(11434)가 꺼져 있으면 자동 기동 후 설치 모델 목록 반환"""
+    installed = get_installed_ollama_models()
+    if installed:
+        return installed
+    ollama_bin = shutil.which('ollama')
+    if not ollama_bin:
+        return set()
+    try:
+        creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+        subprocess.Popen(
+            [ollama_bin, 'serve'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=creationflags,
+        )
+        for _ in range(10):
+            time.sleep(1)
+            installed = get_installed_ollama_models()
+            if installed:
+                log(f'로컬 Ollama 서버 자동 기동 성공 (모델 {len(installed)}개)')
+                return installed
+    except Exception as exc:
+        log(f'로컬 Ollama 자동 기동 실패: {exc}')
+    return set()
+
+
 def resolve_model(preferred, installed, fallback):
     if not installed:
         return preferred
@@ -146,9 +175,9 @@ def has_cjk_chinese(text):
     return len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf]', text)) >= 2
 
 
-def is_parrot_or_weak(user_content, answer):
+def is_parrot_or_weak(user_content, answer, min_len=40):
     """명령어 복창(앵무새), 중국어 혼입, 또는 너무 빈약한 응답 감지"""
-    if not answer or len(answer) < 40:
+    if not answer or len(answer) < min_len:
         return True
     if has_cjk_chinese(answer):
         return True
@@ -232,9 +261,12 @@ def run():
     base = config.get('ROOM_BASE', 'https://buja-ai-room.pages.dev').rstrip('/')
     headers = {'Authorization': 'Bearer ' + config['API_KEY']}
     default_model = config.get('OLLAMA_MODEL', 'exaone3.5:7.8b').strip() or 'exaone3.5:7.8b'
-    installed_models = get_installed_ollama_models()
+    installed_models = ensure_ollama_running()
+    if not installed_models:
+        log('Ollama 서버(127.0.0.1:11434)가 꺼져 있어 로컬 3총사 하트비트 및 순찰을 건너뜁니다.')
+        return
 
-    # 1) 오프라인 로컬 3총사(올라고·클고·딥고) 전원 온라인 하트비트 전송 → 미등교 0명!
+    # 1) 오프라인 로컬 3총사(올라고·클고·딥고) 전원 온라인 하트비트 전송 (Ollama 정상 시에만!)
     try:
         request(
             base + '/api/presence',
@@ -402,23 +434,37 @@ def run():
                         + '- 요청받은 결과물(릴스 대본, 기획안, 전략, 검수안, 해시태그 등)을 지금 당장 실전에 쓸 수 있는 완성본으로 풍성하고 구체적으로 작성하라.\n'
                         + '- 불필요한 메타 설명 없이 회의실에 바로 올릴 순수 한국어 본문만 출력하라.'
                     )
-                    user_prompt = (
-                        f"[회의실: {room_slug}]\n"
-                        f"[발신자: {msg.get('sender', '부자사람대장')}]\n"
-                        f"[요청 내용]\n{content}\n\n"
-                        "위 요청에 대해 지시를 복창하지 말고, 지금 바로 실무에 투입할 수 있는 고퀄리티 완성 결과물을 항목별로 상세히 작성해 보고해 줘."
-                    )
+                    is_rollcall = bool(ALL_CALL_RE.search(content) or '출석체크' in content)
+                    if is_rollcall:
+                        user_prompt = (
+                            f"[회의실: {room_slug}]\n"
+                            f"[출석 호출: {msg.get('sender', '부자사람대장')}]\n"
+                            f"{content}\n\n"
+                            f"부자사람대장님의 출석체크 호출이다! 너({member['sender']} · {use_model})가 지금 정상 가동 중임을 1~2줄로 힘차고 개성 있게 출석 보고해라. "
+                            "반드시 순수 한글만 사용하고, 네 담당 업무 상태도 한마디 덧붙여라."
+                        )
+                        req_tokens = 220
+                        min_len = 15
+                    else:
+                        user_prompt = (
+                            f"[회의실: {room_slug}]\n"
+                            f"[발신자: {msg.get('sender', '부자사람대장')}]\n"
+                            f"[요청 내용]\n{content}\n\n"
+                            "위 요청에 대해 지시를 복창하지 말고, 지금 바로 실무에 투입할 수 있는 고퀄리티 완성 결과물을 항목별로 상세히 작성해 보고해 줘."
+                        )
+                        req_tokens = 1100
+                        min_len = 40
                     try:
-                        answer = call_ollama(use_model, user_prompt, num_predict=1100, temperature=0.55, timeout=180, system_prompt=system_prompt)
+                        answer = call_ollama(use_model, user_prompt, num_predict=req_tokens, temperature=0.55, timeout=180, system_prompt=system_prompt)
                         # 중국어(한자) 혼입 또는 앵무새 복창/빈약 응답 감지 시 즉시 폐기하고 EXAONE 3.5 한국어 최강 엔진으로 100% 한글 재생성!
-                        if is_parrot_or_weak(content, answer):
+                        if is_parrot_or_weak(content, answer, min_len=min_len):
                             reason = '중국어/한자 혼입 차단' if has_cjk_chinese(answer) else '약한/복창 응답 보강'
                             retry_model = resolve_model('exaone3.5:7.8b', installed_models, use_model)
                             log(f'방({room_slug}) [{member["sender"]}] {reason} → {retry_model} 로 순수 한국어 재생성')
                             answer = call_ollama(
                                 retry_model,
                                 user_prompt + '\n(절대 주의: 중국어·한자는 단 1글자도 쓰지 말고 100% 자연스러운 순수 한글로만, 질문 의도에 정확히 맞춰 답변하라!)',
-                                num_predict=1100,
+                                num_predict=req_tokens,
                                 temperature=0.45,
                                 timeout=180,
                                 system_prompt=system_prompt,
