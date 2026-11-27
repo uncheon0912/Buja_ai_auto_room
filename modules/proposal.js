@@ -11,6 +11,7 @@
       return [
         { name: '네이버 브랜드 블로그 대행 (주 3회 · 월 12편)', qty: 1, price: 1200000, note: '의료법 심의 기준 준수' },
         { name: '원장님 팩트체크 릴스 대행 (월 8편 기획·편집)', qty: 1, price: 1300000, note: '3초 후킹 대본 포함' },
+        { name: '스레드(Threads) 대행 (월 20편 · 데일리 소통)', qty: 1, price: 600000, note: '건강 팩트·댓글 소통' },
         { name: '신환 상담 DB 퍼널 · 카톡 전환 셋팅', qty: 1, price: 700000, note: '무료 체크리스트 CTA' },
       ];
     }
@@ -18,6 +19,7 @@
       return [
         { name: '보장분석 리드(DB) 자동 수집 퍼널 구축', qty: 1, price: 1000000, note: '3문항 간편점검 폼 + DM' },
         { name: '보험금 실수/사례 릴스 대행 (월 10편)', qty: 1, price: 1300000, note: '스레드 요약 연계' },
+        { name: '스레드(Threads) 대행 (월 20편 · 데일리 Q&A)', qty: 1, price: 600000, note: '금소법 준수·보장점검 DM' },
         { name: '네이버 블로그 신뢰 칼럼 대행 (월 12편)', qty: 1, price: 1000000, note: '핵심 보장 키워드' },
       ];
     }
@@ -26,11 +28,13 @@
         { name: '정책자금 무료 한도진단 B2B DB 퍼널 셋팅', qty: 1, price: 1100000, note: '대표자 사전 필터링' },
         { name: '정책자금 핵심 키워드 네이버 블로그 대행 (월 12편)', qty: 1, price: 1200000, note: '승인/부결 사례 칼럼' },
         { name: '정책자금 속보 숏폼 릴스 대행 (월 8편)', qty: 1, price: 1100000, note: '마감 임박 후킹 포맷' },
+        { name: '스레드(Threads) 대행 (월 20편 · 대표자 소통)', qty: 1, price: 600000, note: '자금 속보 1줄 훅·링크 전환' },
       ];
     }
     return [
       { name: '네이버 브랜드 블로그 대행 (월 12편)', qty: 1, price: 1000000, note: '지역·업종 키워드 공략' },
       { name: '인스타그램 릴스 대행 (월 8편)', qty: 1, price: 1100000, note: '기획·대본·자막 편집' },
+      { name: '스레드(Threads) 대행 (월 20편 · 데일리 팬덤)', qty: 1, price: 500000, note: '짧은 훅 원고·댓글 소통' },
       { name: '브랜딩 컨셉 & DB 전환 퍼널 셋팅', qty: 1, price: 600000, note: '프로필·랜딩 동선 최적화' },
     ];
   }
@@ -47,12 +51,13 @@
       status: '작성중',
       title: ind + ' 맞춤 SNS 브랜딩 · DB 퍼널 마케팅 제안서',
       validUntil: A.todayKst(),
-      diagnosis: '현재 채널 노출 대비 실제 상담·문의(DB)로 이어지는 전환 동선이 약합니다. 검색(블로그)과 확산(릴스)을 하나의 DB 수집 퍼널로 묶어 지속적인 가망고객 유입 구조를 구축해야 합니다.',
+      diagnosis: '현재 채널 노출 대비 실제 상담·문의(DB)로 이어지는 전환 동선이 약합니다. 검색(블로그)·확산(릴스)·실시간 팬덤 소통(스레드)을 하나의 DB 수집 퍼널로 묶어 지속적인 가망고객 유입 구조를 구축해야 합니다.',
       concept: pb.coreHook,
       strategyBlog: pb.blogStrategy,
       strategyReels: pb.reelsStrategy,
+      strategyThreads: pb.threadsStrategy || '데일리 짧은 인사이트·팩트체크 스레드 월 20편 발행, 댓글 소통 및 프로필 링크 DB 퍼널 연결',
       strategyFunnel: pb.funnelStrategy,
-      roadmap: '1개월 차: 브랜드 포지셔닝 확정, 프로필·블로그 디자인 리뉴얼, DB 수집 퍼널 셋팅\n2개월 차: 핵심 키워드 블로그 주 3회 + 3초 후킹 릴스 월 8편 본격 발행\n3개월 차: 고전환 소재 집중 확대, DB 단가 최적화 및 월간 성과 보고',
+      roadmap: '1개월 차: 브랜드 포지셔닝 확정, 프로필·블로그·스레드 디자인 리뉴얼, DB 수집 퍼널 셋팅\n2개월 차: 핵심 키워드 블로그 주 3회 + 3초 후킹 릴스 월 8편 + 데일리 스레드 월 20편 본격 발행\n3개월 차: 고전환 소재 집중 확대, DB 단가 최적화 및 월간 성과 보고',
       discountRate: 0,
       includeVat: true,
       items: defaultItemsForIndustry(ind),
@@ -91,6 +96,7 @@
       '<table>' +
         '<tr><th style="width:130px">네이버 블로그</th><td>' + A.esc(form.strategyBlog) + '</td></tr>' +
         '<tr><th>인스타그램 릴스</th><td>' + A.esc(form.strategyReels) + '</td></tr>' +
+        '<tr><th>스레드(Threads) 대행</th><td>' + A.esc(form.strategyThreads || '데일리 인사이트·소통 스레드 월 20편 발행 및 프로필 링크 DB 전환') + '</td></tr>' +
         '<tr><th>퍼널 · DB 수집</th><td>' + A.esc(form.strategyFunnel) + '</td></tr>' +
       '</table>' +
 
@@ -176,10 +182,11 @@
         '<div class="ws-field"><label>2. 핵심 브랜딩 컨셉 한 줄</label><input data-pf="concept" value="' + A.esc(form.concept) + '"></div>' +
         '<div class="ws-field"><label>3-1. 네이버 블로그 전략</label><textarea data-pf="strategyBlog" style="min-height:58px">' + A.esc(form.strategyBlog) + '</textarea></div>' +
         '<div class="ws-field"><label>3-2. 인스타그램 릴스 전략</label><textarea data-pf="strategyReels" style="min-height:58px">' + A.esc(form.strategyReels) + '</textarea></div>' +
-        '<div class="ws-field"><label>3-3. 퍼널 · DB 수집 전략</label><textarea data-pf="strategyFunnel" style="min-height:58px">' + A.esc(form.strategyFunnel) + '</textarea></div>' +
+        '<div class="ws-field"><label>3-3. 스레드(Threads) 대행 전략</label><textarea data-pf="strategyThreads" style="min-height:58px">' + A.esc(form.strategyThreads || '') + '</textarea></div>' +
+        '<div class="ws-field"><label>3-4. 퍼널 · DB 수집 전략</label><textarea data-pf="strategyFunnel" style="min-height:58px">' + A.esc(form.strategyFunnel) + '</textarea></div>' +
 
         '<div class="ws-card" style="padding:12px">' +
-          '<h3 style="margin-bottom:8px;font-size:13px"><span>💰 4. 패키지 서비스 · 견적 항목</span><span style="display:flex;gap:5px"><button type="button" class="ws-btn sm danger" id="propPopItem" title="마지막 항목 삭제">− 항목 빼기</button><button type="button" class="ws-btn sm primary" id="propAddItem">+ 항목 추가</button></span></h3>' +
+          '<h3 style="margin-bottom:8px;font-size:13px"><span>💰 4. 패키지 서비스 · 견적 항목</span><span style="display:flex;gap:5px;flex-wrap:wrap"><button type="button" class="ws-btn sm" id="propAddThreads" title="스레드 대행 견적 항목 바로 추가">+ 🧵 스레드 대행</button><button type="button" class="ws-btn sm danger" id="propPopItem" title="마지막 항목 삭제">− 항목 빼기</button><button type="button" class="ws-btn sm primary" id="propAddItem">+ 항목 추가</button></span></h3>' +
           '<div class="line-items" id="propItemsBox">' +
             '<div class="line-head"><span>서비스 항목명</span><span>수량</span><span>단가(원)</span><span>비고</span><span>삭제</span></div>' +
             (form.items || []).map(function (it, idx) {
@@ -262,6 +269,12 @@
       form.items.push({ name: '추가 마케팅 서비스', qty: 1, price: 500000, note: '' });
       render();
     });
+    var addThreads = q('#propAddThreads');
+    if (addThreads) addThreads.addEventListener('click', function () {
+      form.items.push({ name: '스레드(Threads) 대행 (월 20편 · 데일리 소통)', qty: 1, price: 600000, note: '짧은 훅 원고·댓글 소통·링크 전환' });
+      render();
+      A.toast('🧵 견적서에 [스레드(Threads) 대행] 항목이 추가되었습니다!');
+    });
     var popItem = q('#propPopItem');
     if (popItem) popItem.addEventListener('click', function () {
       if (!form.items.length) { A.toast('삭제할 항목이 없습니다.'); return; }
@@ -314,6 +327,7 @@
         contact_name: s.contact + '님',
         title: s.proposalTitle,
         discountRate: s.discountRate,
+        items: (s.items && s.items.length) ? s.items : defaultItemsForIndustry(s.industry),
       });
       render();
       A.toast('🎲 중복 없는 랜덤 제안서(' + s.name + ' · ' + s.industry + ')가 자동 기입되었습니다!');
@@ -367,7 +381,7 @@
         '- 제안 패키지: ' + (form.items || []).map(function (i) { return i.name + ': ' + Number(i.price || 0).toLocaleString() + '원'; }).join(' / ') + ' (총액 ' + A.won(tot.total) + ')',
         '',
         '요청: 일진 종합반에서 서로 아이디어를 교류하고 디벨롭해서 최종 승인용 제안서 초안을 아래 형식으로 정리해줘!',
-        '[핵심 컨셉] / [현황 진단] / [네이버 블로그 전략] / [인스타 릴스 전략] / [퍼널·DB 전략] / [단계별 진행 로드맵(1개월 차/2개월 차/3개월 차)]',
+        '[핵심 컨셉] / [현황 진단] / [네이버 블로그 전략] / [인스타 릴스 전략] / [스레드 대행 전략] / [퍼널·DB 전략] / [단계별 진행 로드맵(1개월 차/2개월 차/3개월 차)]',
       ].join('\n');
       A.requestAiAssist({ room: 'general', prompt: prompt }).then(function () {
         if (window.BujaChat && window.BujaChat.openRoom) window.BujaChat.openRoom('general');
@@ -483,6 +497,7 @@
     if (p.diagnosis) form.diagnosis = p.diagnosis;
     if (p.strategyBlog) form.strategyBlog = p.strategyBlog;
     if (p.strategyReels) form.strategyReels = p.strategyReels;
+    if (p.strategyThreads) form.strategyThreads = p.strategyThreads;
     if (p.strategyFunnel) form.strategyFunnel = p.strategyFunnel;
     if (p.roadmap) form.roadmap = p.roadmap;
     if (p.items && p.items.length) form.items = p.items;

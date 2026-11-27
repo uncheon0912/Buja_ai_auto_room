@@ -37,67 +37,67 @@
     };
   }
 
-  // 업종별 고전환 10편(블로그 6편 + 3초 후킹 릴스 4편) 블루프린트
+  // 업종별 고전환 10편(블로그 4편 + 3초 후킹 릴스 3편 + 스레드 대행 3편) 블루프린트
   var FACTORY_BLUEPRINTS = {
     '병원': [
       { ch: '네이버 블로그', title: '[{name}] 내원 전 꼭 확인해야 할 진료·검진 체크리스트 5가지', hook: '처음 방문하시는 환자분들이 가장 자주 묻는 핵심 질문 5가지를 원장님 기준으로 정리했습니다.', body: '1) 초진 예약 전 준비사항\n2) 증상별 맞춤 상담 절차\n3) 진료 장비·위생 관리 시스템\n4) 자주 묻는 질문(FAQ)\n5) 네이버 예약 / 카카오 상담 안내 (※ 개인별 상태에 따라 진료 계획은 달라질 수 있습니다.)', tags: '#{name} #지역병원추천 #건강검진 #원장님칼럼' },
       { ch: '인스타 릴스', title: '원장님 3초 팩트체크 ① — 병원 선택 시 놓치기 쉬운 핵심 기준', hook: '병원 예약하기 전에 이 1가지만 확인해도 시행착오를 크게 줄일 수 있습니다!', body: '[0~3초 후킹] "병원 예약 전, 이거 안 보고 가시면 후회합니다!"\n[4~20초 본론] 원장님이 직접 알려주는 장비·사후관리·상담 체크포인트 3가지\n[21~30초 CTA] "프로필 링크에서 무료 사전 체크리스트 받아가세요!"', tags: '#병원릴스 #원장님팩트체크 #건강정보 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ① — 진료실에서 하루에 열 번씩 듣는 오해 1줄 정리', hook: '검색해도 헷갈리는 건강 상식, {name} 원장님이 스레드 3줄로 딱 정리해 드립니다.', body: '💡 오늘의 진료실 팩트체크\n"증상이 가라앉으면 검사 안 받아도 되나요?"\n→ 초기 신호일수록 통증이 없을 때 정확히 체크하는 게 비용과 회복 기간을 줄입니다.\n\n👇 평소 헷갈렸던 건강 궁금증 댓글로 달아주시면 바로 답해드릴게요!', tags: '#{name} #스레드건강상식 #원장님소통' },
       { ch: '네이버 블로그', title: '[{name}] 증상 방치하면 커지는 이유와 올바른 초기 대응 가이드', hook: '바쁘다는 이유로 미루기 쉬운 초기 신호, 정확한 진단 타이밍을 알기 쉽게 풀어드립니다.', body: '1) 일상에서 흔히 놓치는 초기 신호\n2) 자가 판단보다 정확한 검사가 중요한 이유\n3) 실제 내원 상담 흐름 안내\n4) 카카오 1:1 빠른 문의 배너', tags: '#증상가이드 #초기진단 #{name} #건강블로그' },
       { ch: '인스타 릴스', title: '원장님 3초 팩트체크 ② — 환자들이 가장 많이 오해하는 속설 TOP3', hook: '인터넷에서 보고 따라 하신 그 방법, 사실은 정반대일 수 있습니다!', body: '[0~3초 후킹] "아직도 이 속설 믿고 계세요? 원장님이 딱 정리해 드립니다!"\n[4~22초 본론] 오해 1~3번 팩트체크 + 올바른 관리법\n[23~30초 CTA] "저장해 두시고 가족에게도 공유해 주세요!"', tags: '#건강오해 #의료상식 #릴스추천 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ② — 바쁜 직장인을 위한 내원 전 10초 준비 팁', hook: '첫 방문 때 대기 시간을 반으로 줄이고 꼼꼼히 상담받는 실전 팁입니다.', body: '🏥 {name} 예약 전 꿀팁 3가지\n1. 평소 복용 약 사진 미리 찍어오기\n2. 아픈 시점·빈도 메모장 2줄 정리\n3. 오전/점심 직후 한산한 타임 노리기\n\n🔗 빠른 네이버·카카오 예약은 프로필 링크!', tags: '#병원꿀팁 #스레드소통 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 최신 의료 장비 및 체계적 사후관리 프로세스 소개', hook: '신뢰할 수 있는 진료를 위해 우리가 고집하는 정밀 검사·청결 기준을 투명하게 공개합니다.', body: '1) 정밀 진단을 돕는 핵심 장비 안내\n2) 1:1 전담 상담 및 사후 관리\n3) 오시는 길 · 주차 · 진료시간 안내', tags: '#정밀검사 #사후관리 #{name} #신뢰병원' },
       { ch: '인스타 릴스', title: '원장님 비하인드 릴스 ③ — 진료실 밖에서 지키는 우리 병원의 원칙', hook: '왜 우리 병원은 하루 상담 인원을 제한할까요? 진짜 이유를 공개합니다.', body: '[0~3초 후킹] "예약이 조금 밀려도 절대 타협하지 않는 딱 한 가지!"\n[4~20초 본론] 충분한 문진 시간과 꼼꼼한 설명 현장 스케치\n[21~30초 CTA] "진료 문의는 댓글에 ‘상담’ 남겨주세요!"', tags: '#병원브랜딩 #원장님철학 #릴스마케팅 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 바쁜 직장인·자영업자를 위한 야간/주말 효율적 예약 꿀팁', hook: '대기 시간을 줄이고 원하는 시간대에 편하게 진료받는 스마트 예약 방법 총정리.', body: '1) 대기 적은 추천 시간대 안내\n2) 네이버 예약 1분 신청 가이드\n3) 사전 문진표 작성 시 혜택(대기 단축)', tags: '#야간진료 #네이버예약 #{name} #진료꿀팁' },
-      { ch: '인스타 릴스', title: '3초 경고형 릴스 ④ — 지금 바로 점검해야 할 자가 체크 3가지', hook: '이 3가지 중 2개 이상 해당된다면 미루지 말고 꼭 점검해 보세요!', body: '[0~3초 후킹] "손가락 접어보세요! 2개 이상이면 오늘 꼭 체크!"\n[4~22초 본론] 자가 체크리스트 3항목 + 주의사항\n[23~30초 CTA] "프로필 링크에서 무료 자가진단표 확인하세요!"', tags: '#자가진단 #건강체크 #숏폼 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 실제 상담 사례로 보는 맞춤형 진료 설계 이야기', hook: '비슷한 고민을 안고 내원하신 분들의 상담 과정과 관리 포인트를 객관적으로 정리했습니다.', body: '1) 주요 고민 유형별 상담 포인트\n2) 개인별 맞춤 계획 수립 절차\n3) 자주 묻는 비용·일정 Q&A (※ 개인차가 있을 수 있습니다.)', tags: '#진료상담 #맞춤케어 #{name} #병원정보' },
+      { ch: '스레드', title: '[{name}] 스레드 ③ — 왜 우리가 과잉 진료를 절대 권하지 않는 이유', hook: '단기 매출보다 10년 다니는 동네 주치의를 목표로 할 때 생기는 일.', body: '🩺 의사로서 가장 뿌듯한 순간은 "안 해도 되는 건 안 해도 된다고 솔직히 말해줘서 고맙다"는 말씀을 들을 때입니다.\n\n내 가족에게 권할 수 있는 진료만 안내하는 {name}이 되겠습니다. (※ 개인 상태에 따라 계획은 달라질 수 있습니다.)', tags: '#원장님철학 #진료원칙 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 이번 달 핵심 건강 관리 & 무료 사전 상담 안내', hook: '계절 변화에 맞춰 꼭 챙겨야 할 건강 습관과 간편 상담 신청 방법을 안내합니다.', body: '1) 이달의 건강 관리 체크포인트\n2) 원장님 추천 생활 습관 3가지\n3) 카카오 채널 · 전화 간편 상담 안내', tags: '#이달의건강 #무료상담 #{name} #브랜드블로그' },
     ],
     '보험설계사': [
       { ch: '네이버 블로그', title: '[{name}] 매달 나가는 보험료, 새는 구멍 찾는 3분 보장점검 가이드', hook: '중복 특약과 갱신형 폭탄만 점검해도 가족 보험료 구조를 훨씬 건강하게 바꿀 수 있습니다.', body: '1) 보험 증권에서 가장 먼저 볼 3가지\n2) 중복 가입이 흔한 특약 체크리스트\n3) 무료 보장분석 리포트 신청 안내 (※ 상품·약관에 따라 보장 범위는 상이할 수 있습니다.)', tags: '#보장분석 #보험리모델링 #{name} #보험꿀팁' },
       { ch: '인스타 릴스', title: '3초 후킹 릴스 ① — 매달 보험료 10만 원 넘게 새고 있는 분들의 공통점', hook: '내 보험 증권에 이 단어 하나 들어가 있으면 5년 뒤 보험료가 확 뛸 수 있습니다!', body: '[0~3초 후킹] "보험 증권 지금 꺼내보세요! 이 글자 있으면 주의!"\n[4~20초 본론] 갱신형 vs 비갱신형 핵심 차이 15초 요약\n[21~30초 CTA] "댓글에 ‘점검’ 남기시면 무료 체크표 DM 발송!"', tags: '#보험릴스 #보험료절약 #보장점검 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ① — "이 특약은 해지하지 말고 꼭 남겨두세요"', hook: '점검해 보면 새로 들기보다 절대 깨면 안 되는 꿀특약을 먼저 찾아드리는 경우가 더 많습니다.', body: '🛡️ 오늘 상담 중 발견한 진짜 아까웠던 케이스!\n예전 증권에 남아있던 구특약 덕분에 연간 보장 공백을 막았습니다.\n\n가입 권유 없이 내 증권 유지/정리 O·X 표만 원하시면 스레드 댓글이나 프로필 링크로 편하게 물어보세요!', tags: '#스레드보험 #보장분석 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 실손보험 청구할 때 놓치기 쉬운 서류와 청구 절차 총정리', hook: '병원 다녀와서 서류 챙기기 막막하셨죠? 3분 만에 끝내는 실손 청구 체크리스트입니다.', body: '1) 통원·입원별 필수 발급 서류\n2) 3년 이내 미청구 보험금 확인법\n3) 1:1 청구 도우미 무료 상담 안내', tags: '#실손보험청구 #보험금청구 #{name} #재무주치의' },
       { ch: '인스타 릴스', title: '3초 팩트체크 릴스 ② — 암·뇌·심장 진단비, 이 범위 안 보면 반쪽짜리!', hook: '암보험 들었다고 안심하셨나요? 약관 속 ‘이 범위’를 꼭 확인해야 합니다!', body: '[0~3초 후킹] "진단비 5천만 원인데 왜 못 받았을까요?"\n[4~22초 본론] 유사암·허혈성·뇌혈관 범위 확인 포인트 3가지\n[23~30초 CTA] "프로필 링크 1분 무료 보장점검 신청하세요!"', tags: '#암보험 #진단비 #보험상식 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ② — 3년 안에 병원 갔다 왔는데 청구 까먹으신 분?', hook: '소액이라 귀찮아서 넘긴 영수증 모으면 가족 외식비 넘게 돌아오는 경우 정말 많습니다.', body: '💡 30초 실손 청구 체크\n• 청구 기한: 진료일로부터 3년 이내\n• 10만 원 이하 통원은 영수증+세부내역서 사진만으로 간편 청구 가능!\n\n혹시 "이것도 청구가 되나?" 헷갈리는 서류 있으면 편하게 질문 남겨주세요 🙋', tags: '#실손청구 #스레드꿀팁 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 연령대별(30대·40대·50대) 꼭 챙겨야 할 핵심 보장 우선순위', hook: '무작정 비싼 보험이 좋은 게 아닙니다. 내 나이와 가족 상황에 맞는 우선순위가 핵심입니다.', body: '1) 30대 사회초년생·신혼 필수 구성\n2) 40대 가장·자녀 가정 리밸런싱\n3) 50대 노후·간병 대비 체크포인트', tags: '#연령별보험 #가족보험 #{name} #보험설계' },
       { ch: '인스타 릴스', title: '3초 공감형 릴스 ③ — 지인 추천으로 가입한 보험, 점검받으면 벌어지는 일', hook: '거절 못 해서 가입한 보험, 눈치 보지 않고 객관적 비교표로만 딱 확인해 드립니다!', body: '[0~3초 후킹] "지인 보험 해지할까 말까 고민 중이라면?"\n[4~20초 본론] 유지해야 할 꿀특약 vs 정리할 중복특약 구분법\n[21~30초 CTA] "강요 없는 카톡 비교표는 프로필 링크로!"', tags: '#지인보험 #보험비교 #설계사브랜딩 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 운전자보험 핵심 3대 특약과 변경된 법규 체크포인트', hook: '스쿨존·중대과실 사고 시 자동차보험만으로는 부족한 형사적 책임 대비 가이드.', body: '1) 교통사고처리지원금·변호사선임비용·벌금 확인\n2) 기존 운전자보험 업그레이드 필요 여부\n3) 무료 증권 점검 신청 안내', tags: '#운전자보험 #자동차보험 #{name} #보험정보' },
-      { ch: '인스타 릴스', title: '3초 체크 릴스 ④ — 우리 가족 숨은 보험금 찾는 30초 방법', hook: '몰라서 못 챙긴 보험금, 지금 스마트폰으로 30초 만에 조회할 수 있습니다!', body: '[0~3초 후킹] "아직도 모르고 지나친 보험금 있으실 수 있어요!"\n[4~22초 본론] 내보험찾아줌 + 실손 미청구 확인 스텝\n[23~30초 CTA] "저장해 두고 주말에 꼭 조회해 보세요!"', tags: '#숨은보험금 #보험꿀팁 #릴스 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 자영업자·개인사업자를 위한 절세와 리스크 대비 플랜', hook: '사업장 배상책임부터 대표님 개인 보장까지, 사장님이 꼭 알아야 할 안전장치 정리.', body: '1) 사업자 필수 리스크 점검\n2) 비용 처리 및 노후 준비 전략\n3) 대표님 맞춤 1:1 무료 컨설팅 예약', tags: '#사업자보험 #대표님보장 #{name} #재무설계' },
+      { ch: '스레드', title: '[{name}] 스레드 ③ — 영업이 아니라 "비교표"만 먼저 보내드리는 이유', hook: '고객님이 직접 숫자를 보고 납득하실 때 가장 오래 가는 신뢰가 쌓입니다.', body: '📊 {name}의 상담 원칙\n1. 가입 강요 연락 일체 없음\n2. 1페이지 요약 비교표 카톡 발송\n3. 기존 보험이 좋으면 그대로 유지 권장\n\n🔗 부담 없는 1분 점검 신청은 프로필 링크에 있습니다.', tags: '#신뢰설계사 #보험비교 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 실제 보장분석 상담 후기 & 강요 없는 객관적 리포트 원칙', hook: '영업이 아니라 ‘분석’을 드립니다. 고객님이 직접 비교하고 결정하는 상담 프로세스.', body: '1) 3문항 간편 신청 → 증권 분석 → 1페이지 요약 리포트\n2) 유지 권장이 더 많은 이유\n3) 카카오 채널 무료 점검 신청', tags: '#보장분석후기 #신뢰설계사 #{name} #보험상담' },
     ],
     '정책자금': [
       { ch: '네이버 블로그', title: '[{name}] 올해 소상공인·중소기업 정책자금 자격 조건 및 신청 일정 총정리', hook: '자금이 필요할 때 서류부터 막히셨나요? 대표님이 꼭 챙겨야 할 정책자금 핵심 조건을 정리했습니다.', body: '1) 운전자금 vs 시설자금 핵심 차이\n2) 업력·매출·신용점수 기본 기준\n3) 1분 무료 한도진단 폼 안내 (※ 기업별 심사 결과는 상이할 수 있습니다.)', tags: '#정책자금 #소상공인정책자금 #{name} #운전자금' },
       { ch: '인스타 릴스', title: '3초 경고형 릴스 ① — 정책자금 서류 탈락하는 대표님 90%의 공통 실수', hook: '조건은 다 되는데 딱 이 서류 한 줄 때문에 부결되는 대표님들이 정말 많습니다!', body: '[0~3초 후킹] "정책자금 탈락하는 대표님 90%가 놓치는 딱 1가지!"\n[4~20초 본론] 재무제표·국세완납·사업계획서 핵심 보완 포인트\n[21~30초 CTA] "프로필 링크에서 1분 무료 자가진단 받아보세요!"', tags: '#정책자금릴스 #사업자대출 #대표님필독 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ① — 대표님, 정책자금 신청 전 국세·지방세 완납부터 확인하세요', hook: '매출도 좋고 업력도 충분한데 소액 체납 1건 때문에 심사 문턱에서 막히는 사례가 가장 아깝습니다.', body: '💰 이번 주 컨설팅 현장 속보\n소액 지방세 자동이체 오류 1건 때문에 보증이 지연될 뻔한 대표님, 사전 점검으로 바로 풀고 승인 흐름 탔습니다!\n\n우리 회사 업종·업력 기준 가능 자금이 궁금하시면 댓글에 업종만 남겨주세요 ✍️', tags: '#정책자금속보 #대표님스레드 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 신용보증기금 · 기술보증기금 보증서 발급 전 필수 준비사항', hook: '한도를 높이고 심사 기간을 단축하는 사전 점검 포인트를 실무 기준으로 정리합니다.', body: '1) 신보·기보 대상 기업 구분\n2) 가점 요소(특허·인증·고용) 활용 전략\n3) 무료 사전 한도 진단 신청', tags: '#신용보증기금 #기술보증기금 #{name} #기업자금' },
       { ch: '인스타 릴스', title: '3초 속보형 릴스 ② — 예산 소진 전 대표님이 지금 확인해야 할 자금 3종', hook: '정책자금은 선착순 예산 소진입니다! 이번 분기 대표님 업종에 맞는 자금 3가지!', body: '[0~3초 후킹] "예산 끝나고 후회하지 마세요! 지금 열린 자금 3가지"\n[4~22초 본론] 창업·성장·소공인별 핵심 지원 체크\n[23~30초 CTA] "댓글에 ‘한도’ 남기시면 체크리스트 보내드립니다!"', tags: '#정부지원금 #소상공인자금 #릴스속보 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ② — 한 번 부결됐어도 3개월 뒤 재도전 성공하는 회사의 차이', hook: '부결 사유를 정확히 파악하고 재무비율·기업인증 2가지만 보완하면 흐름이 바뀝니다.', body: '📌 부결 후 재도전 체크 3단계\n1. 부결 원인(매출·부채비율·대표자 신용) 분리 진단\n2. 단기 보완 가능한 가점 요소(벤처·메인비즈 등) 확보\n3. 다음 분기 공고 오픈 당일 선착순 접수\n\n🔗 1분 무료 한도진단은 프로필 링크에서 가능합니다. (※ 심사 결과는 기업별 상이)', tags: '#정책자금재도전 #스레드인사이트 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 창업 1년 미만 초기 사업자도 도전할 수 있는 정책자금 가이드', hook: '매출 실적이 아직 적어 고민이신 초기 대표님을 위한 단계별 자금 조달 로드맵.', body: '1) 초기 창업자 전용 자금 종류\n2) 사업계획서 설득력 높이는 구성법\n3) 1:1 무료 자격 점검 신청', tags: '#창업자금 #초기사업자 #{name} #정책자금컨설팅' },
       { ch: '인스타 릴스', title: '3초 팩트체크 릴스 ③ — 시중 은행 대출 vs 정책자금, 이자 차이 계산해 봤습니다', hook: '같은 1억 원이라도 어디서 조달하느냐에 따라 연간 이자가 수백만 원 달라집니다!', body: '[0~3초 후킹] "사업자금 이자, 아직도 고금리로 내고 계세요?"\n[4~20초 본론] 금리·거치기간·상환조건 비교 요약\n[21~30초 CTA] "프로필 링크에서 우리 회사 가능 한도 1분 조회!"', tags: '#저금리자금 #경영안정자금 #대표님꿀팁 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 정책자금 부결 후 3개월 만에 재도전 성공하는 보완 체크리스트', hook: '한 번 부결되었다고 끝이 아닙니다. 원인 분석과 재무·인증 보완으로 흐름을 바꾸는 법.', body: '1) 대표적 부결 사유 4가지 진단\n2) 단기 보완 가능한 체크항목\n3) 전문가 1:1 재도전 진단 신청', tags: '#정책자금재도전 #부결원인 #{name} #기업컨설팅' },
-      { ch: '인스타 릴스', title: '3초 체크 릴스 ④ — 기업 인증(벤처·이노비즈) 있으면 한도가 달라지는 이유', hook: '대표님 회사에 인증 하나만 추가해도 심사 평가 점수가 확 올라갑니다!', body: '[0~3초 후킹] "남들보다 정책자금 한도 2배 잘 나오는 회사들의 비밀"\n[4~22초 본론] 기업부설연구소·벤처·메인비즈 실무 혜택\n[23~30초 CTA] "우리 회사 인증 가능 여부, 댓글에 ‘인증’ 남겨주세요!"', tags: '#기업인증 #벤처인증 #정책자금 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 법인사업자 vs 개인사업자, 자금 조달 시 유리한 전략 비교', hook: '매출 성장 구간에서 법인 전환과 정책자금 연계 타이밍을 어떻게 잡아야 할지 정리합니다.', body: '1) 개인·법인별 심사 포인트 차이\n2) 대표자 신용관리 핵심 팁\n3) 맞춤형 1:1 무료 자금 진단', tags: '#법인자금 #개인사업자자금 #{name} #경영전략' },
+      { ch: '스레드', title: '[{name}] 스레드 ③ — 법인 전환 타이밍, 매출 얼마일 때 자금 한도가 유리할까?', hook: '개인사업자에서 법인 전환 시 정책자금·신보 한도 평가 기준이 어떻게 달라지는지 3줄 요약.', body: '🏢 법인 vs 개인 자금 전략 질문 TOP1\n"세금뿐만 아니라 조달 한도 때문에도 법인이 유리할까요?"\n→ 순이익 구간과 설비·운전자금 규모에 따라 손익분기점이 다릅니다.\n\n우리 회사 기준 비교표는 프로필 링크 4문항 진단 시 바로 안내해 드립니다!', tags: '#법인전환 #기업자금전략 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 업종별(제조·유통·서비스) 정책자금 준비 로드맵 & 무료 진단 안내', hook: '우리 업종에 딱 맞는 정책자금 루트, 4문항 간편 진단으로 방향부터 잡아보세요.', body: '1) 제조·유통·서비스업별 핵심 공략 자금\n2) 분기별 자금 캘린더\n3) 1분 무료 한도진단 폼 바로가기', tags: '#업종별정책자금 #무료한도진단 #{name}' },
     ],
     '자영업/소상공인': [
       { ch: '네이버 블로그', title: '[{name}] 동네 단골들이 일부러 찾아오는 시그니처 메뉴·서비스의 비밀', hook: '재료 손질부터 마무리까지, 우리가 매일 아침 고집하는 원칙을 솔직하게 담았습니다.', body: '1) 시그니처 메뉴/서비스 탄생 스토리\n2) 첫 방문 추천 베스트 조합\n3) 네이버 플레이스 예약·알림받기 쿠폰 안내', tags: '#{name} #동네맛집 #단골추천 #로컬브랜드' },
       { ch: '인스타 릴스', title: '3초 시선강탈 릴스 ① — 오픈 전 1시간, 사장님이 직접 준비하는 리얼 현장', hook: '왜 오픈하자마자 웨이팅이 생길까요? 30초 만에 비밀을 보여드립니다!', body: '[0~3초 후킹] "이 동네 사람들이 줄 서서 찾는 진짜 이유!"\n[4~20초 본론] 클로즈업 비주얼 + 사장님 정성 포인트 3컷\n[21~30초 CTA] "오늘 방문 시 ‘릴스 보고 왔어요’ 말씀하시면 서비스 증정!"', tags: '#릴스맛집 #매장브이로그 #로컬릴스 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ① — 오늘 아침 문 열자마자 직접 찍은 매장 준비 한 컷', hook: '동네 손님 한 분 한 분께 부끄럽지 않은 하루를 준비하는 사장님의 진짜 일상.', body: '☀️ 오늘도 {name} 정성 가득하게 오픈했습니다!\n방금 막 세팅 끝난 오늘의 베스트 상태, 오늘 오시는 분들은 운 좋으신 날일지도 몰라요 😉\n\n💬 스레드 보고 오신 분들, 인사해 주시면 반갑게 챙겨드릴게요!', tags: '#{name} #동네단골 #스레드소통' },
       { ch: '네이버 블로그', title: '[{name}] 처음 방문하시는 분들을 위한 200% 즐기는 이용 꿀팁 & 주차 안내', hook: '방문 전 가장 많이 물어보시는 주차, 웨이팅 적은 시간, 추천 코스를 한 번에 정리했습니다.', body: '1) 여유롭게 이용하는 추천 시간대\n2) 주차·대중교통 오시는 길\n3) 네이버 알림받기 즉시 할인 쿠폰', tags: '#방문꿀팁 #주차가능 #{name} #네이버플레이스' },
       { ch: '인스타 릴스', title: '3초 비포애프터 릴스 ② — 단 10초 만에 달라지는 압도적 비주얼 컷', hook: '끝까지 보세요! 마지막 3초 완성 컷 보면 오늘 당장 오고 싶어지실 겁니다!', body: '[0~3초 후킹] "이거 실제로 보면 진짜 감탄 나옵니다!"\n[4~22초 본론] 과정 → 완성 하이라이트 컷 전환\n[23~30초 CTA] "같이 가고 싶은 친구 태그하고 저장하세요!"', tags: '#비포애프터 #시선강탈 #숏폼마케팅 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ② — 단골 손님이 남겨주신 쪽지 하나에 힘나는 날', hook: '자영업을 오래 버티게 해주는 건 결국 화려한 광고보다 손님 한 분의 진심 어린 한마디입니다.', body: '💌 어제 마감 직전 다녀가신 단골 손님께서 남기고 가신 한마디 덕분에 오늘 피로가 싹 풀렸습니다.\n\n동네에서 "여기는 믿고 간다" 소리 듣는 그날까지 타협 없이 지키겠습니다. 주말 예약은 프로필 링크에서 10초 만에 가능해요!', tags: '#사장님일기 #단골감사 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 고객님 실제 후기 BEST 5로 보는 우리가 사랑받는 이유', hook: '직접 다녀가신 손님들이 남겨주신 소중한 리뷰와 감사 인사를 모았습니다.', body: '1) 재방문 고객님들이 꼽은 장점 TOP3\n2) 리뷰 이벤트 및 단골 혜택 안내\n3) 카카오 채널 소식 받기', tags: '#실제후기 #재방문맛집 #{name} #고객리뷰' },
       { ch: '인스타 릴스', title: '3초 Q&A 릴스 ③ — 손님들이 가장 많이 물어보는 질문 TOP3 즉답!', hook: '디엠으로 하루에도 수십 번 물어보시는 그 질문, 사장님이 직접 답해드립니다!', body: '[0~3초 후킹] "제일 많이 물어보시는 3가지, 딱 20초 정리!"\n[4~20초 본론] 예약/포장/추천메뉴 빠른 답변\n[21~30초 CTA] "더 궁금한 점은 댓글로 남겨주세요!"', tags: '#사장님답변 #매장Q&A #동네핫플 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 이번 주말 가족·연인과 함께하기 좋은 추천 코스 & 예약 가이드', hook: '주말 나들이 동선에 딱 맞는 방문 코스와 사전 예약 혜택을 알려드립니다.', body: '1) 주말 방문 추천 타임\n2) 가족·모임 맞춤 추천 구성\n3) 네이버 예약 10초 완료 방법', tags: '#주말가볼만한곳 #가족모임 #{name}' },
-      { ch: '인스타 릴스', title: '3초 혜택 릴스 ④ — 이번 달 한정 알림받기·방문 고객 특별 이벤트!', hook: '이번 달에 방문 예정이시라면 이 혜택 안 챙기면 진짜 손해입니다!', body: '[0~3초 후킹] "잠깐! 이번 달 오실 분들은 이거 꼭 챙기세요!"\n[4~22초 본론] 이벤트 혜택 & 참여 방법 3단계\n[23~30초 CTA] "프로필 링크에서 쿠폰 바로 다운받으세요!"', tags: '#매장이벤트 #방문혜택 #릴스쿠폰 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 사장님이 직접 전하는 매장 운영 철학과 앞으로의 약속', hook: '반짝 유행이 아니라 오래 기억되는 동네 1등 매장이 되기 위한 우리의 기준.', body: '1) 절대 타협하지 않는 품질 원칙\n2) 고객 피드백 반영 개선 스토리\n3) 단골 감사 인사 및 오시는 길', tags: '#사장님스토리 #브랜드철학 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ③ — 이번 주말 웨이팅 피해서 편하게 오시는 꿀시간대 공유', hook: '미리 알고 오시면 대기 없이 가장 여유롭게 즐기실 수 있는 타임 알려드립니다.', body: '⏰ {name} 이번 주 실시간 예약·방문 팁\n• 가장 여유로운 시간: 평일 오후 2~4시 / 주말 오픈 직후\n• 네이버 알림받기 쿠폰 적용 시 즉시 혜택까지!\n\n주말 나들이 코스로 고민 중이시면 저장해 두셨다가 들러주세요 🙌', tags: '#주말추천 #동네핫플 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 이달의 신메뉴/시즌 한정 프로모션 총정리', hook: '이번 시즌에만 만나볼 수 있는 특별한 구성과 사전 예약 혜택을 공개합니다.', body: '1) 시즌 한정 포인트 소개\n2) 함께 즐기면 좋은 베스트 조합\n3) 간편 예약 및 문의 안내', tags: '#시즌한정 #신메뉴 #{name} #동네추천' },
     ],
     '브랜드/기타': [
       { ch: '네이버 블로그', title: '[{name}] 브랜드가 탄생한 진짜 이유와 우리가 고집하는 핵심 기준', hook: '비슷한 제품·서비스가 넘치는 시장에서 {name}만의 확실한 차별점을 스토리로 풀어냅니다.', body: '1) 브랜드가 해결하려는 고객의 핵심 불편함\n2) 타사 대비 확실히 다른 3가지 기준\n3) 대표 상품·서비스 라인업 소개 및 공식 상담 안내', tags: '#{name} #브랜드스토리 #프리미엄브랜딩 #차별화' },
       { ch: '인스타 릴스', title: '3초 후킹 릴스 ① — 똑같은 돈 주고 후회하는 분들의 공통점 3가지', hook: '가격만 보고 고르셨다가 실패한 경험 있으시죠? 실패 없는 선택 기준 3초 정리!', body: '[0~3초 후킹] "아직도 가격표만 보고 고르세요? 딱 3가지만 보세요!"\n[4~20초 본론] 업계 전문가가 알려주는 품질·사후관리·가성비 비교 팩트\n[21~30초 CTA] "프로필 링크에서 무료 비교 가이드 받아가세요!"', tags: '#브랜드릴스 #선택가이드 #릴스마케팅 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ① — 우리가 싼 가격 경쟁을 포기하고 품질을 올린 진짜 이유', hook: '당장의 문의 수보다 한 번 써본 고객이 지인을 데려오는 브랜드 구조를 만들기로 결심한 이야기.', body: '✨ 브랜드 운영 1줄 인사이트\n고객은 싼 곳을 찾다가도 결국 "실패 없는 곳"에 지갑을 엽니다.\n\n{name}이 끝까지 고집하는 3가지 기준, 오늘 스레드에서 솔직하게 풀어봤습니다. 여러분의 선택 기준은 무엇인가요? 💬', tags: '#{name} #브랜드철학 #스레드소통' },
       { ch: '네이버 블로그', title: '[{name}] 처음 이용하는 고객을 위한 베스트 추천 조합 & 200% 활용법', hook: '무엇부터 시작해야 할지 고민되신다면, 실제 고객 만족도가 가장 높은 베스트 구성을 확인해 보세요.', body: '1) 목적별·예산별 베스트 추천 옵션\n2) 첫 이용 시 꼭 챙겨야 할 혜택\n3) 1:1 맞춤 상담 및 견적 문의 안내', tags: '#추천가이드 #베스트구성 #{name} #고객맞춤' },
       { ch: '인스타 릴스', title: '3초 비하인드 릴스 ② — 완성품 뒤 숨겨진 {name}의 집요한 디테일', hook: '고객님은 모르셔도 됩니다. 하지만 우리가 끝까지 타협하지 않는 딱 한 가지 디테일!', body: '[0~3초 후킹] "남들은 대충 넘기는 이 공정, 우리는 왜 고집할까요?"\n[4~22초 본론] 제작·검수·세팅 리얼 현장 3컷 클로즈업\n[23~30초 CTA] "저장해 두고 필요할 때 바로 문의 주세요!"', tags: '#브랜드비하인드 #디테일장인 #숏폼 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ② — 문의 전에 가장 많이 물어보시는 3가지 질문 1분 요약', hook: 'DM·카톡으로 매일 들어오는 핵심 궁금증을 군더더기 없이 딱 정리했습니다.', body: '📌 {name} Q&A 요약\n1. 초기 상담만 받아도 비용이 드나요? → 0원 무료 진단\n2. 내 상황/예산에 맞게 조율 가능한가요? → 1:1 맞춤 설계\n3. 신청 후 회신은 얼마나 걸리나요? → 영업시간 내 당일 답변\n\n🔗 빠른 문의는 프로필 링크를 눌러주세요!', tags: '#스레드FAQ #브랜드소통 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 실제 고객 후기와 도입 사례로 보는 Before & After 변화', hook: '백 마디 광고보다 강력한 실제 고객님들의 솔직한 경험과 객관적 변화를 모았습니다.', body: '1) 도입 전 가장 컸던 고민 TOP3\n2) {name}과 함께한 뒤 달라진 핵심 변화\n3) 무료 사전 상담 및 맞춤 제안 신청', tags: '#고객후기 #성공사례 #{name} #신뢰브랜드' },
       { ch: '인스타 릴스', title: '3초 Q&A 릴스 ③ — DM·전화로 제일 많이 물어보시는 질문 TOP3 즉답!', hook: '문의 주시기 전에 가장 궁금해하시는 3가지, 20초 만에 속 시원하게 답해드립니다!', body: '[0~3초 후킹] "하루에도 수십 번 받는 질문 3가지, 딱 정리!"\n[4~20초 본론] 비용·기간·진행 절차 핵심 답변\n[21~30초 CTA] "댓글에 ‘문의’ 남기시면 상세 안내표 DM 발송!"', tags: '#자주묻는질문 #브랜드Q&A #DB퍼널 #{name}' },
-      { ch: '네이버 블로그', title: '[{name}] 업계 트렌드 분석 — 올해 고객들이 열광하는 핵심 포인트', hook: '빠르게 변하는 시장 속에서 현명한 소비자와 대표님들이 주목하는 최신 트렌드 리포트.', body: '1) 올해 달라진 핵심 소비 기준\n2) 실패를 줄이는 체크리스트 5가지\n3) {name} 전문가 1:1 무료 진단 안내', tags: '#트렌드리포트 #인사이트 #{name} #전문가칼럼' },
-      { ch: '인스타 릴스', title: '3초 혜택 릴스 ④ — 이번 달 한정 신규 고객 특별 프로모션 안내!', hook: '이번 달 진행 예정이시라면 지금 바로 챙기셔야 할 한정 혜택을 공개합니다!', body: '[0~3초 후킹] "잠깐! 이번 달 문의하시는 분들만 받는 특별 혜택!"\n[4~22초 본론] 한정 혜택 구성 & 1분 신청 절차\n[23~30초 CTA] "프로필 링크에서 지금 바로 신청하세요!"', tags: '#이달의혜택 #프로모션 #릴스광고 #{name}' },
+      { ch: '스레드', title: '[{name}] 스레드 ③ — 이번 달 한정 신규 고객 특별 혜택 마감 전 체크', hook: '고민 중이셨다면 이번 달 혜택이 남아 있을 때 사전 진단부터 받아두시는 게 유리합니다.', body: '🎁 이번 달 {name} 특별 프로모션 안내\n신규 문의 고객 대상 무료 맞춤 가이드 + 우선 예약 혜택 진행 중!\n\n댓글에 "가이드" 남기시거나 프로필 링크로 바로 확인해 보세요 👇', tags: '#이달의혜택 #스레드마케팅 #{name}' },
       { ch: '네이버 블로그', title: '[{name}] 자주 묻는 질문(FAQ) 총정리 — 계약·진행·사후관리 완벽 가이드', hook: '진행 전 망설여지는 모든 궁금증을 투명하고 알기 쉽게 한 번에 정리해 드립니다.', body: '1) 상담부터 완료까지 전체 프로세스\n2) 비용·일정·수정 정책 안내\n3) 카카오 채널·전화 빠른 문의 연결', tags: '#FAQ #진행절차 #{name} #친절안내' },
-      { ch: '네이버 블로그', title: '[{name}] 다음 달 시즌 전략 & VIP 고객 전용 우선 예약 안내', hook: '성수기·마감 전 미리 준비하시는 분들을 위한 우선 예약 및 맞춤 컨설팅 안내입니다.', body: '1) 미리 준비하면 유리한 이유\n2) 맞춤형 패키지 구성 안내\n3) 간편 무료 상담 신청 링크', tags: '#우선예약 #맞춤컨설팅 #{name} #브랜드블로그' },
     ],
   };
 
@@ -145,12 +145,12 @@
   };
 
   var CHANNELS = [
-    { id: '네이버 블로그', short: '블', icon: '🟢', color: '#4ade80', bg: 'rgba(74,222,128,0.18)', border: '#22c55e', text: '#bbf7d0' },
-    { id: '인스타 릴스', short: '릴', icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.2)', border: '#a855f7', text: '#e9d5ff' },
-    { id: '유튜브', short: '유', icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.2)', border: '#ef4444', text: '#fecaca' },
-    { id: '컨설팅', short: '컨', icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.2)', border: '#eab308', text: '#fef08a' },
-    { id: '스레드', short: '스', icon: '🧵', color: '#38bdf8', bg: 'rgba(56,189,248,0.16)', border: 'rgba(56,189,248,0.45)', text: '#bae6fd' },
-    { id: '기타', short: '기', icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.16)', border: '#64748b', text: '#cbd5e1' },
+    { id: '네이버 블로그', label: '네이버 블로그', short: '블', icon: '🟢', color: '#4ade80', bg: 'rgba(74,222,128,0.18)', border: '#22c55e', text: '#bbf7d0' },
+    { id: '인스타 릴스', label: '인스타 릴스', short: '릴', icon: '🟣', color: '#c084fc', bg: 'rgba(192,132,252,0.2)', border: '#a855f7', text: '#e9d5ff' },
+    { id: '유튜브', label: '유튜브', short: '유', icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.2)', border: '#ef4444', text: '#fecaca' },
+    { id: '컨설팅', label: '컨설팅', short: '컨', icon: '🟡', color: '#facc15', bg: 'rgba(250,204,21,0.2)', border: '#eab308', text: '#fef08a' },
+    { id: '스레드', label: '스레드 대행', short: '스', icon: '🧵', color: '#38bdf8', bg: 'rgba(56,189,248,0.16)', border: 'rgba(56,189,248,0.45)', text: '#bae6fd' },
+    { id: '기타', label: '기타', short: '기', icon: '⚪', color: '#94a3b8', bg: 'rgba(148,163,184,0.16)', border: '#64748b', text: '#cbd5e1' },
   ];
 
   function channelStyle(ch) {
@@ -223,7 +223,7 @@
         compliance: comp,
       };
     });
-    A.toast('🏭 ' + name + ' (' + ind + ') 맞춤 블로그 6편 + 릴스 4편 = 총 10편 생성 완료!');
+    A.toast('🏭 ' + name + ' (' + ind + ') 맞춤 블로그 4편 + 릴스 3편 + 스레드 3편 = 총 10편 생성 완료!');
     render();
   }
 
@@ -397,7 +397,7 @@
       '<span style="color:#c084fc;font-weight:800">🟣릴스</span>' +
       '<span style="color:#f87171;font-weight:800">🔴유튜브</span>' +
       '<span style="color:#facc15;font-weight:800">🟡컨설팅</span>' +
-      '<span style="color:#38bdf8;font-weight:800">🧵스레드</span>' +
+      '<span style="color:#38bdf8;font-weight:800">🧵스레드 대행</span>' +
       '</div>' +
       '</div>' +
 
@@ -420,7 +420,7 @@
       (selectedFilterClient ? '<button type="button" class="ws-btn sm danger" id="calBulkDelClientBtn" title="선택한 고객사의 모든 일정을 일괄 삭제">🗑️ [' + A.esc(selectedFilterClient.name) + '] 전체 삭제 (' + filtered.length + '건)</button>' : '') +
       '<select id="calFilterCh" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line-strong);font-size:12px">' +
       '<option value="">전체 채널</option>' +
-      CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.filterChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+      CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.filterChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + (ch.label || ch.id) + '</option>'; }).join('') +
       '</select>' +
       '</div>' +
       '</div>' +
@@ -442,7 +442,7 @@
         '</div>' +
         '<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">' +
         '① 아래 4칸만 채우고 <b>[달력·VIP 포털에 등록]</b>을 누르세요.<br>' +
-        '② 채널에 따라 달력에 <b>연두(네이버)·보라(릴스)·빨강(유튜브)·노랑(컨설팅)</b> 색상으로 자동 분류됩니다.' +
+        '② 채널에 따라 달력에 <b>연두(네이버)·보라(릴스)·빨강(유튜브)·노랑(컨설팅)·하늘(스레드)</b> 색상으로 자동 분류됩니다.' +
         '</div>' +
         '<div class="ws-grid-2">' +
         '<div class="ws-field"><label>1. 고객사 선택 *</label><select id="calNewClient">' +
@@ -454,11 +454,11 @@
         '</div>' +
         '<div class="ws-grid-2" style="margin-top:8px">' +
         '<div class="ws-field"><label>3. 발행 채널 (색상 자동지정)</label><select id="calNewCh">' +
-        CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.newChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+        CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (st.newChannel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + (ch.label || ch.id) + '</option>'; }).join('') +
         '</select></div>' +
         '<div class="ws-field"><label>등록 상태</label><select id="calNewStatus"><option value="검수대기">⏳ VIP 포털 고객 검수 요청</option><option value="예약확정">✅ 바로 예약 확정</option><option value="발행완료">🏁 발행 완료</option></select></div>' +
         '</div>' +
-        '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 12월 유튜브 쇼츠 / 원장님 컨설팅 미팅 / 블로그 포스팅"></div>' +
+        '<div class="ws-field" style="margin-top:8px"><label>4. 콘텐츠 제목 *</label><input id="calNewTitle" value="' + A.esc(st.newTitle) + '" placeholder="예: 스레드 데일리 소통 / 블로그 포스팅 / 릴스 쇼츠 / 컨설팅"></div>' +
         '<div class="ws-field" style="margin-top:8px"><label>초안 내용 · 대본 · 메모</label><textarea id="calNewBody" style="min-height:130px" placeholder="블로그 핵심 요약, 릴스/유튜브 대본, 또는 컨설팅 안건을 입력하세요">' + A.esc(st.newBody) + '</textarea></div>' +
         '<div class="ws-actions" style="margin-top:10px">' +
         '<button type="button" class="ws-btn primary" id="calSubmitNewBtn">💾 달력 · VIP 포털에 일정 등록</button>' +
@@ -476,7 +476,7 @@
           '</div>' +
           '<div class="ws-grid-2">' +
           '<div class="ws-field"><label>발행 채널</label><select id="calEditCh">' +
-          CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (sel.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+          CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (sel.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + (ch.label || ch.id) + '</option>'; }).join('') +
           '</select></div>' +
           '<div class="ws-field"><label>예약 발행일</label><input type="date" id="calEditDate" value="' + A.esc(sel.scheduled_date || '') + '"></div>' +
           '</div>' +
@@ -518,8 +518,8 @@
     return '' +
       '<div class="ws-card" style="padding:14px;margin-bottom:12px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
-      '<h3 style="margin:0;font-size:15px">🏭 AI 업종별 3초 후킹 릴스 · 블로그 초안 10편 일괄 생성 공장 (Phase A-3)</h3>' +
-      '<span class="tag-pill ok">블로그 6편 + 릴스 4편 = 10편 원클릭</span>' +
+      '<h3 style="margin:0;font-size:15px">🏭 AI 업종별 블로그 · 릴스 · 스레드 대행 10편 일괄 생성 공장 (Phase A-3)</h3>' +
+      '<span class="tag-pill ok">블로그 4 + 릴스 3 + 스레드 3 = 10편 원클릭</span>' +
       '</div>' +
       '<div class="ws-grid-4">' +
       '<div class="ws-field"><label>대상 고객사 (CRM 연동)</label><select id="facClient">' +
@@ -534,7 +534,7 @@
       '<div class="ws-field"><label>발행 시작일 (월·수·금 자동 분산)</label><input type="date" id="facStart" value="' + A.esc(st.factoryStartDate) + '"></div>' +
       '</div>' +
       '<div class="ws-actions" style="margin-top:10px">' +
-      '<button type="button" class="ws-btn primary" id="facGenBtn">⚡ 10편 일괄 생성 (블로그 6 + 릴스 4)</button>' +
+      '<button type="button" class="ws-btn primary" id="facGenBtn">⚡ 10편 일괄 생성 (블로그 4 + 릴스 3 + 스레드 3)</button>' +
       (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facBulkSaveBtn"' + (st.savingBulk ? ' disabled' : '') + '>📅 10편 전체 캘린더 · VIP 포털 검수함에 일괄 등록</button>' : '') +
       (st.drafts.length ? '<button type="button" class="ws-btn" id="facDlHtmlBtn">🌐 클라이언트용 HTML 기획안 다운</button>' : '') +
       (st.drafts.length ? '<button type="button" class="ws-btn ok" id="facPrintPdfBtn">🖨️ 클라이언트용 PDF 출력 / 저장</button>' : '') +
@@ -547,9 +547,12 @@
         '<div class="fac-draft-grid">' +
         st.drafts.map(function (d, i) {
           var isReel = d.channel.indexOf('릴스') !== -1;
-          return '<div class="ws-card" style="padding:12px;border-left:4px solid ' + (isReel ? '#ec4899' : '#0284c7') + '">' +
+          var isThread = d.channel.indexOf('스레드') !== -1;
+          var stripeCol = isReel ? '#ec4899' : (isThread ? '#38bdf8' : '#0284c7');
+          var badgeIcon = isReel ? '🎬 ' : (isThread ? '🧵 ' : '📝 ');
+          return '<div class="ws-card" style="padding:12px;border-left:4px solid ' + stripeCol + '">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px">' +
-            '<span class="tag-pill ' + (isReel ? 'warn' : 'ok') + '">#' + d.idx + ' ' + (isReel ? '🎬 ' : '📝 ') + A.esc(d.channel) + '</span>' +
+            '<span class="tag-pill ' + (isReel ? 'warn' : (isThread ? '' : 'ok')) + '">#' + d.idx + ' ' + badgeIcon + A.esc(d.channel) + '</span>' +
             '<span style="font-size:11px;font-weight:700;color:var(--muted)">📅 ' + A.esc(d.scheduled_date) + ' · ' + d.compliance.label + '</span>' +
             '</div>' +
             '<input data-fd-title="' + i + '" value="' + A.esc(d.title) + '" style="width:100%;font-weight:800;font-size:12.8px;margin-bottom:6px;padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--bg);color:var(--ink)">' +
@@ -606,7 +609,7 @@
           : '<option value="">고객사 없음</option>') +
         '</select></div>' +
         '<div class="ws-field"><label>채널</label><select id="dmNewCh">' +
-        CHANNELS.map(function (ch) { return '<option value="' + ch.id + '">' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+        CHANNELS.map(function (ch) { return '<option value="' + ch.id + '">' + ch.icon + ' ' + (ch.label || ch.id) + '</option>'; }).join('') +
         '</select></div>' +
         '<div class="ws-field"><label>상태</label><select id="dmNewStatus"><option value="검수대기">⏳ VIP검수대기</option><option value="예약확정">✅ 검수·예약확정</option><option value="발행완료">🏁 발행완료</option></select></div>' +
         '</div>' +
@@ -632,7 +635,7 @@
           '</div>' +
           '<div class="ws-grid-3">' +
           '<div class="ws-field"><label>채널 변경</label><select data-dm-f="channel">' +
-          CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (it.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + ch.id + '</option>'; }).join('') +
+          CHANNELS.map(function (ch) { return '<option value="' + ch.id + '"' + (it.channel === ch.id ? ' selected' : '') + '>' + ch.icon + ' ' + (ch.label || ch.id) + '</option>'; }).join('') +
           '</select></div>' +
           '<div class="ws-field"><label>날짜 이동</label><input type="date" data-dm-f="scheduled_date" value="' + A.esc(it.scheduled_date || ymd) + '"></div>' +
           '<div class="ws-field"><label>상태 변경</label><select data-dm-f="status">' +
@@ -1084,21 +1087,27 @@
       var cName = st.factoryClientId ? clientNameById(st.factoryClientId) : '고객사';
       var blogCnt = st.drafts.filter(function (d) { return d.channel.indexOf('블로그') !== -1; }).length;
       var reelCnt = st.drafts.filter(function (d) { return d.channel.indexOf('릴스') !== -1; }).length;
+      var threadCnt = st.drafts.filter(function (d) { return d.channel.indexOf('스레드') !== -1; }).length;
       var safeCnt = st.drafts.filter(function (d) { return checkCompliance(d.title + '\n' + d.preview_text).safe; }).length;
       var tableRows = st.drafts.map(function (d) {
         var isReel = d.channel.indexOf('릴스') !== -1;
+        var isThread = d.channel.indexOf('스레드') !== -1;
+        var pillCls = isReel ? 'reel' : (isThread ? 'thread' : 'blog');
         return '<tr><td style="text-align:center;font-weight:800">' + d.idx + '</td>' +
-          '<td><span class="pill ' + (isReel ? 'reel' : 'blog') + '">' + A.esc(d.channel) + '</span></td>' +
+          '<td><span class="pill ' + pillCls + '">' + A.esc(d.channel) + '</span></td>' +
           '<td><b>' + A.esc(d.title) + '</b></td>' +
           '<td style="text-align:center">' + A.esc(d.scheduled_date) + '</td>' +
           '<td style="text-align:center">' + (checkCompliance(d.title + '\n' + d.preview_text).safe ? '✅ 안전' : '⚠️ 검토') + '</td></tr>';
       }).join('');
       var detailCards = st.drafts.map(function (d) {
         var isReel = d.channel.indexOf('릴스') !== -1;
+        var isThread = d.channel.indexOf('스레드') !== -1;
+        var pillCls = isReel ? 'reel' : (isThread ? 'thread' : 'blog');
+        var cardCls = isReel ? 'is-reel' : (isThread ? 'is-thread' : 'is-blog');
         var cp = checkCompliance(d.title + '\n' + d.preview_text);
-        return '<div class="card ' + (isReel ? 'is-reel' : 'is-blog') + '">' +
+        return '<div class="card ' + cardCls + '">' +
           '<div class="card-top">' +
-          '<span class="pill ' + (isReel ? 'reel' : 'blog') + '">#' + d.idx + ' ' + A.esc(d.channel) + '</span>' +
+          '<span class="pill ' + pillCls + '">#' + d.idx + ' ' + A.esc(d.channel) + '</span>' +
           '<span class="meta">발행 예정일: <b>' + A.esc(d.scheduled_date) + '</b> · ' + A.esc(cp.label) + '</span>' +
           '</div>' +
           '<h3>' + A.esc(d.title) + '</h3>' +
@@ -1120,9 +1129,9 @@
         '.kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px}.kpi .l{font-size:11px;color:#64748b;font-weight:700}.kpi .v{font-size:20px;font-weight:900;color:#0c4a6e;margin-top:4px}' +
         'h2{font-size:15.5px;font-weight:900;color:#0c4a6e;border-left:4px solid #0284c7;padding-left:10px;margin:24px 0 12px}' +
         'table{width:100%;border-collapse:collapse;font-size:12.2px;margin-bottom:24px}th,td{border:1px solid #cbd5e1;padding:8px 10px}th{background:#f1f5f9;color:#1e293b;font-weight:800}' +
-        '.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:10.8px;font-weight:800}.pill.blog{background:#e0f2fe;color:#0369a1}.pill.reel{background:#fce7f3;color:#be185d}' +
-        '.card{border:1px solid #cbd5e1;border-left:4px solid #0284c7;border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff;page-break-inside:avoid;break-inside:avoid}' +
-        '.card.is-reel{border-left-color:#db2777}.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.meta{font-size:11.2px;color:#64748b}' +
+        '.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:10.8px;font-weight:800}.pill.blog{background:#dcfce7;color:#15803d}.pill.reel{background:#fce7f3;color:#be185d}.pill.thread{background:#e0f2fe;color:#0369a1}' +
+        '.card{border:1px solid #cbd5e1;border-left:4px solid #16a34a;border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff;page-break-inside:avoid;break-inside:avoid}' +
+        '.card.is-reel{border-left-color:#db2777}.card.is-thread{border-left-color:#0284c7}.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.meta{font-size:11.2px;color:#64748b}' +
         '.card h3{margin:0 0 8px;font-size:14.2px;color:#0f172a}.card pre{margin:0;white-space:pre-wrap;word-break:keep-all;font-family:inherit;font-size:12.3px;line-height:1.68;color:#334155;background:#f8fafc;padding:10px 12px;border-radius:8px}' +
         '.foot{margin-top:28px;padding-top:14px;border-top:1px dashed #cbd5e1;display:flex;justify-content:space-between;font-size:11.5px;color:#64748b}' +
         '@media print{@page{size:A4 portrait;margin:10mm}body{background:#fff;padding:0}.bar{display:none}.sheet{box-shadow:none;padding:2mm 4mm;border-radius:0;max-width:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}}' +
@@ -1135,10 +1144,10 @@
         '<p>업종: ' + A.esc(st.factoryIndustry) + ' · 핵심 테마: ' + A.esc(st.factoryTopic || '브랜딩 · 검색 유입 · DB 전환 극대화') + ' · 작성일: ' + A.todayKst() + '</p>' +
         '</div>' +
         '<div class="kpis">' +
-        '<div class="kpi"><div class="l">총 기획 편수</div><div class="v">' + st.drafts.length + '편</div></div>' +
-        '<div class="kpi"><div class="l">네이버 블로그</div><div class="v" style="color:#0284c7">' + blogCnt + '편</div></div>' +
-        '<div class="kpi"><div class="l">인스타 릴스</div><div class="v" style="color:#db2777">' + reelCnt + '편</div></div>' +
-        '<div class="kpi"><div class="l">법적 심의 통과</div><div class="v" style="color:#16a34a">' + safeCnt + '/' + st.drafts.length + '편</div></div>' +
+        '<div class="kpi"><div class="l">총 기획 · 심의 안전</div><div class="v">' + st.drafts.length + '편 (' + safeCnt + '안전)</div></div>' +
+        '<div class="kpi"><div class="l">🟢 네이버 블로그</div><div class="v" style="color:#16a34a">' + blogCnt + '편</div></div>' +
+        '<div class="kpi"><div class="l">🟣 인스타 릴스</div><div class="v" style="color:#db2777">' + reelCnt + '편</div></div>' +
+        '<div class="kpi"><div class="l">🧵 스레드 대행</div><div class="v" style="color:#0284c7">' + threadCnt + '편</div></div>' +
         '</div>' +
         '<h2>1. 월간 발행 캘린더 요약표</h2>' +
         '<table><thead><tr><th style="width:46px">No</th><th style="width:110px">채널</th><th>콘텐츠 제목</th><th style="width:105px">발행 예정일</th><th style="width:80px">심의</th></tr></thead><tbody>' + tableRows + '</tbody></table>' +
@@ -1183,12 +1192,14 @@
         '- 현재 10편 초안 목록:',
         summary,
         '',
-        '요청: 위 10편(블로그 6편 + 릴스 4편)을 의료법·금소법 심의에 안전하면서도 클릭률과 DB 문의 전환율이 폭발하도록 업그레이드해 줘!',
+        '요청: 위 10편(블로그 4편 + 릴스 3편 + 스레드 대행 3편)을 의료법·금소법 심의에 안전하면서도 클릭률과 DB 문의 전환율이 폭발하도록 업그레이드해 줘!',
         '※ 대장님이 [🎬 승인 · 10편 공장 재입력] 버튼 한 번으로 자동 반영할 수 있도록 반드시 아래 형식으로 1번~10번을 정리해 줘:',
         '1. [네이버 블로그] 업그레이드 제목',
         '후킹/구성: 핵심 도입 + 본문 3줄 + CTA',
         '2. [인스타 릴스] 업그레이드 제목',
         '후킹/구성: [0~3초 후킹] ... [4~20초 본론] ... [21~30초 CTA] ...',
+        '3. [스레드] 업그레이드 제목',
+        '후킹/구성: 핵심 인사이트 3줄 + 댓글 소통 유도 + 프로필 링크 CTA',
       ].join('\n');
       A.requestAiAssist({ room: 'general', prompt: promptText }).then(function () {
         if (window.BujaChat && window.BujaChat.openRoom) window.BujaChat.openRoom('general');

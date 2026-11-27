@@ -8,7 +8,7 @@
 
   var DEFAULT_CLAUSES = [
     '제1조 (목적)',
-    '본 계약은 갑(위탁자)이 을(수탁자)에게 SNS·블로그·릴스·브랜딩 및 DB 퍼널 마케팅 대행 업무를 위탁함에 있어, 양 당사자 간의 권리·의무 및 제반 사항을 명확히 규정함을 목적으로 한다.',
+    '본 계약은 갑(위탁자)이 을(수탁자)에게 SNS·블로그·릴스·스레드·브랜딩 및 DB 퍼널 마케팅 대행 업무를 위탁함에 있어, 양 당사자 간의 권리·의무 및 제반 사항을 명확히 규정함을 목적으로 한다.',
     '',
     '제2조 (대행 업무 범위)',
     '을은 상단 [서비스 내역 및 대금] 표에 명시된 마케팅 대행 항목을 성실히 수행하며, 세부 기획·발행 일정은 월간 운영 계획에 따라 갑과 협의하여 진행한다.',
@@ -82,6 +82,7 @@
       items: [
         { name: '네이버 브랜드 블로그 대행 (월 12편)', qty: 1, price: 1100000, note: '기획·원고·이미지' },
         { name: '인스타그램 릴스 대행 (월 8편)', qty: 1, price: 1200000, note: '대본·편집·업로드' },
+        { name: '스레드(Threads) 대행 (월 20편 · 데일리 소통)', qty: 1, price: 600000, note: '짧은 훅 원고·댓글 소통·링크 전환' },
       ],
       clauses: DEFAULT_CLAUSES,
       usePage2: false,
@@ -105,10 +106,11 @@
   }
 
   var EXTRA_TERM_PRESETS = [
-    { label: '📊 월간 성과 리포트 특약', text: '1. 을은 매월 말일 기준 네이버 블로그·인스타 릴스·DB 유입 성과 보고서 및 VIP 포털 실시간 리포트를 갑에게 제공한다.' },
-    { label: '🎥 촬영·원본·저작권 특약', text: '2. 출장 촬영 또는 원장님/대표님 인터뷰 촬영 원본 파일은 요청 시 갑에게 제공하며, 제3자 무단 배포를 금지한다.' },
-    { label: '💳 매체 광고비 실비 정산', text: '3. 네이버 파워링크·메타(인스타) 유료 광고 집행 실비는 본 대행료와 별도로 갑의 법인/개인 카드로 직접 결제한다.' },
-    { label: '🔒 동종 업종 비밀유지 강화', text: '4. 을은 계약 기간 및 종료 후 1년간 갑의 내부 영업 전략·단가·수집된 가망고객 DB를 타사 마케팅에 일체 활용하지 않는다.' },
+    { label: '📊 월간 성과 리포트 특약', text: '1. 을은 매월 말일 기준 네이버 블로그·인스타 릴스·스레드·DB 유입 성과 보고서 및 VIP 포털 실시간 리포트를 갑에게 제공한다.' },
+    { label: '🧵 스레드 데일리 소통·계정 운영 특약', text: '2. 을은 갑의 스레드(Threads) 공식 계정에서 월 20편 내외의 인사이트·공감형 콘텐츠를 발행하며, 댓글 소통 및 프로필 링크 유입 관리를 대행한다.' },
+    { label: '🎥 촬영·원본·저작권 특약', text: '3. 출장 촬영 또는 원장님/대표님 인터뷰 촬영 원본 파일은 요청 시 갑에게 제공하며, 제3자 무단 배포를 금지한다.' },
+    { label: '💳 매체 광고비 실비 정산', text: '4. 네이버 파워링크·메타(인스타·스레드) 유료 광고 집행 실비는 본 대행료와 별도로 갑의 법인/개인 카드로 직접 결제한다.' },
+    { label: '🔒 동종 업종 비밀유지 강화', text: '5. 을은 계약 기간 및 종료 후 1년간 갑의 내부 영업 전략·단가·수집된 가망고객 DB를 타사 마케팅에 일체 활용하지 않는다.' },
   ];
 
   var form = blankForm();
@@ -295,7 +297,7 @@
       '</div>' +
 
       '<div class="ws-card" style="padding:12px">' +
-      '<h3 style="margin-bottom:8px;font-size:13px"><span>💰 서비스 항목 및 계약 금액</span><span style="display:flex;gap:5px"><button type="button" class="ws-btn sm danger" id="contPopItem" title="마지막 항목 삭제">− 항목 빼기</button><button type="button" class="ws-btn sm primary" id="contAddItem">+ 항목 추가</button></span></h3>' +
+      '<h3 style="margin-bottom:8px;font-size:13px"><span>💰 서비스 항목 및 계약 금액</span><span style="display:flex;gap:5px;flex-wrap:wrap"><button type="button" class="ws-btn sm" id="contAddThreads" title="스레드 대행 계약 항목 바로 추가">+ 🧵 스레드 대행</button><button type="button" class="ws-btn sm danger" id="contPopItem" title="마지막 항목 삭제">− 항목 빼기</button><button type="button" class="ws-btn sm primary" id="contAddItem">+ 항목 추가</button></span></h3>' +
       '<div class="line-items" id="contItemsBox">' +
       '<div class="line-head"><span>서비스 항목명</span><span>수량</span><span>단가(원)</span><span>비고</span><span>삭제</span></div>' +
       (form.items || []).map(function (it, idx) {
@@ -467,6 +469,12 @@
     if (addItem) addItem.addEventListener('click', function () {
       form.items.push({ name: '추가 대행 서비스', qty: 1, price: 500000, note: '' });
       render();
+    });
+    var addThreads = q('#contAddThreads');
+    if (addThreads) addThreads.addEventListener('click', function () {
+      form.items.push({ name: '스레드(Threads) 대행 (월 20편 · 데일리 소통)', qty: 1, price: 600000, note: '짧은 훅 원고·댓글 소통·링크 전환' });
+      render();
+      A.toast('🧵 계약서에 [스레드(Threads) 대행] 항목이 추가되었습니다!');
     });
     var popItem = q('#contPopItem');
     if (popItem) popItem.addEventListener('click', function () {
